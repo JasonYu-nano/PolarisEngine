@@ -1,0 +1,8 @@
+//
+// Created by Shinonome on 2021/8/14.
+//
+
+#ifndef POLARISENGINE_LOGGER_HPP
+#define POLARISENGINE_LOGGER_HPP
+
+#endif //POLARISENGINE_LOGGER_HPP
