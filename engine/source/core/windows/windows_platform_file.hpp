@@ -1,9 +1,9 @@
 #pragma once
 #include "core/file_system/platform_file_interface.hpp"
 
-namespace Nano
+namespace Engine
 {
-    class ENGINE_API WindowsPlatformFile : public IPlatformFile
+    class CORE_API WindowsPlatformFile : public IPlatformFile
     {
     public:
         WindowsPlatformFile() = default;
@@ -27,6 +27,6 @@ namespace Nano
     private:
         uint32 GetLastError();
 
-        size_t GetTimeStamp(const ::FILETIME& fileTime);
+        uint64 GetTimeStamp(const ::FILETIME& fileTime);
     };
 }

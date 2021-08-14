@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# User
+[Bb]uild/
+.vscode/
+.vs/
+.xmake/
+.idea/
+vsxmake2019/
+generated/

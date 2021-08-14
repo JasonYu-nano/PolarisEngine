@@ -1,13 +1,13 @@
-#include "core/precompiled.hpp"
+#include "core/precompiled_core.hpp"
 #include <corecrt_io.h>
 #include "core/foundation/regex.hpp"
 #include "core/windows/windows_platform_file.hpp"
 #include "core/file_system/path.hpp"
-#include "core/foundation/queue_wrapper.hpp"
+#include "core/foundation/queue.hpp"
 
-using namespace Nano;
+using namespace Engine;
 
-namespace Nano
+namespace Engine
 {
 
     bool WindowsPlatformFile::MakeDir(const tchar* path)
@@ -56,9 +56,9 @@ namespace Nano
             FILETIME fLastWriteTime;
             if (::GetFileTime(handle, &fCreationTime, &fLastAccessTime, &fLastWriteTime))
             {
-                ret.creationTime = GetTimeStamp(fCreationTime);
-                ret.lastAccessTime = GetTimeStamp(fLastAccessTime);
-                ret.lastModifyTime = GetTimeStamp(fLastWriteTime);
+                ret.CreationTime = GetTimeStamp(fCreationTime);
+                ret.LastAccessTime = GetTimeStamp(fLastAccessTime);
+                ret.LastModifyTime = GetTimeStamp(fLastWriteTime);
             }
         }
 
@@ -80,14 +80,14 @@ namespace Nano
         {
             String& path = searchQueue.front();
 
-            HANDLE handle = ::FindFirstFile(*Path::MakePath(path, TEXTS("*")), &data);
+            HANDLE handle = ::FindFirstFile(*Path::MakePath(path, TX("*")), &data);
             if (handle != INVALID_HANDLE_VALUE)
             {
                 do
                 {
                     if (recursion && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
                     {
-                        if (StrCmp(data.cFileName, TEXTS(".")) != 0 && StrCmp(data.cFileName, TEXTS("..")) != 0)
+                        if (StrCmp(data.cFileName, TX(".")) != 0 && StrCmp(data.cFileName, TX("..")) != 0)
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {
@@ -114,7 +114,7 @@ namespace Nano
         return (uint32)::GetLastError();
     }
 
-    size_t WindowsPlatformFile::GetTimeStamp(const ::FILETIME& fileTime)
+    uint64 WindowsPlatformFile::GetTimeStamp(const ::FILETIME& fileTime)
     {
         const int64 k_UnixTimeStart = 0x019DB1DED53E8000;
         const int64 k_TicksPerSecond = 10000000;
