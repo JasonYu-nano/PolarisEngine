@@ -29,19 +29,19 @@ end
 
 
 local cfg_debug = false
-local cfg_vs_runtime = "MT"
+local cfg_vs_runtime = "MD"
 -- for the windows platform (msvc)
 if is_plat("windows") then
     add_defines("WIN32")
     add_defines("_WIN32")
     if is_mode("debug") then
         --add_cxflags("-Gs", "-RTC1")
-        set_runtimes("MTd")
-        cfg_vs_runtime = "MTd"
+        set_runtimes("MDd")
+        cfg_vs_runtime = "MDd"
         cfg_debug = true
     else
-        set_runtimes("MT")
-        cfg_vs_runtime = "MT"
+        set_runtimes("MD")
+        cfg_vs_runtime = "MD"
     end
 end
 
@@ -76,11 +76,10 @@ else
 end
 
 -- 3rd
-add_requires("conan::fmt/7.1.2", {alias = "fmt", debug = cfg_debug})
-add_requires("conan::spdlog/1.8.2", {alias = "spdlog", debug = cfg_debug, configs = { options = "spdlog:wchar_support=True" }})
-
+add_requires("conan::fmt/7.1.2", {alias = "fmt", debug = cfg_debug, vs_runtime = cfg_vs_runtime})
+add_requires("conan::spdlog/1.8.2", {alias = "spdlog", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "spdlog:wchar_support=True\nspdlog:shared=True" }})
+add_requires("conan::glfw/3.3.4", {alias = "glfw", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "glfw:shared=True" }})
 
 -- include project sources
 add_includedirs("source")
-add_includedirs("source/core")
 includes("source")

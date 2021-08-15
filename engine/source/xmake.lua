@@ -10,4 +10,6 @@ else
     add_defines("ENGINE_ROOT_PATH=\"$(curdir)\"")
 end
 
+includes("app")
 includes("core")
+includes("render")

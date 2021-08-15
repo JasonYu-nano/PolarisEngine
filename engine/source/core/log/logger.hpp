@@ -39,15 +39,10 @@ namespace Engine
             static auto logger = spdlog::basic_logger_mt("engine_log", "logs/engine_log.txt");
             return logger;
         }
-
-        static void TEST(const tchar*&& s)
-        {
-
-        }
     };
 
     #define PL_INFO(fmt, ...) {LogSystem::Info(fmt, ## __VA_ARGS__);}
     #define PL_WARN(fmt, ...) {LogSystem::Warn(fmt, ## __VA_ARGS__);}
     #define PL_ERROR(fmt, ...) {LogSystem::Error(fmt, ## __VA_ARGS__);}
-    #define PL_FATAL(fmt, ...) {LogSystem::Fatal, ## __VA_ARGS__);}
+    #define PL_FATAL(fmt, ...) {LogSystem::Fatal(fmt, ## __VA_ARGS__);}
 }
