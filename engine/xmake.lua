@@ -17,13 +17,18 @@ set_languages("cxx20")
 
 -- add build modes
 add_rules("mode.debug", "mode.releasedbg", "mode.release")
+
+local current_mode = ""
 if is_mode("debug") then
+    current_mode = "debug"
     add_defines("DEBUG")
 end
 if is_mode("releasedbg") then
+    current_mode = "development"
     add_defines("DEVELOPMENT")
 end
 if is_mode("release") then
+    current_mode = "shipping"
     add_defines("SHIPPING")
 end
 
@@ -70,9 +75,9 @@ end
 
 -- output
 if has_config("shared") then
-    set_targetdir("$(buildir)/bin/$(plat)/$(arch)")
+    set_targetdir("$(buildir)/bin/$(plat)/$(arch)/"..current_mode.."/")
 else
-    set_targetdir("$(buildir)/lib/$(plat)/$(arch)")
+    set_targetdir("$(buildir)/lib/$(plat)/$(arch)"..current_mode.."/")
 end
 
 -- 3rd

@@ -7,13 +7,13 @@ namespace Engine
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-        Window = glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr);
+        Window = GLWindowUniquePtr(glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr), [](GLFWwindow* ptr){
+            glfwDestroyWindow(ptr);
+        });
     }
 
     void VulkanAppDriver::Shutdown()
     {
-        glfwDestroyWindow(Window);
-
         glfwTerminate();
     }
 }

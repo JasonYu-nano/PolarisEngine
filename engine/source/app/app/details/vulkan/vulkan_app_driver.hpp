@@ -2,17 +2,21 @@
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 #include "foundation/smart_ptr.hpp"
+#include "foundation/functional.hpp"
+#include "app/details/app_driver.hpp"
 
 namespace Engine
 {
-    class VulkanAppDriver
+    class VulkanAppDriver : public IAppDriver
     {
-    public:
-        void Init();
+        using GLWindowUniquePtr = UniquePtr<GLFWwindow, TFunction<void(GLFWwindow*)>>;
 
-        void Shutdown();
+    public:
+        virtual void Init() override;
+
+        virtual void Shutdown() override;
 
     private:
-        GLFWwindow* Window;
+        GLWindowUniquePtr Window;
     };
 }

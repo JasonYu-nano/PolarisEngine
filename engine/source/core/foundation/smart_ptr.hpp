@@ -14,8 +14,11 @@ namespace Engine
         return std::make_shared<Type>(Forward<Args>(args)...);
     }
 
-    template <typename Type>
-    using UniquePtr = std::unique_ptr<Type>;
+    /*template <typename Type>
+    using UniquePtr = std::unique_ptr<Type>;*/
+
+    template <typename Type, typename Del = std::default_delete<Type>>
+    using UniquePtr = std::unique_ptr<Type, Del>;
 
     template <typename Type, typename... Args>
     NODISCARD UniquePtr<Type> MakeUniquePtr(Args&&... args)
