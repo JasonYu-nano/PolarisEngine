@@ -8,11 +8,11 @@ namespace Engine
         String ret = dest;
         if (ret.IsEmpty())
             ret.Append(part);
-        else if (ret.EndWith(TX("/")) || ret.EndWith(TX("\\")))
+        else if (ret.EndWith(TC("/")) || ret.EndWith(TC("\\")))
         {
-            if (part.StartWith(TX("/")) && part.Length() > 1)
+            if (part.StartWith(TC("/")) && part.Length() > 1)
                 ret.Append(part.Substr(1, part.Length() - 1));
-            else if (part.StartWith(TX("\\")) && part.Length() > 2)
+            else if (part.StartWith(TC("\\")) && part.Length() > 2)
                 ret.Append(part.Substr(2, part.Length() - 2));
             else
                 ret.Append(part);
@@ -20,13 +20,13 @@ namespace Engine
         }
         else
         {
-            if (part.StartWith(TX("/")) && part.Length() > 1)
+            if (part.StartWith(TC("/")) && part.Length() > 1)
                 ret.Append(part.Substr(1, part.Length() - 1));
-            else if (part.StartWith(TX("\\")) && part.Length() > 2)
+            else if (part.StartWith(TC("\\")) && part.Length() > 2)
                 ret.Append(part.Substr(2, part.Length() - 2));
             else
             {
-                ret.Append(TX("/"));
+                ret.Append(TC("/"));
                 ret.Append(part);
             }
         }
@@ -35,7 +35,7 @@ namespace Engine
 
     String Path::GetExtension(const String& path)
     {
-        size_t pos = path.FindLast(TX("."));
+        size_t pos = path.FindLast(TC("."));
         if (pos != String::InvalidIndex && pos < path.Length() - 1)
         {
             return path.Substr(pos, path.Length() - pos);
@@ -45,7 +45,7 @@ namespace Engine
 
     String Path::RemoveExtension(const String& path)
     {
-        size_t pos = path.FindLast(TX("."));
+        size_t pos = path.FindLast(TC("."));
         if (pos == 0)
             return String::Empty();
         else if (pos != String::InvalidIndex)
@@ -56,7 +56,7 @@ namespace Engine
 
     String Path::GetShortName(const String& path, bool withExtension)
     {
-        size_t pos = path.FindLast(TX("/\\"));
+        size_t pos = path.FindLast(TC("/\\"));
         String ret = String::Empty();
         if (pos != String::InvalidIndex && pos < path.Length() - 1)
         {
@@ -71,6 +71,6 @@ namespace Engine
 
     Vector<String> Path::SplitPath(const String& path)
     {
-        return path.Split(TX("/\\"));
+        return path.Split(TC("/\\"));
     }
 }

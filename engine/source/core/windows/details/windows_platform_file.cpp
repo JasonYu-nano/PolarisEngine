@@ -80,14 +80,14 @@ namespace Engine
         {
             String& path = searchQueue.front();
 
-            HANDLE handle = ::FindFirstFile(*Path::MakePath(path, TX("*")), &data);
+            HANDLE handle = ::FindFirstFile(*Path::MakePath(path, TC("*")), &data);
             if (handle != INVALID_HANDLE_VALUE)
             {
                 do
                 {
                     if (recursion && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
                     {
-                        if (StrCmp(data.cFileName, TX(".")) != 0 && StrCmp(data.cFileName, TX("..")) != 0)
+                        if (StrCmp(data.cFileName, TC(".")) != 0 && StrCmp(data.cFileName, TC("..")) != 0)
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {

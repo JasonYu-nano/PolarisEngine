@@ -13,7 +13,7 @@ namespace Engine
 #ifdef Format
     #undefine Format
 #endif
-    #define Format(context, ...) fmt::format(TX(context), __VA_ARGS__)
+    #define Format(context, ...) fmt::format(TC(context), __VA_ARGS__)
 
 /**
  * @brief: StrCmp

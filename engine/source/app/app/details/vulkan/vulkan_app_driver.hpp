@@ -16,6 +16,7 @@ namespace Engine
 
         virtual void Shutdown() override;
 
+        virtual void Tick() override;
     private:
         GLWindowUniquePtr Window;
     };

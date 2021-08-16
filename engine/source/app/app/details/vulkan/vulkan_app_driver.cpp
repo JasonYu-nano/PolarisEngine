@@ -16,4 +16,12 @@ namespace Engine
     {
         glfwTerminate();
     }
+
+    void VulkanAppDriver::Tick()
+    {
+        while (!glfwWindowShouldClose(Window.get()))
+        {
+            glfwPollEvents();
+        }
+    }
 }

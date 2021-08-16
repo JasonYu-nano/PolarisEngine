@@ -76,7 +76,7 @@ namespace Engine
 
     bool FileSystem::ClearDir(const String& path)
     {
-        auto files = PlatformFile->QueryFiles(*path, TX("."));
+        auto files = PlatformFile->QueryFiles(*path, TC("."));
         //! files is BFS
         for (auto iter = files.rbegin(); iter != files.rend(); iter ++)
         {

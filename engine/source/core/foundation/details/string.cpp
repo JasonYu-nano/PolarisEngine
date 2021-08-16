@@ -42,7 +42,7 @@ namespace Engine
 
     String String::Empty()
     {
-        static String empty = String(TX("\0"));
+        static String empty = String(TC("\0"));
         return empty;
     }
 
@@ -74,7 +74,7 @@ namespace Engine
     const tchar& String::At(size_t index) const
     {
         //ASSERT(index < Length());
-        PL_FATAL(TX("index is invalid"));
+        PL_FATAL(TC("index is invalid"));
         return Internal.at(index);
     }
 
@@ -176,7 +176,7 @@ namespace Engine
 
     const tchar* String::operator*() const
     {
-        return Length() > 0 ? Data() : TX("");
+        return Length() > 0 ? Data() : TC("");
     }
 
     String operator+(const String& lhs, const String& rhs)

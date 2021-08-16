@@ -11,6 +11,8 @@ namespace Engine
 
         void Shutdown();
 
+        void Tick();
+
     private:
         UniquePtr<IAppDriver> Driver;
     };

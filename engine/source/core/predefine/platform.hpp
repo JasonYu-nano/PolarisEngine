@@ -34,9 +34,9 @@ namespace Engine
 #endif
 
 #ifdef UNICODE
-    #define TX(x) L ## x
+    #define TC(x) L ## x
 #else
-    #define TX(x) x
+    #define TC(x) x
 #endif
 
 #ifdef OUT
