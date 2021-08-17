@@ -1,6 +1,7 @@
 target("Core")
     if has_config("shared") then
         set_kind("shared")
+        add_defines("CORE_EXPORT")
     else
         set_kind("static")
     end

@@ -1,5 +1,5 @@
 #pragma once
-#include "core_module.hpp"
+#include "definitions_core.hpp"
 #include "foundation/string_view.hpp"
 
 namespace Engine

@@ -13,4 +13,7 @@ namespace Engine
     };
 
     typedef WinPlatformType CorePlatformType;
+
+    #define DLLIMPORT __declspec(dllimport)
+    #define DLLEXPORT __declspec(dllexport)
 }

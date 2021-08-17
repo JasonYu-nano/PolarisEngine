@@ -3,8 +3,7 @@
 #include <ostream>
 #include "fmt/core.h"
 #include "fmt/ostream.h"
-#include "core_module.hpp"
-#include "predefine/platform.hpp"
+#include "definitions_core.hpp"
 #include "foundation/array.hpp"
 #include "foundation/string_view.hpp"
 
