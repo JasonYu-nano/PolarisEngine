@@ -1,4 +1,5 @@
 #include "app/application.hpp"
+#include "render_module.hpp"
 
 namespace Engine
 {
@@ -6,12 +7,15 @@ namespace Engine
     {
         Driver = AppDriverHelper::GetDriver();
         Driver->Init();
+        RenderModule::Get().Init();
     }
 
     void Application::Shutdown()
     {
+        RenderModule::Get().Shutdown();
         Driver->Shutdown();
     }
+
     void Application::Tick()
     {
         Driver->Tick();

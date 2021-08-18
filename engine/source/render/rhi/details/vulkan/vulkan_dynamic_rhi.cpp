@@ -1,4 +1,3 @@
-#include <vulkan/vulkan.h>
 #include "GLFW/glfw3.h"
 #include "core_minimal_public.hpp"
 #include "rhi/details/vulkan/vulkan_dynamic_rhi.hpp"
@@ -7,7 +6,7 @@ namespace Engine
 {
     void VulkanDynamicRHI::Init()
     {
-
+        InitInstance();
     }
 
     void VulkanDynamicRHI::Shutdown()
@@ -36,6 +35,9 @@ namespace Engine
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
         createInfo.enabledLayerCount = 0;
+#if VULKAN_DEBUG_MODE
+        FillUpValidationSetting(createInfo);
+#endif
 
         if (vkCreateInstance(&createInfo, nullptr, &Instance) != VK_SUCCESS) 
         {
@@ -43,4 +45,48 @@ namespace Engine
             return;
         }
     }
+
+#if VULKAN_DEBUG_MODE
+    bool VulkanDynamicRHI::CheckValidationLayerSupport()
+    {
+        uint32 layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        Vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for (const char* layerName : ValidationLayers) 
+        {
+            bool layerFound = false;
+
+            for (const auto& layerProperties : availableLayers) {
+                if (strcmp(layerName, layerProperties.layerName) == 0) 
+                {
+                    layerFound = true;
+                    break;
+                }
+            }
+
+            if (!layerFound) 
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    void VulkanDynamicRHI::FillUpValidationSetting(VkInstanceCreateInfo& createInfo)
+    {
+        if (CheckValidationLayerSupport())
+        {
+            createInfo.enabledLayerCount = static_cast<uint32>(ValidationLayers.size());
+            createInfo.ppEnabledLayerNames = ValidationLayers.data();
+        }
+        else
+        {
+            PL_WARN(TC("CheckValidationLayerSupport failed in vulkan debug mode"));
+        }
+    }
+#endif
 }

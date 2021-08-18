@@ -81,7 +81,7 @@ else
 end
 
 -- 3rd
-add_requires("conan::fmt/7.1.2", {alias = "fmt", debug = cfg_debug, vs_runtime = cfg_vs_runtime})
+-- add_requires("conan::fmt/7.1.3", {alias = "fmt", debug = cfg_debug, vs_runtime = cfg_vs_runtime})
 add_requires("conan::spdlog/1.8.2", {alias = "spdlog", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "spdlog:wchar_support=True\nspdlog:shared=True" }})
 add_requires("conan::glfw/3.3.4", {alias = "glfw", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "glfw:shared=True" }})
 

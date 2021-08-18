@@ -2,7 +2,8 @@
 #include <string>
 #include <ostream>
 #include "fmt/core.h"
-#include "fmt/ostream.h"
+//#include <fmt/ostream.h>
+#include "spdlog/fmt/fmt.h"
 #include "definitions_core.hpp"
 #include "foundation/array.hpp"
 #include "foundation/string_view.hpp"
@@ -59,11 +60,11 @@ namespace Engine
 
         const tchar* Data() const;
 
-        String ToUpper();
+        String ToUpper() { return *this; }
 
-        String ToLower();
+        String ToLower() { return *this; }
 
-        String Trim();
+        String Trim() { return *this; }
 
         bool EndWith (const tchar* value) const;
 
@@ -121,7 +122,7 @@ namespace Engine
 using namespace Engine;
 
 template<>
-struct std::hash<String>
+struct CORE_API std::hash<String>
 {
     size_t operator()(const String& str) const
     {
@@ -130,7 +131,7 @@ struct std::hash<String>
 };
 
 template<>
-struct std::less<String>
+struct CORE_API std::less<String>
 {
     bool operator()(const String& lhs, const String& rhs) const
     {
@@ -139,7 +140,7 @@ struct std::less<String>
 };
 
 template <>
-struct fmt::formatter<String> : fmt::formatter<int> 
+struct CORE_API fmt::formatter<String> : fmt::formatter<int>
 {
     template<typename ParseContext>
     constexpr auto parse(ParseContext& ctx)
