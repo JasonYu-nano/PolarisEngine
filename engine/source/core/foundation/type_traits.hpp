@@ -21,3 +21,9 @@ NODISCARD constexpr std::remove_reference_t<Type>&& MoveTemp(Type&& arg) noexcep
     static_assert(!std::is_rvalue_reference_v<Type> && std::is_reference_v<Type>, "argument must be left value");
     return static_cast<std::remove_reference_t<Type>&&>(arg);
 }
+
+template<bool Test, typename Type = void>
+using EnableIf = typename std::enable_if<Test, Type>;
+
+template<bool Test, typename Type = void>
+using TEnableIf = typename std::enable_if<Test, Type>::type;
