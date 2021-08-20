@@ -24,17 +24,15 @@ namespace Engine
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
-        uint32 glfwExtensionCount = 0;
-        const schar** glfwExtensions;
-
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        Vector<const schar*> extensions = GetRequiredExtensions();
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledExtensionCount = glfwExtensionCount;
-        createInfo.ppEnabledExtensionNames = glfwExtensions;
         createInfo.enabledLayerCount = 0;
+        createInfo.ppEnabledLayerNames = nullptr;
+        createInfo.enabledExtensionCount = static_cast<uint32>(extensions.size());
+        createInfo.ppEnabledExtensionNames = extensions.data();
 #if VULKAN_DEBUG_MODE
         FillUpValidationSetting(createInfo);
 #endif
@@ -46,10 +44,23 @@ namespace Engine
         }
     }
 
+    Vector<const schar*> VulkanDynamicRHI::GetRequiredExtensions()
+    {
+        uint32 glfwExtensionCount = 0;
+        const schar** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        Vector<const schar*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+#if VULKAN_DEBUG_MODE
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+        return extensions;
+    }
+
 #if VULKAN_DEBUG_MODE
     bool VulkanDynamicRHI::CheckValidationLayerSupport()
     {
-        uint32 layerCount;
+        uint32 layerCount = 0;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         Vector<VkLayerProperties> availableLayers(layerCount);
@@ -73,7 +84,7 @@ namespace Engine
             }
         }
 
-        return false;
+        return true;
     }
 
     void VulkanDynamicRHI::FillUpValidationSetting(VkInstanceCreateInfo& createInfo)
@@ -89,4 +100,16 @@ namespace Engine
         }
     }
 #endif
+
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData) 
+    {
+
+        //std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+        return VK_FALSE;
+    }
 }

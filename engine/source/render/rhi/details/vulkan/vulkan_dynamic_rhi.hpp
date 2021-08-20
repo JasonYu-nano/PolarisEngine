@@ -24,6 +24,7 @@ namespace Engine
     private:
         void InitInstance();
 
+        Vector<const schar*> GetRequiredExtensions();
 #if VULKAN_DEBUG_MODE
         bool CheckValidationLayerSupport();
 

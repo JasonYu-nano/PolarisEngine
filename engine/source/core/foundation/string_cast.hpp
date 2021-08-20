@@ -17,6 +17,85 @@ namespace Engine
         bool Value = sizeof(EncodingA) == sizeof(EncodingB);
     };
 
+    template<typename InFromType, typename InToType = InFromType>
+    class StringPointer
+    {
+        static_assert(sizeof(InFromType) == sizeof(InToType), "FromType must be the same size as ToType!");
+
+    public:
+        typedef InFromType FromType;
+        typedef InToType   ToType;
+
+    public:
+        explicit StringPointer(const FromType* Source)
+        {
+            if (Source)
+            {
+                Ptr = (const ToType*)Source;
+                StringLength = -1; // Length calculated on-demand
+            }
+            else
+            {
+                Ptr = nullptr;
+                StringLength = 0;
+            }
+        }
+
+        StringPointer(const FromType* Source, int32 SourceLen)
+        {
+            if (Source)
+            {
+                if (SourceLen > 0 && Source[SourceLen - 1] == 0)
+                {
+                    // Given buffer is null-terminated
+                    SourceLen -= 1;
+                }
+
+                Ptr = (const ToType*)Source;
+                StringLength = SourceLen;
+            }
+            else
+            {
+                Ptr = nullptr;
+                StringLength = 0;
+            }
+        }
+
+        /**
+         * Move constructor
+         */
+        StringPointer(TStringPointer&& Other) = default;
+
+        /**
+         * Accessor for the string.
+         * @note The string may not be null-terminated if constructed from an explicitly sized buffer that didn't include the null-terminator.
+         *
+         * @return A const pointer to the string.
+         */
+        FORCEINLINE const ToType* Get() const
+        {
+            return Ptr;
+        }
+
+        /**
+         * Length of the string.
+         *
+         * @return The number of characters in the string, excluding any null terminator.
+         */
+        FORCEINLINE int32 Length() const
+        {
+            return StringLength == -1 ? TCString<ToType>::Strlen(Ptr) : StringLength;
+        }
+
+    private:
+        // Non-copyable
+        TStringPointer(const TStringPointer&) = delete;
+        TStringPointer& operator=(const TStringPointer&) = delete;
+
+        const ToType* Ptr;
+        int32 StringLength;
+    };
+
 
 namespace Locale
 {
@@ -66,7 +145,17 @@ namespace Locale
     template<typename To, typename From>
     TEnableIf<!EncodingCompatible<To, From>::Value, const To*> StringCast(const From* str)
     {
-        return (const To*)str;
+        static_assert(false, "Unsupport encoding to cast");
+        return nullptr;
+    }
+
+    const wchar* StringCast(const schar* str)
+    {
+        uint64 newSize = static_cast<uint64>(strlen(str)) + 1;
+        wchar_t* wcstring = new wchar_t[newSize];
+        size_t convertedChars = 0;
+        mbstowcs_s(&convertedChars, wcstring, newSize, str, _TRUNCATE);
+        return wcstring;
     }
 
     template <typename From, typename To>
