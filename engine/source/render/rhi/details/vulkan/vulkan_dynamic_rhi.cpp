@@ -1,16 +1,44 @@
 #include "GLFW/glfw3.h"
-#include "core_minimal_public.hpp"
 #include "rhi/details/vulkan/vulkan_dynamic_rhi.hpp"
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData)
+{
+    switch (messageSeverity)
+    {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        PL_INFO("Render", pCallbackData->pMessage)
+            break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        PL_INFO("Render", pCallbackData->pMessage)
+            break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        PL_WARN("Render", pCallbackData->pMessage)
+            break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        PL_ERROR("Render", pCallbackData->pMessage)
+            break;
+    default:
+        break;
+    }
+
+    return VK_FALSE;
+}
 
 namespace Engine
 {
     void VulkanDynamicRHI::Init()
     {
         InitInstance();
+        SetupDebugMessenger();
     }
 
     void VulkanDynamicRHI::Shutdown()
     {
+        DestroyDebugUtilsMessengerEXT(Instance, DebugMessenger, nullptr);
         vkDestroyInstance(Instance, nullptr);
     }
 
@@ -33,13 +61,17 @@ namespace Engine
         createInfo.ppEnabledLayerNames = nullptr;
         createInfo.enabledExtensionCount = static_cast<uint32>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
+        createInfo.pNext = nullptr;
 #if VULKAN_DEBUG_MODE
         FillUpValidationSetting(createInfo);
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+        PopulateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
 #endif
 
         if (vkCreateInstance(&createInfo, nullptr, &Instance) != VK_SUCCESS) 
         {
-            PL_FATAL(TC("Failed to create vulkan instance"));
+            PL_FATAL(TC("Render"), TC("Failed to create vulkan instance"));
             return;
         }
     }
@@ -57,7 +89,6 @@ namespace Engine
         return extensions;
     }
 
-#if VULKAN_DEBUG_MODE
     bool VulkanDynamicRHI::CheckValidationLayerSupport()
     {
         uint32 layerCount = 0;
@@ -89,6 +120,7 @@ namespace Engine
 
     void VulkanDynamicRHI::FillUpValidationSetting(VkInstanceCreateInfo& createInfo)
     {
+#if VULKAN_DEBUG_MODE
         if (CheckValidationLayerSupport())
         {
             createInfo.enabledLayerCount = static_cast<uint32>(ValidationLayers.size());
@@ -96,20 +128,48 @@ namespace Engine
         }
         else
         {
-            PL_WARN(TC("CheckValidationLayerSupport failed in vulkan debug mode"));
+            PL_WARN(TC("Render"), TC("CheckValidationLayerSupport failed in vulkan debug mode"));
         }
-    }
 #endif
+    }
 
-    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-        void* pUserData) 
+    void VulkanDynamicRHI::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
     {
+#if VULKAN_DEBUG_MODE
+        createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = DebugCallback;
+#endif
+    }
 
-        //std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    void VulkanDynamicRHI::SetupDebugMessenger()
+    {
+#if VULKAN_DEBUG_MODE
+        VkDebugUtilsMessengerCreateInfoEXT createInfo;
+        PopulateDebugMessengerCreateInfo(createInfo);
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance, "vkCreateDebugUtilsMessengerEXT");
+        if (func != nullptr && func(Instance, &createInfo, nullptr, &DebugMessenger) == VK_SUCCESS)
+        {
+            return;
+        }
+        else
+        {
+            PL_ERROR(TC("Render"), TC("failed to set up debug messenger!"));
+            return;
+        }
+#endif
+    }
 
-        return VK_FALSE;
+    void VulkanDynamicRHI::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* allocator)
+    {
+#if VULKAN_DEBUG_MODE
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        if (func != nullptr) 
+        {
+            func(instance, debugMessenger, allocator);
+        }
+#endif
     }
 }

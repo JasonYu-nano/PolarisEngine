@@ -1,9 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "definitions_render.hpp"
+#include "core_minimal_public.hpp"
 #include "foundation/functional.hpp"
-#include "foundation/array.hpp"
-#include "foundation/string.hpp"
+#include "definitions_render.hpp"
 
 #ifdef DEBUG
 #define VULKAN_DEBUG_MODE 1
@@ -25,16 +24,20 @@ namespace Engine
         void InitInstance();
 
         Vector<const schar*> GetRequiredExtensions();
-#if VULKAN_DEBUG_MODE
+
         bool CheckValidationLayerSupport();
 
         void FillUpValidationSetting(VkInstanceCreateInfo& createInfo);
-#endif
+
+        void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+
+        void SetupDebugMessenger();
+
+        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* allocator);
 
         VkInstance Instance;
 
-#if VULKAN_DEBUG_MODE
+        VkDebugUtilsMessengerEXT DebugMessenger;
         Vector<const schar*> ValidationLayers{ {"VK_LAYER_KHRONOS_validation"} };
-#endif
     };
 }

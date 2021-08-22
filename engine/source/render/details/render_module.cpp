@@ -4,8 +4,8 @@ namespace Engine
 {
     RenderModule& RenderModule::Get()
     {
-        static RenderModule module;
-        return module;
+        static RenderModule render;
+        return render;
     }
 
     void RenderModule::Init()
