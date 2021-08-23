@@ -15,6 +15,7 @@
 #include <thread>
 #include <string_view>
 #include <type_traits>
+#include <optional>
 
 #ifdef _WIN32
 #include <windows.h>

@@ -156,7 +156,7 @@ namespace Engine
         }
         else
         {
-            PL_ERROR(TC("Render"), TC("failed to set up debug messenger!"));
+            PL_ERROR(TC("Render"), TC("Failed to set up debug messenger!"));
             return;
         }
 #endif
@@ -171,5 +171,58 @@ namespace Engine
             func(instance, debugMessenger, allocator);
         }
 #endif
+    }
+
+    bool VulkanDynamicRHI::FindPhysicalDevice()
+    {
+        uint32 deviceNum = 0;
+        vkEnumeratePhysicalDevices(Instance, &deviceNum, nullptr);
+
+        if (deviceNum <= 0)
+        {
+            PL_ERROR(TC("Render"), TC("Failed to find GPUs with Vulkan support"));
+            return false;
+        }
+
+        Vector<VkPhysicalDevice> devices(deviceNum);
+        vkEnumeratePhysicalDevices(Instance, &deviceNum, devices.data());
+
+        for (const auto& device : devices) 
+        {
+            if (IsPhysicalDeviceSuitable(device)) {
+                PhysicalDevice = device;
+                break;
+            }
+        }
+
+        return true;
+    }
+    bool VulkanDynamicRHI::IsPhysicalDeviceSuitable(VkPhysicalDevice device)
+    {
+        QueueFamilyIndices indices = FindQueueFamilies(device);
+        return indices.GraphicsFamily.has_value();
+    }
+
+    QueueFamilyIndices VulkanDynamicRHI::FindQueueFamilies(VkPhysicalDevice device)
+    {
+        uint32 queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+        Vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        QueueFamilyIndices indices;
+        int i = 0;
+        for (const auto& queueFamily : queueFamilies) 
+        {
+            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+            {
+                indices.GraphicsFamily = i;
+            }
+
+            i++;
+        }
+
+        return indices;
     }
 }

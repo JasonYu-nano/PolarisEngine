@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 #include "core_minimal_public.hpp"
 #include "foundation/functional.hpp"
+#include "foundation/stl_misc.hpp"
 #include "definitions_render.hpp"
 
 #ifdef DEBUG
@@ -10,6 +11,11 @@
 
 namespace Engine
 {
+    struct QueueFamilyIndices
+    {
+        Optional<uint32> GraphicsFamily;
+    };
+
     class RENDER_API VulkanDynamicRHI
     {
         /*template<typename Type>
@@ -35,9 +41,17 @@ namespace Engine
 
         void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* allocator);
 
+        bool FindPhysicalDevice();
+
+        bool IsPhysicalDeviceSuitable(VkPhysicalDevice device);
+
+        QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+    private:
         VkInstance Instance;
 
         VkDebugUtilsMessengerEXT DebugMessenger;
         Vector<const schar*> ValidationLayers{ {"VK_LAYER_KHRONOS_validation"} };
+
+        VkPhysicalDevice PhysicalDevice{ nullptr };
     };
 }
