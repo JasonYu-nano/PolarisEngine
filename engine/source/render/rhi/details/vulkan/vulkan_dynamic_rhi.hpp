@@ -46,6 +46,8 @@ namespace Engine
         bool IsPhysicalDeviceSuitable(VkPhysicalDevice device);
 
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+
+        bool CreateLogicalDevice();
     private:
         VkInstance Instance;
 
@@ -53,5 +55,7 @@ namespace Engine
         Vector<const schar*> ValidationLayers{ {"VK_LAYER_KHRONOS_validation"} };
 
         VkPhysicalDevice PhysicalDevice{ nullptr };
+        VkDevice Device{ nullptr };
+        VkQueue GraphicsQueue{ nullptr };
     };
 }
