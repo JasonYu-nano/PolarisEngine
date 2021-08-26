@@ -48,6 +48,8 @@ namespace Engine
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
         bool CreateLogicalDevice();
+
+        bool CreateSurface();
     private:
         VkInstance Instance;
 
@@ -57,5 +59,6 @@ namespace Engine
         VkPhysicalDevice PhysicalDevice{ nullptr };
         VkDevice Device{ nullptr };
         VkQueue GraphicsQueue{ nullptr };
+        VkSurfaceKHR surface{ nullptr };
     };
 }

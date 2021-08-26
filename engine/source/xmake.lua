@@ -13,3 +13,4 @@ end
 includes("app")
 includes("core")
 includes("render")
+includes("launcher")

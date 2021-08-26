@@ -1,0 +1,8 @@
+target("Launcher")
+    set_kind("binary")
+    set_group("Engine")
+    add_files("**.cpp")
+    add_headerfiles("**.hpp")
+    add_deps("App", "Render")
+    add_includedirs("$(projectdir)/source/launcher")
+target_end()

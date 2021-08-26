@@ -272,4 +272,9 @@ namespace Engine
 
         return true;
     }
+
+    bool VulkanDynamicRHI::CreateSurface()
+    {
+        return false;
+    }
 }
