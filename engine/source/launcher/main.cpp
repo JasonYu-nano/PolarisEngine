@@ -5,7 +5,7 @@ int main(void* args, int argv)
 {
     Engine::EngineLoop::Init();
 
-    if (!Engine::EngineLoop::IsExitRequested())
+    while (!Engine::EngineLoop::IsExitRequested())
     {
         Engine::EngineLoop::Tick();
     }

@@ -7,6 +7,7 @@ namespace Engine
     WindowsApplication* WindowsApplication::CreateApplication()
     {
         AppInstance = new WindowsApplication();
+        AppInstance->Init();
         return AppInstance;
     }
 
@@ -48,7 +49,7 @@ namespace Engine
         wc.lpszClassName = WindowsWindow::WinClassName;
 
         // register the window class
-        RegisterClassEx(&wc);
+        auto ret = RegisterClassEx(&wc);
     }
 
     LRESULT CALLBACK WindowsApplication::HandleWinMsg(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -64,7 +65,7 @@ namespace Engine
             PostQuitMessage(0);
         } break;
         default:
-            DefWindowProc(hWnd, message, wParam, lParam);
+            ::DefWindowProc(hWnd, message, wParam, lParam);
         }
 
         return result;

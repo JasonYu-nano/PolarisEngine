@@ -23,7 +23,7 @@ namespace Engine
             NULL,                                       // we have no parent window, NULL
             NULL,                                       // we aren't using menus, NULL
             instance,                                   // application handle
-            this);                                      // pass pointer to current object
+            NULL);                                      // pass pointer to current object
 
         HDc = GetDC(HWnd);
 
