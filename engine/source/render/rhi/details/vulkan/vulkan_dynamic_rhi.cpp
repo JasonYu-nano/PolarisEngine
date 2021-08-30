@@ -92,6 +92,7 @@ namespace Engine
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         Vector<const schar*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+        extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #if VULKAN_DEBUG_MODE
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif

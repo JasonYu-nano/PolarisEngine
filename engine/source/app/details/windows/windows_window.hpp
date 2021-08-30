@@ -12,6 +12,8 @@ namespace Engine
 
         void Shudown() {}
 
+        HWND GetHWnd() const { return HWnd; }
+
     public:
         static const tchar WinClassName[];
     private:

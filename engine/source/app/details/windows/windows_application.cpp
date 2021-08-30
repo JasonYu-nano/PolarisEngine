@@ -1,3 +1,4 @@
+#include "core_minimal_public.hpp"
 #include "details/windows/windows_application.hpp"
 
 namespace Engine
@@ -15,6 +16,21 @@ namespace Engine
     {
         delete AppInstance;
         AppInstance = nullptr;
+    }
+
+    HINSTANCE WindowsApplication::GetHInstance()
+    {
+        ASSERT(AppInstance != nullptr);
+
+        return AppInstance->HInstance;
+    }
+
+    HWND WindowsApplication::GetHWnd()
+    {
+        ASSERT(AppInstance != nullptr);
+        ASSERT(AppInstance->Window != nullptr);
+
+        return AppInstance->Window->GetHWnd();
     }
 
     WindowsApplication::~WindowsApplication()

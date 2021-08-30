@@ -15,6 +15,10 @@ namespace Engine
         /**thread unsafe, don't call multiple times*/
         static void DestroyApplication();
 
+        static HINSTANCE GetHInstance();
+
+        static HWND GetHWnd();
+
     private:
         static LRESULT CALLBACK HandleWinMsg(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

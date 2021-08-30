@@ -8,7 +8,7 @@ target("Render")
     set_group("Engine")
     add_files("**.cpp")
     add_headerfiles("**.hpp")
-    add_deps("Core")
+    add_deps("App")
     add_packages("glfw", {public = true})
     add_includedirs("$(projectdir)/source/render", {public = true})
 
