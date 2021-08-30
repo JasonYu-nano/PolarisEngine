@@ -80,7 +80,7 @@ namespace Engine
 
         if (vkCreateInstance(&createInfo, nullptr, &Instance) != VK_SUCCESS) 
         {
-            PL_FATAL(TC("Render"), TC("Failed to create vulkan instance"));
+            PL_FATAL("Render", TC("Failed to create vulkan instance"));
             return;
         }
     }
@@ -138,7 +138,7 @@ namespace Engine
         }
         else
         {
-            PL_WARN(TC("Render"), TC("CheckValidationLayerSupport failed in vulkan debug mode"));
+            PL_WARN("Render", TC("CheckValidationLayerSupport failed in vulkan debug mode"));
         }
 #endif
     }
@@ -166,7 +166,7 @@ namespace Engine
         }
         else
         {
-            PL_ERROR(TC("Render"), TC("Failed to set up debug messenger!"));
+            PL_ERROR("Render", TC("Failed to set up debug messenger!"));
             return;
         }
 #endif
@@ -190,7 +190,7 @@ namespace Engine
 
         if (deviceNum <= 0)
         {
-            PL_ERROR(TC("Render"), TC("Failed to find GPUs with Vulkan support"));
+            PL_ERROR("Render", TC("Failed to find GPUs with Vulkan support"));
             return false;
         }
 
@@ -265,7 +265,7 @@ namespace Engine
 
         if (vkCreateDevice(PhysicalDevice, &createInfo, nullptr, &Device) != VK_SUCCESS) 
         {
-            PL_ERROR(TC("Render"), TC("Failed to create logical device!"));
+            PL_ERROR("Render", TC("Failed to create logical device!"));
             return false;
         }
 

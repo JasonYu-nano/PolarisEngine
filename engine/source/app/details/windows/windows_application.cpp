@@ -1,14 +1,20 @@
 #include "core_minimal_public.hpp"
 #include "details/windows/windows_application.hpp"
+#include "core_minimal_public.hpp"
 
 namespace Engine
 {
     WindowsApplication* AppInstance = nullptr;
 
-    WindowsApplication* WindowsApplication::CreateApplication()
+    ApplicationBase* WindowsApplication::CreateApplication()
     {
         AppInstance = new WindowsApplication();
         AppInstance->Init();
+        return AppInstance;
+    }
+
+    ApplicationBase* WindowsApplication::GetApplication()
+    {
         return AppInstance;
     }
 
@@ -33,6 +39,22 @@ namespace Engine
         return AppInstance->Window->GetHWnd();
     }
 
+    void WindowsApplication::Tick()
+    {
+        MSG msg;
+        // we use PeekMessage instead of GetMessage here
+        // because we should not block the thread at anywhere
+        // except the engine execution driver module
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            // translate keystroke messages into the right format
+            TranslateMessage(&msg);
+
+            // send the message to the WindowProc function
+            DispatchMessage(&msg);
+        }
+    }
+
     WindowsApplication::~WindowsApplication()
     {
         
@@ -40,12 +62,12 @@ namespace Engine
 
     void WindowsApplication::Init()
     {
-        RegisterClass();
+        RegisteClass();
         Window = MakeSharedPtr<WindowsWindow>();
         Window->Init(HInstance);
     }
 
-    void WindowsApplication::RegisterClass()
+    void WindowsApplication::RegisteClass()
     {
         HInstance = GetModuleHandle(NULL);
 
@@ -65,7 +87,11 @@ namespace Engine
         wc.lpszClassName = WindowsWindow::WinClassName;
 
         // register the window class
-        auto ret = RegisterClassEx(&wc);
+        auto result = RegisterClassEx(&wc);
+        if (result == 0)
+        {
+            PL_ERROR("Application", TC("RegisterClassEx failed in windows platform"));
+        }
     }
 
     LRESULT CALLBACK WindowsApplication::HandleWinMsg(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -81,7 +107,7 @@ namespace Engine
             PostQuitMessage(0);
         } break;
         default:
-            ::DefWindowProc(hWnd, message, wParam, lParam);
+            result = ::DefWindowProc(hWnd, message, wParam, lParam);
         }
 
         return result;

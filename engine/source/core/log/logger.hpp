@@ -12,31 +12,31 @@ namespace Engine
     {
     public:
         template<typename TChar, typename... Args>
-        static void Info(const TChar* category, const TChar* fmt, Args&&... args)
+        static void Info(const schar* category, const TChar* fmt, Args&&... args)
         {
             GetLogger()->info(fmt, std::forward<Args>(args)...);
         }
 
         template<typename TChar, typename... Args>
-        static void Warn(const TChar* category, const TChar* fmt, Args&&... args)
+        static void Warn(const schar* category, const TChar* fmt, Args&&... args)
         {
             GetLogger()->warn(fmt, std::forward<Args>(args)...);
         }
 
         template<typename TChar, typename... Args>
-        static void Error(const TChar* category, const TChar* fmt, Args&&... args)
+        static void Error(const schar* category, const TChar* fmt, Args&&... args)
         {
             GetLogger()->error(fmt, std::forward<Args>(args)...);
         }
 
         template<typename TChar, typename... Args>
-        static void Fatal(const TChar* category, const TChar* fmt, Args&&... args)
+        static void Fatal(const schar* category, const TChar* fmt, Args&&... args)
         {
             GetLogger()->critical(fmt, std::forward<Args>(args)...);
         }
 
         template<typename TChar, typename... Args>
-        static void Log(spdlog::source_loc src, spdlog::level::level_enum level, const TChar* category, const TChar* fmt, Args&&... args)
+        static void Log(spdlog::source_loc src, spdlog::level::level_enum level, const schar* category, const TChar* fmt, Args&&... args)
         {
             GetLogger()->log(src, level, fmt, std::forward<Args>(args)...);
         }

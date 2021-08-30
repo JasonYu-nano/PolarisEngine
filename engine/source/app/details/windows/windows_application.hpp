@@ -10,15 +10,16 @@ namespace Engine
     {
     public:
         /**thread unsafe, don't call multiple times*/
-        static WindowsApplication* CreateApplication();
+        static ApplicationBase* CreateApplication();
+
+        static ApplicationBase* GetApplication();
 
         /**thread unsafe, don't call multiple times*/
         static void DestroyApplication();
 
+        virtual void Tick() override;
         static HINSTANCE GetHInstance();
-
         static HWND GetHWnd();
-
     private:
         static LRESULT CALLBACK HandleWinMsg(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -28,7 +29,7 @@ namespace Engine
 
         void Init();
 
-        void RegisterClass();
+        void RegisteClass();
 
     private:
         SharedPtr<WindowsWindow> Window{ nullptr };

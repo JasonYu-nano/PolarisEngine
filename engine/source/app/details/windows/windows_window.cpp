@@ -1,4 +1,5 @@
 #include "details/windows/windows_window.hpp"
+#include "core_minimal_public.hpp"
 
 namespace Engine
 {
@@ -24,6 +25,13 @@ namespace Engine
             NULL,                                       // we aren't using menus, NULL
             instance,                                   // application handle
             NULL);                                      // pass pointer to current object
+
+        if (HWnd == nullptr)
+        {
+            uint32 errorCode = (uint32)::GetLastError();
+            PL_ERROR("Application", TC("CreateWindowEx failed, error code: {0}"), errorCode);
+            return;
+        }
 
         HDc = GetDC(HWnd);
 

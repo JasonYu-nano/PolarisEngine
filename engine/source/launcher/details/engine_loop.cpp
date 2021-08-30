@@ -10,7 +10,11 @@ namespace Engine
 
     void EngineLoop::Tick()
     {
-
+        auto* app = PlatformApplication::GetApplication();
+        if (app != nullptr)
+        {
+            app->Tick();
+        }
     }
 
     void EngineLoop::Shutdown()

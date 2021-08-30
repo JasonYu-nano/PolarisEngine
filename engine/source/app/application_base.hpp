@@ -9,6 +9,8 @@ namespace Engine
         static void RequestExitApp();
 
         static bool IsExitRequested();
+
+        virtual void Tick() = 0;
     protected:
         static bool ExitRequested;
     };
