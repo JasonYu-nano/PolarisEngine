@@ -18,7 +18,9 @@ namespace Engine
         static void DestroyApplication();
 
         virtual void Tick() override;
+
         static HINSTANCE GetHInstance();
+
         static HWND GetHWnd();
     private:
         static LRESULT CALLBACK HandleWinMsg(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

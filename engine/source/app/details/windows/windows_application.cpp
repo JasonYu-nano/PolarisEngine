@@ -24,21 +24,6 @@ namespace Engine
         AppInstance = nullptr;
     }
 
-    HINSTANCE WindowsApplication::GetHInstance()
-    {
-        ASSERT(AppInstance != nullptr);
-
-        return AppInstance->HInstance;
-    }
-
-    HWND WindowsApplication::GetHWnd()
-    {
-        ASSERT(AppInstance != nullptr);
-        ASSERT(AppInstance->Window != nullptr);
-
-        return AppInstance->Window->GetHWnd();
-    }
-
     void WindowsApplication::Tick()
     {
         MSG msg;
@@ -53,6 +38,21 @@ namespace Engine
             // send the message to the WindowProc function
             DispatchMessage(&msg);
         }
+    }
+
+    HINSTANCE WindowsApplication::GetHInstance()
+    {
+        ASSERT(AppInstance != nullptr);
+
+        return AppInstance->HInstance;
+    }
+
+    HWND WindowsApplication::GetHWnd()
+    {
+        ASSERT(AppInstance != nullptr);
+        ASSERT(AppInstance->Window != nullptr);
+
+        return AppInstance->Window->GetHWnd();
     }
 
     WindowsApplication::~WindowsApplication()
