@@ -1,5 +1,7 @@
-#include "GLFW/glfw3.h"
+//#include "GLFW/glfw3.h"
+#include "core/core_minimal_public.hpp"
 #include "rhi/details/vulkan/vulkan_dynamic_rhi.hpp"
+#include "rhi/details/vulkan/vulkan_platform.hpp"
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -34,10 +36,17 @@ namespace Engine
     {
         InitInstance();
         SetupDebugMessenger();
+
+        if (!CreateSurface())
+        {
+            return;
+        }
+        
         if (!FindPhysicalDevice())
         {
             return;
         }
+
         if (!CreateLogicalDevice())
         {
             return;
@@ -48,6 +57,7 @@ namespace Engine
     {
         vkDestroyDevice(Device, nullptr);
         DestroyDebugUtilsMessengerEXT(Instance, DebugMessenger, nullptr);
+        vkDestroySurfaceKHR(Instance, Surface, nullptr);
         vkDestroyInstance(Instance, nullptr);
     }
 
@@ -61,7 +71,7 @@ namespace Engine
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
-        Vector<const schar*> extensions = GetRequiredExtensions();
+        Vector<const schar*> extensions = GetExtraExtensions();
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -85,14 +95,14 @@ namespace Engine
         }
     }
 
-    Vector<const schar*> VulkanDynamicRHI::GetRequiredExtensions()
+    Vector<const schar*> VulkanDynamicRHI::GetExtraExtensions()
     {
         uint32 glfwExtensionCount = 0;
-        const schar** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        /*const schar** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);*/
 
-        Vector<const schar*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-        extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+        Vector<const schar*> extensions;
+        VulkanPlatformHelper::GetExtraExtensions(extensions);
 #if VULKAN_DEBUG_MODE
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
@@ -230,6 +240,19 @@ namespace Engine
                 indices.GraphicsFamily = i;
             }
 
+            VkBool32 presentSupport = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(PhysicalDevice, i, Surface, &presentSupport);
+            
+            if (presentSupport)
+            {
+                indices.PresentFamily = i;
+            }
+
+            if (indices.IsValid())
+            {
+                break;
+            }
+
             i++;
         }
 
@@ -240,19 +263,25 @@ namespace Engine
     {
         QueueFamilyIndices indices = FindQueueFamilies(PhysicalDevice);
 
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = indices.GraphicsFamily.value();
-        queueCreateInfo.queueCount = 1;
+        Vector<VkDeviceQueueCreateInfo> queueCreationInfos;
+        Set<uint32> queueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
+
         float queuePriority = 1.0f;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
+        for (uint32_t queueFamily : queueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreationInfos.push_back(queueCreateInfo);
+        }
 
         VkPhysicalDeviceFeatures deviceFeatures{};
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.pQueueCreateInfos = &queueCreateInfo;
-        createInfo.queueCreateInfoCount = 1;
+        createInfo.pQueueCreateInfos = queueCreationInfos.data();
+        createInfo.queueCreateInfoCount = static_cast<uint32>(queueCreationInfos.size());
         createInfo.pEnabledFeatures = &deviceFeatures;
 
         createInfo.enabledExtensionCount = 0;
@@ -270,12 +299,13 @@ namespace Engine
         }
 
         vkGetDeviceQueue(Device, indices.GraphicsFamily.value(), 0, &GraphicsQueue);
+        vkGetDeviceQueue(Device, indices.PresentFamily.value(), 0, &PresentQueue);
 
         return true;
     }
 
     bool VulkanDynamicRHI::CreateSurface()
     {
-        return false;
+        return VulkanPlatformHelper::GetSurfaceKHR(Instance, Surface);
     }
 }

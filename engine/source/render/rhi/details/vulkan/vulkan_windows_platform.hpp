@@ -1,7 +1,8 @@
 #pragma once
-#define VK_KHR_surface
+//#define VK_KHR_surface
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
+#include "core/core_minimal_public.hpp"
 
 namespace Engine
 {
@@ -9,7 +10,7 @@ namespace Engine
     {
     public:
         static bool GetSurfaceKHR(const VkInstance& instance, VkSurfaceKHR& outSurface);
-        static Vector<const schar*> GetRequiredExtensions();
+        static void GetExtraExtensions(Vector<const schar*> extensions);
     };
 
     typedef VulkanWindowsHelper VulkanPlatformHelper;

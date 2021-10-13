@@ -14,6 +14,12 @@ namespace Engine
     struct QueueFamilyIndices
     {
         Optional<uint32> GraphicsFamily;
+        Optional<uint32> PresentFamily;
+
+        bool IsValid() const
+        {
+            return GraphicsFamily.has_value() && PresentFamily.has_value();
+        }
     };
 
     class RENDER_API VulkanDynamicRHI
@@ -29,7 +35,7 @@ namespace Engine
     private:
         void InitInstance();
 
-        Vector<const schar*> GetRequiredExtensions();
+        Vector<const schar*> GetExtraExtensions();
 
         bool CheckValidationLayerSupport();
 
@@ -59,6 +65,7 @@ namespace Engine
         VkPhysicalDevice PhysicalDevice{ nullptr };
         VkDevice Device{ nullptr };
         VkQueue GraphicsQueue{ nullptr };
-        VkSurfaceKHR surface{ nullptr };
+        VkQueue PresentQueue{ nullptr };
+        VkSurfaceKHR Surface{ nullptr };
     };
 }

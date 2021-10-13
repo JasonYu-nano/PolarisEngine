@@ -1,8 +1,7 @@
+#include "rhi/details/vulkan/vulkan_windows_platform.hpp"
 #include <vulkan/vulkan_win32.h>
-#include "GLFW/glfw3.h"
 #include "core_minimal_public.hpp"
 #include "platform_application.hpp"
-#include "rhi/details/vulkan/vulkan_windows_platform.hpp"
 
 namespace Engine
 {
@@ -13,25 +12,18 @@ namespace Engine
         createInfo.hwnd = PlatformApplication::GetHWnd();
         createInfo.hinstance = PlatformApplication::GetHInstance();
 
-        auto func = vkGetInstanceProcAddr(instance, "vkCreateWin32SurfaceKHR");
-        //if (vkCreateWin32SurfaceKHR(instance, &createInfo, nullptr, &outSurface) != VK_SUCCESS) 
-        //{
-        //    //PL_ERROR("Render", TC("Failed to create window surface!"));
-        //    return false;
-        //}
+        auto func = (PFN_vkCreateWin32SurfaceKHR)vkGetInstanceProcAddr(instance, "vkCreateWin32SurfaceKHR");
+        if (func != nullptr && func(instance, &createInfo, nullptr, &outSurface) == VK_SUCCESS)
+        {
+            return true;
+        }
+        PL_ERROR("Render", TC("Failed to create window surface!"));
+        return false;
     }
 
-    Vector<const schar*> VulkanWindowsHelper::GetRequiredExtensions()
+    void VulkanWindowsHelper::GetExtraExtensions(Vector<const schar*> extensions)
     {
-        uint32 glfwExtensionCount = 0;
-        const schar** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        Vector<const schar*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+        extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
         extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#if VULKAN_DEBUG_MODE
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
-        return extensions;
     }
 }
