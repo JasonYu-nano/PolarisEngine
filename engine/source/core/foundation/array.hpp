@@ -11,3 +11,22 @@ using Array = std::array<T, MaxSize>;
 
 template<typename T>
 using Span = std::span<T>;
+
+namespace Engine
+{
+    template<typename Element, typename Allocator> 
+    class TArray
+    {
+    public:
+        TArray() 
+            : Size(0)
+            , Max(0)
+        {}
+
+        ~TArray() = default;
+    private:
+        uint32 Size;
+        uint32 Max;
+        Allocator* AllocatorInstance;
+    };
+}
