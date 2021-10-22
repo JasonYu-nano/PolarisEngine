@@ -27,3 +27,9 @@ using EnableIf = typename std::enable_if<Test, Type>;
 
 template<bool Test, typename Type = void>
 using TEnableIf = typename std::enable_if<Test, Type>::type;
+
+template <typename Type>
+using IsIntegral = std::is_integral<Type>;
+
+template <typename Type>
+using IsPointer = std::is_pointer<Type>;
