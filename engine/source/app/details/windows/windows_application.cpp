@@ -1,6 +1,5 @@
 #include "core_minimal_public.hpp"
 #include "details/windows/windows_application.hpp"
-#include "core_minimal_public.hpp"
 
 namespace Engine
 {
