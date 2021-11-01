@@ -65,5 +65,8 @@ namespace Engine
     #define META(...)
 #endif
 
-#define NODISCARD [[nodiscard]]
+#ifndef NODISCARD
+#define NODISCARD
+#endif
+
 }

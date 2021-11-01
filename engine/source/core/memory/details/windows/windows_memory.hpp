@@ -9,11 +9,10 @@ namespace Engine
     class CORE_API WindowsMemory
     {
     public:
-        static const IMalloc* GetDefaultMalloc();
+        static IMalloc* GetDefaultMalloc();
 
         static uint32 GetDefaultAlignment();
     private:
-        static IMalloc* SDefaultMalloc;
         static uint32 SDefaultAlignment;
     };
 

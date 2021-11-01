@@ -1,5 +1,6 @@
 #include "engine_loop.hpp"
 #include "platform_application.hpp"
+#include "core/memory/memory.hpp"
 
 namespace Engine
 {
@@ -20,6 +21,7 @@ namespace Engine
     void EngineLoop::Shutdown()
     {
         PlatformApplication::DestroyApplication();
+        Memory::Shutdown();
     }
 
     bool EngineLoop::IsExitRequested()

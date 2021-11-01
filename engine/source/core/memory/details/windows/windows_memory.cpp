@@ -1,19 +1,18 @@
 #include "precompiled_core.hpp"
 #include "memory/details/windows/windows_memory.hpp"
-#include "core/memory/malloc_c.hpp"
+#include "core/memory/ansi_c_malloc.hpp"
 
 namespace Engine
 {
-    IMalloc* WindowsMemory::SDefaultMalloc = new MallocC();
     uint32 WindowsMemory::SDefaultAlignment = 16;
 
-    const IMalloc* WindowsMemory::GetDefaultMalloc()
+    IMalloc* WindowsMemory::GetDefaultMalloc()
     {
-        return SDefaultMalloc;
+        return new AnsiCMalloc();
     }
 
     uint32 WindowsMemory::GetDefaultAlignment()
     {
-        return 1;
+        return SDefaultAlignment;
     }
 }

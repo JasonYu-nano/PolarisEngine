@@ -1,11 +1,11 @@
 #include "precompiled_core.hpp"
-#include "memory/malloc_c.hpp"
+#include "memory/ansi_c_malloc.hpp"
 #include "math/align_utils.hpp"
 #include "math/generic_math.hpp"
 
 namespace Engine
 {
-    void* MallocC::Malloc(size_t size, uint32 alignment)
+    void* AnsiCMalloc::Malloc(size_t size, uint32 alignment) const
     {
         void* ptr = malloc(size + alignment + sizeof(void*) + sizeof(size_t));
         void* result;
@@ -15,12 +15,12 @@ namespace Engine
         return result;
     }
 
-    void MallocC::Free(void* ptr)
+    void AnsiCMalloc::Free(void* ptr) const
     {
         free(*((void**)((uint8*)ptr - sizeof(void*))));
     }
 
-    void* MallocC::Realloc(void* ptr, size_t size, uint32 alignment)
+    void* AnsiCMalloc::Realloc(void* ptr, size_t size, uint32 alignment) const
     {
         alignment = Math::Max(size >= 16 ? (uint32)16 : (uint32)8, alignment);
         return nullptr;
