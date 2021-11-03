@@ -13,13 +13,15 @@ namespace Engine
 
         static void Free(void* ptr);
 
+        static void Memcpy(void* dest, void* src, size_t size);
+
         /** call on app terminal */
         static void Shutdown();
     private:
         Memory() = delete;
 
         /** get global malloc object, thread unsafe */
-        static const IMalloc* GetGMalloc();
+        static IMalloc* GetGMalloc();
     };
 }
 

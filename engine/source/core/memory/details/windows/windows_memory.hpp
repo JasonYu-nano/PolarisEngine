@@ -12,6 +12,8 @@ namespace Engine
         static IMalloc* GetDefaultMalloc();
 
         static uint32 GetDefaultAlignment();
+
+        static void Memcpy(void* dest, void* src, size_t size);
     private:
         static uint32 SDefaultAlignment;
     };

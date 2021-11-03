@@ -100,7 +100,7 @@ namespace Engine
 namespace Locale
 {
     template <typename Source, typename Dest>
-    static typename TEnableIf<!EncodingCompatible<Source, Dest>::Value, Dest*> Convert(Dest* dest, int32 destSize, const Source* src, int32 srcSize, Dest bogusChar = (Dest)'?')
+    static typename EnableIfT<!EncodingCompatible<Source, Dest>::Value, Dest*> Convert(Dest* dest, int32 destSize, const Source* src, int32 srcSize, Dest bogusChar = (Dest)'?')
     {
         const int32 size = destSize <= srcSize ? destSize : srcSize;
         bool invalidChars = false;
@@ -137,13 +137,13 @@ namespace Locale
 
 
     template<typename To, typename From>
-    TEnableIf<EncodingCompatible<To, From>::Value, const To*> StringCast(const From* str)
+    EnableIfT<EncodingCompatible<To, From>::Value, const To*> StringCast(const From* str)
     {
         return (const To*)str;
     }
 
     template<typename To, typename From>
-    TEnableIf<!EncodingCompatible<To, From>::Value, const To*> StringCast(const From* str)
+    EnableIfT<!EncodingCompatible<To, From>::Value, const To*> StringCast(const From* str)
     {
         static_assert(false, "Unsupport encoding to cast");
         return nullptr;

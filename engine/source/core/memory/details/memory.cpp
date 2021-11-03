@@ -1,5 +1,5 @@
 #include "precompiled_core.hpp"
-#include "predefine/common_marco.hpp"
+#include "core_minimal_private.hpp"
 #include "memory/memory.hpp"
 #include "memory/malloc_interface.hpp"
 
@@ -14,14 +14,18 @@ namespace Engine
 
     void* Memory::Malloc(size_t size, uint32 alignment)
     {
-        const IMalloc* gMalloc = GetGMalloc();
+        IMalloc* gMalloc = GetGMalloc();
         return gMalloc->Malloc(size, alignment);
     }
 
     void Memory::Free(void* ptr)
     {
-        const IMalloc* gMalloc = GetGMalloc();
+        IMalloc* gMalloc = GetGMalloc();
         gMalloc->Free(ptr);
+    }
+
+    void Memory::Memcpy(void* dest, void* src, size_t size)
+    {
     }
 
     void Memory::Shutdown()
@@ -33,13 +37,13 @@ namespace Engine
         }
     }
 
-    const IMalloc* Memory::GetGMalloc()
+    IMalloc* Memory::GetGMalloc()
     {
         if (GMalloc == nullptr)
         {
             GMalloc = PlatformMemory::GetDefaultMalloc();
         }
-        ASSERT(GMalloc);
+        PL_ASSERT(GMalloc);
         return GMalloc;
     }
 }

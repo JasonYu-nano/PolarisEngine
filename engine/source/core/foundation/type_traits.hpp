@@ -2,6 +2,8 @@
 #include <type_traits>
 #include "predefine/platform.hpp"
 
+using namespace Engine;
+
 template <typename Type>
 NODISCARD constexpr Type&& Forward(std::remove_reference_t<Type>& arg) noexcept 
 {
@@ -26,10 +28,13 @@ template<bool Test, typename Type = void>
 using EnableIf = typename std::enable_if<Test, Type>;
 
 template<bool Test, typename Type = void>
-using TEnableIf = typename std::enable_if<Test, Type>::type;
+using EnableIfT = typename std::enable_if<Test, Type>::type;
 
 template <typename Type>
 using IsIntegral = std::is_integral<Type>;
 
 template <typename Type>
 using IsPointer = std::is_pointer<Type>;
+
+template <typename Type>
+constexpr bool IsUnsignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, uint8, uint16, uint32, uint64>;

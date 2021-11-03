@@ -41,15 +41,15 @@ namespace Engine
 
     HINSTANCE WindowsApplication::GetHInstance()
     {
-        ASSERT(AppInstance != nullptr);
+        PL_ASSERT(AppInstance != nullptr);
 
         return AppInstance->HInstance;
     }
 
     HWND WindowsApplication::GetHWnd()
     {
-        ASSERT(AppInstance != nullptr);
-        ASSERT(AppInstance->Window != nullptr);
+        PL_ASSERT(AppInstance != nullptr);
+        PL_ASSERT(AppInstance->Window != nullptr);
 
         return AppInstance->Window->GetHWnd();
     }

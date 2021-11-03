@@ -5,12 +5,12 @@
 
 namespace Engine
 {
-    class CORE_API AnsiCMalloc final : public IMalloc, public SystemNewDeleteObject
+    class CORE_API BinnedMalloc final : public IMalloc, public SystemNewDeleteObject
     {
     public:
-        AnsiCMalloc() = default;
+        BinnedMalloc() = default;
 
-        virtual ~AnsiCMalloc() = default;
+        virtual ~BinnedMalloc() = default;
 
         virtual void* Malloc(size_t size, uint32 alignment) final;
 
@@ -18,6 +18,8 @@ namespace Engine
 
         virtual void* Realloc(void* ptr, size_t size, uint32 alignment) final;
 
-        size_t GetAllocateSize(void* ptr);
+        virtual void SetupCurrentThreadTLS() final;
+
+    private:
     };
 }
