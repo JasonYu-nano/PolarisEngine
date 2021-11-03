@@ -23,6 +23,8 @@ namespace Engine
     typedef CorePlatformType::wchar     wchar;
     typedef CorePlatformType::tchar     tchar;
 
+    typedef CorePlatformType::byte      byte;
+
 #ifdef NInterface
     #undef NInterface
 #endif

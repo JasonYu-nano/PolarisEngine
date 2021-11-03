@@ -4,20 +4,26 @@
 #include "definitions_core.hpp"
 #include "predefine/platform.hpp"
 #include "math/generic_math.hpp"
+#include "memory/heap_allocator.hpp"
+#include "log/logger.hpp"
+#include "foundation/type_traits.hpp"
 
 namespace Engine
 {
-    template<typename ElementType, typename Allocator>
+    template <typename ElementType, typename Allocator = HeapAllocator<uint64>>
     class CORE_API List
     {
+        typedef Allocator::SizeType SizeType;
     public:
         List()
-            : MaxSize(AllocatorInstance.GetDefaultCapacity())
+            : Capacity(AllocatorInstance.GetDefaultCapacity())
         {}
 
-        List(uint64 size)
-            : MaxSize(Math::Max(size, AllocatorInstance.GetDefaultCapacity()))
-        {}
+        List(SizeType size)
+            : Capacity(Math::Max(size, AllocatorInstance.GetDefaultCapacity()))
+        {
+            AllocatorInstance.Resize(Capacity);
+        }
 
         List(ElementType* rawPtr, uint64 count) {};
 
@@ -27,18 +33,55 @@ namespace Engine
 
         List(List&& other) {};
 
-        void Add(const ElementType& element) {};
+        void Add(const ElementType& element)
+        {
+            EmplaceBack(Forward<const ElementType&>(element));
+        };
 
-        void Add(ElementType&& element) {};
+        void Add(ElementType&& element)
+        {
+            EmplaceBack(Forward<ElementType&&>(element));
+        }
 
         void Clear() {};
 
-        ElementType* Data() { return nullptr; }
+        ElementType* GetData() 
+        { 
+            if (byte* raw = AllocatorInstance.GetAllocation())
+            {
+                return (ElementType*)raw;
+            }
+            return nullptr;
+        }
 
     private:
+        template <typename... Args>
+        void EmplaceBack(Args&&... args)
+        {
+            SizeType index = AddSize(1);
+            new(GetData() + index) ElementType(Forward<Args>(args)...);
+        }
+
+        /**
+         * add given count of unconstruct element size memory
+         * 
+         * @param count count of add elements
+         * @return start index of add elements
+         */
+        SizeType AddSize(SizeType count)
+        {
+            PL_ASSERT(count > 0);
+            SizeType oldSize = Size;
+            if (oldSize + count > Capacity)
+            {
+                //TODO: resize
+            }
+            return oldSize;
+        }
+
         /** make sure AllocatorInstance init first */
         Allocator AllocatorInstance;
-        uint64 Size{ 0 };
-        uint64 MaxSize{ 0 };
+        SizeType Size{ 0 };
+        SizeType Capacity{ 0 };
     };
 }

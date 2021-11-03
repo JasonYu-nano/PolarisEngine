@@ -13,6 +13,8 @@ namespace Engine
 
         static void Free(void* ptr);
 
+        static void* Realloc(void* ptr, size_t newSize, uint32 alignment = PlatformMemory::GetDefaultAlignment());
+
         static void Memcpy(void* dest, void* src, size_t size);
 
         /** call on app terminal */

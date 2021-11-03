@@ -38,3 +38,6 @@ using IsPointer = std::is_pointer<Type>;
 
 template <typename Type>
 constexpr bool IsUnsignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, uint8, uint16, uint32, uint64>;
+
+template <typename Type>
+struct IsUnsignedIntegral : std::bool_constant<IsUnsignedIntegralV<Type>> {};

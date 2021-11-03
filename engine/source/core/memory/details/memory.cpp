@@ -24,8 +24,15 @@ namespace Engine
         gMalloc->Free(ptr);
     }
 
+    void* Memory::Realloc(void* ptr, size_t newSize, uint32 alignment)
+    {
+        IMalloc* gMalloc = GetGMalloc();
+        return gMalloc->Realloc(ptr, newSize, alignment);
+    }
+
     void Memory::Memcpy(void* dest, void* src, size_t size)
     {
+        return PlatformMemory::Memcpy(dest, src, size);
     }
 
     void Memory::Shutdown()
