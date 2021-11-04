@@ -11,7 +11,7 @@
 namespace Engine
 {
     template <typename ElementType, typename Allocator = HeapAllocator<uint64>>
-    class CORE_API List
+    class List
     {
         typedef typename Allocator::SizeType SizeType;
     public:

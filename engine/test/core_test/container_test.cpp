@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "foundation/list.hpp"
+#include "memory/memory.hpp"
 
 namespace Engine
 {

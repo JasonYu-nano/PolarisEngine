@@ -9,7 +9,7 @@
 namespace Engine
 {
     template<typename UIntType, EnableIfT<IsUnsignedIntegral<typename UIntType>::value, bool> = true>
-    class CORE_API HeapAllocator
+    class HeapAllocator
     {
     public:
         typedef UIntType SizeType;
@@ -33,7 +33,7 @@ namespace Engine
             return Data;
         }
 
-        SizeType CaculateValidCapacity(SizeType elementNum, size_t elementSize, SizeType oldCapacity) const
+        SizeType CaculateValidCapacity(SizeType elementNum, SizeType oldCapacity, size_t elementSize) const
         {
             const size_t firstGrow = 4;
             const size_t constantGrow = 16;
@@ -66,7 +66,14 @@ namespace Engine
         {
             if (Data != nullptr || elementNum > 0)
             {
-                Data = (byte*)Memory::Realloc(Data, elementNum * elementSize);
+                if (Data == nullptr)
+                {
+                    Data = (byte*)Memory::Malloc(elementNum * elementSize);
+                }
+                else
+                {
+                    Data = (byte*)Memory::Realloc(Data, elementNum * elementSize);
+                }
             }
         }
 
