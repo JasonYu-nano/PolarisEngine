@@ -64,6 +64,11 @@ option("unicode")
     set_showmenu(true)
 option_end()
 
+option("with_test")
+    set_default(true)
+    set_showmenu(true)
+option_end()
+
 if has_config("shared") then
     add_defines("SHARED_LIB")
 end
@@ -85,7 +90,13 @@ end
 add_requires("conan::spdlog/1.8.2", {alias = "spdlog", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "spdlog:wchar_support=True\nspdlog:shared=True" }})
 add_requires("conan::glfw/3.3.4", {alias = "glfw", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "glfw:shared=True" }})
 --add_requires("conan::mimalloc/2.0.2", {alias = "mimalloc", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "mimalloc:shared=True" }})
+if has_config("with_test") then
+    add_requires("conan::gtest/cci.20210126", {alias = "gtest", debug = cfg_debug, vs_runtime = cfg_vs_runtime, configs = { options = "glfw:shared=True" }})
+end
 
 -- include project sources
 add_includedirs("source")
 includes("source")
+if has_config("with_test") then
+    includes("test")
+end

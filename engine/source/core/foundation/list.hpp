@@ -13,7 +13,7 @@ namespace Engine
     template <typename ElementType, typename Allocator = HeapAllocator<uint64>>
     class CORE_API List
     {
-        typedef Allocator::SizeType SizeType;
+        typedef typename Allocator::SizeType SizeType;
     public:
         List()
             : Capacity(AllocatorInstance.GetDefaultCapacity())

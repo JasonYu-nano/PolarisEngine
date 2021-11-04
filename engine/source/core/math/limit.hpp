@@ -30,12 +30,12 @@ using namespace Engine;
 namespace Engine
 {
     template <typename T>
-    class NumericLimits
+    struct NumericLimits
     {
     };
 
     template <>
-    class NumericLimits<uint8>
+    struct NumericLimits<uint8>
     {
         static constexpr uint8 Min()
         {
@@ -49,7 +49,7 @@ namespace Engine
     };
 
     template <>
-    class NumericLimits<uint16>
+    struct NumericLimits<uint16>
     {
         static constexpr uint16 Min()
         {
@@ -63,7 +63,7 @@ namespace Engine
     };
 
     template <>
-    class NumericLimits<uint32>
+    struct NumericLimits<uint32>
     {
         static constexpr uint32 Min()
         {
@@ -77,7 +77,7 @@ namespace Engine
     };
 
     template <>
-    class NumericLimits<uint64>
+    struct NumericLimits<uint64>
     {
         static constexpr uint64 Min()
         {
@@ -91,7 +91,7 @@ namespace Engine
     };
 
     template <>
-    class NumericLimits<int8>
+    struct NumericLimits<int8>
     {
         static constexpr int8 Min()
         {

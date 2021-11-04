@@ -11,8 +11,9 @@ namespace Engine
     template<typename UIntType, EnableIfT<IsUnsignedIntegral<typename UIntType>::value, bool> = true>
     class CORE_API HeapAllocator
     {
-        typedef UIntType SizeType;
     public:
+        typedef UIntType SizeType;
+
         ~HeapAllocator()
         {
             if (Data)
