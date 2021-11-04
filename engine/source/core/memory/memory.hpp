@@ -17,6 +17,8 @@ namespace Engine
 
         static void Memcpy(void* dest, void* src, size_t size);
 
+        static void Memmove(void* dest, void* src, size_t size);
+
         /** call on app terminal */
         static void Shutdown();
     private:

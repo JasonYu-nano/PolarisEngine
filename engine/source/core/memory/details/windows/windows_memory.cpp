@@ -20,4 +20,9 @@ namespace Engine
     {
         ::memcpy(dest, src, size);
     }
+
+    void WindowsMemory::Memmove(void* dest, void* src, size_t size)
+    {
+        ::memmove(dest, src, size);
+    }
 }

@@ -32,7 +32,12 @@ namespace Engine
 
     void Memory::Memcpy(void* dest, void* src, size_t size)
     {
-        return PlatformMemory::Memcpy(dest, src, size);
+        PlatformMemory::Memcpy(dest, src, size);
+    }
+
+    void Memory::Memmove(void* dest, void* src, size_t size)
+    {
+        PlatformMemory::Memmove(dest, src, size);
     }
 
     void Memory::Shutdown()

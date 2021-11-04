@@ -19,8 +19,8 @@ namespace Engine
             : Capacity(AllocatorInstance.GetDefaultCapacity())
         {}
 
-        List(SizeType size)
-            : Capacity(Math::Max(size, AllocatorInstance.GetDefaultCapacity()))
+        List(SizeType capacity)
+            : Capacity(Math::Max(capacity, AllocatorInstance.GetDefaultCapacity()))
         {
             AllocatorInstance.Resize(Capacity);
         }
@@ -33,17 +33,61 @@ namespace Engine
 
         List(List&& other) {};
 
+        ElementType& operator[] (SizeType index)
+        {
+            BoundCheck();
+            return GetData() + index;
+        }
+
+        /**
+         * add an element at end
+         *
+         * @param element
+         */
         void Add(const ElementType& element)
         {
             EmplaceBack(Forward<const ElementType&>(element));
         };
 
+        /**
+         * move an element to end
+         *
+         * @param element pending move
+         */
         void Add(ElementType&& element)
         {
             EmplaceBack(Forward<ElementType&&>(element));
         }
 
-        void Clear() {};
+        void Insert(SizeType index, const ElementType& element)
+        {
+            EmplaceAt(index, element);
+        };
+
+        void Insert(SizeType index, ElementType&& element)
+        {
+            EmplaceAt(index, element);
+        };
+
+        void Clear(SizeType slack)
+        {
+            DestructElements(GetData(), Count);
+            Count = 0;
+            if (Capacity != slack)
+            {
+                Resize();
+            }
+        }
+
+        ElementType& At(SizeType index)
+        {
+            BoundCheck();
+            if (IsValidIndex(index))
+            {
+                return GetData() + index;
+            }
+            throw std::out_of_range{};
+        }
 
         ElementType* GetData() 
         { 
@@ -54,34 +98,105 @@ namespace Engine
             return nullptr;
         }
 
+        SizeType GetCount() const
+        {
+            return Count;
+        }
+
+        SizeType GetCapacity() const
+        {
+            return Capacity;
+        }
+
+        void Resize(SizeType newCapacity)
+        {
+            if (newCapacity > Count && newCapacity != Capacity)
+            {
+                Capacity = newCapacity;
+                AllocatorInstance.Resize(newCapacity, sizeof(ElementType));
+            }
+        }
+
+        bool IsValidIndex(SizeType index) const
+        {
+            return index < Count;
+        }
     private:
         template <typename... Args>
         void EmplaceBack(Args&&... args)
         {
-            SizeType index = AddSize(1);
+            SizeType index = AddUnconstructElement(1);
+            new(GetData() + index) ElementType(Forward<Args>(args)...);
+        }
+
+        template <typename... Args>
+        void EmplaceAt(SizeType index, Args&&... args)
+        {
+            InserUnconstructElement(index, 1);
             new(GetData() + index) ElementType(Forward<Args>(args)...);
         }
 
         /**
-         * add given count of unconstruct element size memory
+         * add given count of unconstruct element
          * 
          * @param count count of add elements
          * @return start index of add elements
          */
-        SizeType AddSize(SizeType count)
+        SizeType AddUnconstructElement(SizeType count)
         {
             PL_ASSERT(count > 0);
-            SizeType oldSize = Size;
-            if (oldSize + count > Capacity)
+            SizeType oldCount = Count;
+            if (oldCount + count > Capacity)
             {
-                //TODO: resize
+                Expansion(oldCount + count);
             }
-            return oldSize;
+            return oldCount;
+        }
+
+        void InserUnconstructElement(SizeType index, SizeType count)
+        {
+            PL_ASSERT(index >= 0 && count > 0 && index <= Count);
+            SizeType oldCount = Count;
+            if (oldCount + count > Capacity)
+            {
+                Expansion(oldCount + count);
+            }
+
+            ElementType* src = GetData() + index;
+            Memory::Memmove(src + count, src, oldCount - index);
+        }
+
+        void Expansion(SizeType newSize)
+        {
+            Capacity = AllocatorInstance.CaculateValidCapacity(newSize, Capacity, sizeof(ElementType));
+            PL_ASSERT(newSize <= Capacity);
+            Count = newSize;
+            AllocatorInstance.Resize(Capacity, sizeof(ElementType));
+        }
+
+        void BoundCheck()
+        {
+            PL_ASSERT(Count >= 0 && Count <= Capacity);
+        }
+
+        void DestructElements(ElementType* element, SizeType count)
+        {
+            if constexpr (HasDestructorV<ElementType>)
+            {
+                while (count)
+                {
+                    typedef ElementType DestructItemsElementTypeTypedef;
+
+                    element->DestructItemsElementTypeTypedef::~DestructItemsElementTypeTypedef();
+                    ++element;
+                    --count;
+                }
+            }
         }
 
         /** make sure AllocatorInstance init first */
         Allocator AllocatorInstance;
-        SizeType Size{ 0 };
+        SizeType Count{ 0 };
         SizeType Capacity{ 0 };
     };
 }

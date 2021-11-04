@@ -41,3 +41,6 @@ constexpr bool IsUnsignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, u
 
 template <typename Type>
 struct IsUnsignedIntegral : std::bool_constant<IsUnsignedIntegralV<Type>> {};
+
+template <typename Type>
+constexpr bool HasDestructorV = __has_trivial_destructor(Type) || __has_user_destructor(Type) || __has_virtual_destructor(Type);

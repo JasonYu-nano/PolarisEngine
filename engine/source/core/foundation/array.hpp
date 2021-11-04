@@ -19,13 +19,13 @@ namespace Engine
     {
     public:
         TArray() 
-            : Size(0)
+            : Count(0)
             , Max(0)
         {}
 
         ~TArray() = default;
     private:
-        uint32 Size;
+        uint32 Count;
         uint32 Max;
         Allocator* AllocatorInstance;
     };
