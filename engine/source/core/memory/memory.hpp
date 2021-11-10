@@ -17,6 +17,10 @@ namespace Engine
 
         static void Memcpy(void* dest, void* src, size_t size);
 
+        /**
+         * Copies the values of num bytes from the location pointed by source to the memory block pointed by destination. 
+         * Copying takes place as if an intermediate buffer were used, allowing the destination and source to overlap.
+         */
         static void Memmove(void* dest, void* src, size_t size);
 
         /** call on app terminal */

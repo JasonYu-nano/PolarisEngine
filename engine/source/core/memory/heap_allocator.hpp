@@ -14,6 +14,16 @@ namespace Engine
     public:
         typedef UIntType SizeType;
 
+        HeapAllocator() = default;
+
+        HeapAllocator(const HeapAllocator& other) = delete;
+
+        HeapAllocator(HeapAllocator&& other)
+        {
+            Data = other.Data;
+            other.Data = nullptr;
+        }
+
         ~HeapAllocator()
         {
             if (Data)
@@ -21,6 +31,13 @@ namespace Engine
                 Memory::Free(Data);
                 Data = nullptr;
             }
+        }
+
+        HeapAllocator& operator= (HeapAllocator&& other)
+        {
+            Data = other.Data;
+            other.Data = nullptr;
+            return *this;
         }
 
         SizeType GetDefaultCapacity() const

@@ -7,6 +7,7 @@
 #include "memory/heap_allocator.hpp"
 #include "log/logger.hpp"
 #include "foundation/type_traits.hpp"
+#include "foundation/functional.hpp"
 
 namespace Engine
 {
@@ -22,21 +23,57 @@ namespace Engine
         List(SizeType capacity)
             : Capacity(Math::Max(capacity, AllocatorInstance.GetDefaultCapacity()))
         {
-            AllocatorInstance.Resize(Capacity);
+            AllocatorInstance.Resize(Capacity, sizeof(ElementType));
         }
 
         List(ElementType* rawPtr, uint64 count) {};
 
-        List(std::initializer_list<ElementType> initList) {};
+        List(std::initializer_list<ElementType> initializer) 
+        {
+            CopyElement(initializer.begin(), (SizeType)initializer.size());
+        };
 
-        List(const List& other) {};
+        List(const List& other) 
+        {
+            CopyElement(other.GetData(), other.Count);
+        }
 
-        List(List&& other) {};
+        List(List&& other) noexcept
+        {
+            MoveElement(Forward<List&&>(other));
+        }
+
+        ~List()
+        {
+            Clear();
+        }
+
+        List& operator=(std::initializer_list<ElementType> initializer)
+        {
+            DestructElements(GetData(), Count);
+            CopyElement(initializer.begin(), (SizeType)initializer.size());
+            return *this;
+        }
+
+        List& operator=(const List& other)
+        {
+            DestructElements(GetData(), Count);
+            CopyElement(other.GetData(), other.Count);
+            return *this;
+        }
+
+        List& operator=(List&& other) noexcept
+        {
+            DestructElements(GetData(), Count);
+            MoveElement(Forward<List&&>(other));
+            return *this;
+        }
 
         ElementType& operator[] (SizeType index)
         {
             BoundCheck();
-            return GetData() + index;
+            PL_ASSERT(index < Count);
+            return *(GetData() + index);
         }
 
         /**
@@ -46,6 +83,7 @@ namespace Engine
          */
         void Add(const ElementType& element)
         {
+            AddressCheck(&element);
             EmplaceBack(Forward<const ElementType&>(element));
         };
 
@@ -56,26 +94,69 @@ namespace Engine
          */
         void Add(ElementType&& element)
         {
+            AddressCheck(&element);
             EmplaceBack(Forward<ElementType&&>(element));
         }
 
         void Insert(SizeType index, const ElementType& element)
         {
+            AddressCheck(&element);
             EmplaceAt(index, element);
         };
 
         void Insert(SizeType index, ElementType&& element)
         {
+            AddressCheck(&element);
             EmplaceAt(index, element);
         };
 
-        void Clear(SizeType slack)
+        void RemoveAt(SizeType index)
+        {
+            PL_ASSERT(IsValidIndex(index));
+            DestructElements(GetData() + index, 1);
+
+            SizeType countToMove = Count - index - 1;
+            if (countToMove)
+            {
+                Memory::Memmove(GetData() + index, GetData() + index + 1, countToMove * sizeof(ElementType));
+            }
+            Count -= 1;
+            //TODO: check need shink
+        }
+
+        bool Remove(const ElementType& element)
+        {
+            RemoveMatch([](const ElementType& inElement) {
+                return element == inElement;
+            });
+        }
+
+        void RemoveMatch(TFunction<bool(const ElementType& element)> predicate)
+        {
+            if (Count <= 0)
+            {
+                return;
+            }
+
+            SizeType searchIndex = Count - 1;
+            while (searchIndex >= 0)
+            {
+                ElementType* element = GetData() + searchIndex;
+                if (predicate(element))
+                {
+                    RemoveAt(searchIndex);
+                }
+                searchIndex--;
+            }
+        }
+
+        void Clear(SizeType slack = 0)
         {
             DestructElements(GetData(), Count);
             Count = 0;
             if (Capacity != slack)
             {
-                Resize();
+                Resize(slack);
             }
         }
 
@@ -89,11 +170,20 @@ namespace Engine
             throw std::out_of_range{};
         }
 
-        ElementType* GetData() 
-        { 
+        ElementType* GetData()
+        {
             if (byte* raw = AllocatorInstance.GetAllocation())
             {
                 return (ElementType*)raw;
+            }
+            return nullptr;
+        }
+
+        const ElementType* GetData() const
+        { 
+            if (byte* raw = AllocatorInstance.GetAllocation())
+            {
+                return (const ElementType*)raw;
             }
             return nullptr;
         }
@@ -106,6 +196,11 @@ namespace Engine
         SizeType GetCapacity() const
         {
             return Capacity;
+        }
+
+        bool IsEmpty() const
+        {
+            return Count == 0;
         }
 
         void Resize(SizeType newCapacity)
@@ -132,7 +227,7 @@ namespace Engine
         template <typename... Args>
         void EmplaceAt(SizeType index, Args&&... args)
         {
-            InserUnconstructElement(index, 1);
+            InsertUnconstructElement(index, 1);
             new(GetData() + index) ElementType(Forward<Args>(args)...);
         }
 
@@ -146,31 +241,32 @@ namespace Engine
         {
             PL_ASSERT(count > 0);
             SizeType oldCount = Count;
-            if (oldCount + count > Capacity)
+            Count += count;
+            if (Count > Capacity)
             {
-                Expansion(oldCount + count);
+                Expansion();
             }
             return oldCount;
         }
 
-        void InserUnconstructElement(SizeType index, SizeType count)
+        void InsertUnconstructElement(SizeType index, SizeType count)
         {
             PL_ASSERT(index >= 0 && count > 0 && index <= Count);
             SizeType oldCount = Count;
-            if (oldCount + count > Capacity)
+            Count += count;
+            if (Count > Capacity)
             {
-                Expansion(oldCount + count);
+                Expansion();
             }
 
             ElementType* src = GetData() + index;
-            Memory::Memmove(src + count, src, oldCount - index);
+            Memory::Memmove(src + count, src, (oldCount - index) * sizeof(ElementType));
         }
 
-        void Expansion(SizeType newSize)
+        void Expansion()
         {
-            Capacity = AllocatorInstance.CaculateValidCapacity(newSize, Capacity, sizeof(ElementType));
-            PL_ASSERT(newSize <= Capacity);
-            Count = newSize;
+            Capacity = AllocatorInstance.CaculateValidCapacity(Count, Capacity, sizeof(ElementType));
+            PL_ASSERT(Count <= Capacity);
             AllocatorInstance.Resize(Capacity, sizeof(ElementType));
         }
 
@@ -179,9 +275,19 @@ namespace Engine
             PL_ASSERT(Count >= 0 && Count <= Capacity);
         }
 
+        void AddressCheck(const ElementType* address)
+        {
+            PL_ASSERT(address < GetData() || address >= GetData() + Capacity);
+        }
+
+        void ConstructElements(ElementType* dest, const ElementType* src, SizeType count)
+        {
+            Memory::Memcpy((void*)dest, (void*)src, sizeof(ElementType) * count);
+        }
+
         void DestructElements(ElementType* element, SizeType count)
         {
-            if constexpr (HasDestructorV<ElementType>)
+            if constexpr (HasUserDestructorV<ElementType>)
             {
                 while (count)
                 {
@@ -193,6 +299,23 @@ namespace Engine
                 }
             }
         }
+
+        void CopyElement(const ElementType* data, SizeType count)
+        {
+            PL_ASSERT(data && count > 0 && Count <= 0);
+            Count = count;
+            Expansion();
+            ConstructElements(GetData(), data, count);
+        }
+
+        void MoveElement(List&& other)
+        {
+            Count = other.Count;
+            Capacity = other.Capacity;
+            AllocatorInstance = MoveTemp(other.AllocatorInstance);
+        }
+
+    private:
 
         /** make sure AllocatorInstance init first */
         Allocator AllocatorInstance;

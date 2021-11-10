@@ -3,6 +3,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/pattern_formatter.h"
 #include "predefine/platform.hpp"
 #include "foundation/smart_ptr.hpp"
 
@@ -62,7 +63,8 @@ namespace Engine
             sinks.push_back(colorSink);
             sinks.push_back(MakeSharedPtr<spdlog::sinks::basic_file_sink_mt>("engine_log", "logs/engine_log.txt"));
             Logger = MakeSharedPtr<spdlog::logger>("engine_log", begin(sinks), end(sinks));
-            Logger->set_pattern("%^[%H:%M:%S] [%s:%#] [%!] %v%$");
+            //TODO: has bug with overriden operator new / delete
+            //Logger->set_pattern("%^[%H:%M:%S] [%s:%#] [%!] %v%$");
         }
 
         SharedPtr<spdlog::logger> Logger;

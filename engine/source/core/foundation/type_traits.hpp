@@ -10,7 +10,7 @@ NODISCARD constexpr Type&& Forward(std::remove_reference_t<Type>& arg) noexcept
     return static_cast<Type&&>(arg);
 }
 
-template <class Type>
+template <typename Type>
 NODISCARD constexpr Type&& Forward(std::remove_reference_t<Type>&& arg) noexcept
 {
     static_assert(!std::is_lvalue_reference_v<Type>, "bad forward call");
@@ -43,4 +43,7 @@ template <typename Type>
 struct IsUnsignedIntegral : std::bool_constant<IsUnsignedIntegralV<Type>> {};
 
 template <typename Type>
-constexpr bool HasDestructorV = __has_trivial_destructor(Type) || __has_user_destructor(Type) || __has_virtual_destructor(Type);
+constexpr bool HasTrivialDestructorV = __has_trivial_destructor(Type);
+
+template <typename Type>
+constexpr bool HasUserDestructorV = __has_user_destructor(Type) || __has_virtual_destructor(Type);
