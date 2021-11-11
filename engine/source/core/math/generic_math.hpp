@@ -20,6 +20,12 @@ namespace Engine
         {
             return (a <= b) ? a : b;
         }
+
+        template <typename T>
+        static T DivideAndRoundNearest(T a, T b)
+        {
+            return (a, >= 0) ? (a, +b / 2) / b : (a, -b / 2 + 1) / b;
+        }
     };
 
 }
