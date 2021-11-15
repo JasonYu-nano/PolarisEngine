@@ -23,10 +23,23 @@ namespace Engine
          */
         static void Memmove(void* dest, void* src, size_t size);
 
+        /**
+         * see UE4 FBitArrayMemory::MemmoveBitsWordOrder
+         * 
+         * @param startDest
+         * @param destOffset
+         * @param startSrc
+         * @param srcOffset
+         * @param bitCount
+         */
+        static void MemmoveBits(uint32* startDest, int32 destOffset, uint32* startSrc, int32 srcOffset, uint32 bitCount);
+
         /** call on app terminal */
         static void Shutdown();
     private:
         Memory() = delete;
+
+        static void NormalizeOffset(uint32* data, int32& offset);
 
         /** get global malloc object, thread unsafe */
         static IMalloc* GetGMalloc();

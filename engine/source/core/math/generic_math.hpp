@@ -24,7 +24,13 @@ namespace Engine
         template <typename T>
         static T DivideAndRoundNearest(T a, T b)
         {
-            return (a >= 0) ? (a, +b / 2) / b : (a, -b / 2 + 1) / b;
+            return (a >= 0) ? (a + b / 2) / b : (a - b / 2 + 1) / b;
+        }
+
+        template <typename T>
+        static T DivideAndCeil(T a, T b)
+        {
+            return (a + b - 1) / b;
         }
     };
 

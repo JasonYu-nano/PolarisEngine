@@ -48,4 +48,13 @@ namespace Engine
         listOfCopy2 = MoveTemp(listOfCopy);
         EXPECT_TRUE(listOfCopy2[0] == 1 && listOfCopy2[4] == 0);
     }
+
+    TEST(BitArrayTest, All)
+    {
+        BitArray array;
+        array.Add(true);
+        EXPECT_TRUE(array[0]);
+        array[0] = false;
+        EXPECT_TRUE(!array[0]);
+    }
 }

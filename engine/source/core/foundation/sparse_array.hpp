@@ -8,15 +8,15 @@ namespace Engine
     template <typename ElementType>
     class SparseArray
     {
-        #define INVALID_LINK_NODE_INDEX ((int32) -1)
+        #define INVALID_LINK_NODE_INDEX MAX_UINT32
 
         union ElementLinkNode
         {
             ElementType Element;
             struct
             {
-                int32 PrevIndex;
-                int32 NextIndex;
+                uint32 PrevIndex;
+                uint32 NextIndex;
             };
         };
 
@@ -29,6 +29,25 @@ namespace Engine
         uint32 Add(ElementType&& element)
         {
             return Emplace(element);
+        }
+
+        void RemoveAt(uint32 index)
+        {
+            PL_ASSERT(index < GetCount());
+            ElementLinkNode& node = ElementNodes[index];
+            if (FirstFreeNodeIndex != INVALID_LINK_NODE_INDEX)
+            {
+                ElementNodes[FirstFreeNodeIndex].PrevIndex = index;
+            }
+            node.NextIndex = FirstFreeNodeIndex;
+            node.PrevIndex = INVALID_LINK_NODE_INDEX;
+            FirstFreeNodeIndex = index;
+            AllocateFlags[index] = false;
+        }
+
+        uint32 GetCount() const
+        {
+            return ElementNodes.GetCount();
         }
 
         ElementLinkNode* GetData()
@@ -47,17 +66,17 @@ namespace Engine
 
         uint32 AddUnconstructElement()
         {
-            int32 index = INVALID_LINK_NODE_INDEX;
+            if (GetCount() >= INVALID_LINK_NODE_INDEX)
+            {
+                throw std::overflow_error();
+            }
+
+            uint32 index = INVALID_LINK_NODE_INDEX;
             if (FirstFreeNodeIndex != INVALID_LINK_NODE_INDEX)
             {
                 // return allocated element node
                 PL_ASSERT(!AllocateFlags[FirstFreeNodeIndex]);
                 ElementLinkNode& node = ElementNodes[FirstFreeNodeIndex];
-                if (node.PrevIndex != INVALID_LINK_NODE_INDEX)
-                {
-                    ElementLinkNode& prevNode = ElementNodes[node.PrevIndex];
-                    prevNode.NextIndex = node.NextIndex;
-                }
                 FirstFreeNodeIndex = node.NextIndex;
                 index = FirstFreeNodeIndex;
             }
