@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "foundation/list.hpp"
 #include "memory/memory.hpp"
+#include "foundation/sparse_array.hpp"
 
 namespace Engine
 {

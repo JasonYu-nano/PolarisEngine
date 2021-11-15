@@ -12,11 +12,13 @@ namespace Engine
     #define ELEMENT_BITS  ((uint32)32)
 
     public:
+        BitArray();
+
         BitArray(uint32 capacity);
 
         BitArray(bool defaultValue, uint32 count);
 
-        bool operator[] (uint32 index);
+        bool& operator[] (uint32 index);
 
         void Add(bool value)
         {
@@ -40,7 +42,7 @@ namespace Engine
 
         void Expansion()
         {
-            uint32 elementCount = AllocatorInstance.CaculateValidCapacity(Math::DivideAndRoundNearest(Count, ELEMENT_BITS), Capacity / ELEMENT_BITS), ELEMENT_BITS);
+            uint32 elementCount = AllocatorInstance.CaculateValidCapacity(Math::DivideAndRoundNearest(Count, ELEMENT_BITS), Capacity / ELEMENT_BITS, ELEMENT_BITS);
             AllocatorInstance.Resize(elementCount, ELEMENT_BITS);
             Capacity = elementCount * ELEMENT_BITS;
             PL_ASSERT(Count <= Capacity);
