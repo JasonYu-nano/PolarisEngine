@@ -21,6 +21,19 @@ namespace Engine
         };
 
     public:
+        SparseArray() = default;
+
+        SparseArray(uint32 capacity)
+            : AllocateFlags(BitArray(capacity))
+            , ElementNodes(List<ElementLinkNode>(capacity))
+        {}
+
+        ElementType& operator[] (uint32 index)
+        {
+            PL_ASSERT(AllocateFlags[index]);
+            return ElementNodes[index].Element;
+        }
+
         uint32 Add(const ElementType& element)
         {
             return Emplace(element);
@@ -68,7 +81,7 @@ namespace Engine
         {
             if (GetCount() >= INVALID_LINK_NODE_INDEX)
             {
-                throw std::overflow_error();
+                throw std::overflow_error("index of sparse array can not >= MAX_UINT32");
             }
 
             uint32 index = INVALID_LINK_NODE_INDEX;
@@ -90,7 +103,7 @@ namespace Engine
             return index;
         }
     private:
-        int32 FirstFreeNodeIndex{ INVALID_LINK_NODE_INDEX };
+        uint32 FirstFreeNodeIndex{ INVALID_LINK_NODE_INDEX };
         BitArray<HeapAllocator<uint32>> AllocateFlags;
         List<ElementLinkNode> ElementNodes;
     };

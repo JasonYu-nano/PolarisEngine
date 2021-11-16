@@ -57,4 +57,14 @@ namespace Engine
         array[0] = false;
         EXPECT_TRUE(!array[0]);
     }
+
+    TEST(SparseArrayTest, All)
+    {
+        SparseArray<int32> array(8);
+        uint32 index1 = array.Add(-20);
+        uint32 index2 = array.Add(11);
+        array.RemoveAt(0);
+        array.Add(6);
+        EXPECT_TRUE(array[0] == 6);
+    }
 }
