@@ -14,8 +14,9 @@ namespace Engine
     template <typename ElementType, typename Allocator = HeapAllocator<uint32>>
     class List
     {
+        template <typename T> friend class SparseArray;
+    protected:
         typedef typename Allocator::SizeType SizeType;
-
     public:
         List()
             : Capacity(AllocatorInstance.GetDefaultCapacity())
@@ -44,7 +45,7 @@ namespace Engine
             MoveElement(Forward<List&&>(other));
         }
 
-        ~List()
+        virtual ~List()
         {
             Clear();
         }
@@ -218,6 +219,21 @@ namespace Engine
             return index < Count;
         }
 
+    private:
+        template <typename... Args>
+        void EmplaceBack(Args&&... args)
+        {
+            SizeType index = AddUnconstructElement(1);
+            new(GetData() + index) ElementType(Forward<Args>(args)...);
+        }
+
+        template <typename... Args>
+        void EmplaceAt(SizeType index, Args&&... args)
+        {
+            InsertUnconstructElement(index, 1);
+            new(GetData() + index) ElementType(Forward<Args>(args)...);
+        }
+
         /**
          * add given count of unconstruct element
          *
@@ -234,20 +250,6 @@ namespace Engine
                 Expansion();
             }
             return oldCount;
-        }
-    private:
-        template <typename... Args>
-        void EmplaceBack(Args&&... args)
-        {
-            SizeType index = AddUnconstructElement(1);
-            new(GetData() + index) ElementType(Forward<Args>(args)...);
-        }
-
-        template <typename... Args>
-        void EmplaceAt(SizeType index, Args&&... args)
-        {
-            InsertUnconstructElement(index, 1);
-            new(GetData() + index) ElementType(Forward<Args>(args)...);
         }
 
         void InsertUnconstructElement(SizeType index, SizeType count)
@@ -316,7 +318,7 @@ namespace Engine
             AllocatorInstance = MoveTemp(other.AllocatorInstance);
         }
 
-    private:
+    protected:
 
         /** make sure AllocatorInstance init first */
         Allocator AllocatorInstance;

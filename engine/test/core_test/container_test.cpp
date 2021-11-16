@@ -2,6 +2,7 @@
 #include "foundation/list.hpp"
 #include "memory/memory.hpp"
 #include "foundation/sparse_array.hpp"
+#include "foundation/stack.hpp"
 
 namespace Engine
 {
@@ -65,6 +66,13 @@ namespace Engine
         uint32 index2 = array.Add(11);
         array.RemoveAt(0);
         array.Add(6);
-        EXPECT_TRUE(array[0] == 6);
+        EXPECT_TRUE(array[0] == 6 && array[1] == 11);
+    }
+
+    TEST(StackTest, All)
+    {
+        Stack<int32> array(8);
+
+        EXPECT_TRUE(array[0] == 6 && array[1] == 11);
     }
 }

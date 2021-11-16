@@ -90,15 +90,16 @@ namespace Engine
                 // return allocated element node
                 PL_ASSERT(!AllocateFlags[FirstFreeNodeIndex]);
                 ElementLinkNode& node = ElementNodes[FirstFreeNodeIndex];
-                FirstFreeNodeIndex = node.NextIndex;
                 index = FirstFreeNodeIndex;
+                AllocateFlags[index] = true;
+                FirstFreeNodeIndex = node.NextIndex;
             }
             else
             {
                 // add new element
                 index = ElementNodes.AddUnconstructElement(1);
+                AllocateFlags.Add(true);
             }
-            AllocateFlags[index] = true;
 
             return index;
         }
