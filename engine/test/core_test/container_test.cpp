@@ -3,6 +3,7 @@
 #include "memory/memory.hpp"
 #include "foundation/sparse_array.hpp"
 #include "foundation/stack.hpp"
+#include "foundation/array.hpp"
 
 namespace Engine
 {
@@ -50,6 +51,21 @@ namespace Engine
         EXPECT_TRUE(listOfCopy2[0] == 1 && listOfCopy2[4] == 0);
     }
 
+    TEST(ListTest, ConstBitIterator)
+    {
+        List<int> list = { 1, 2, 3, 4, 0 };
+
+        for (auto&& value : list)
+        {
+            PL_INFO("", "{0}", value);
+        }
+
+        List<int>::ConstIterator iter = list.begin();
+
+        Vector<int> vec = { 1, 2, 3, 4, 0 };
+        Vector<int>::const_iterator iter2 = vec.begin();
+    }
+
     TEST(BitArrayTest, All)
     {
         BitArray array;
@@ -64,15 +80,22 @@ namespace Engine
         SparseArray<int32> array(8);
         uint32 index1 = array.Add(-20);
         uint32 index2 = array.Add(11);
-        array.RemoveAt(0);
-        array.Add(6);
+        array.Add(15);
+        array.Add(-1); //{-20, 11, 15, -1}
+
+        array.RemoveAt(0); //{11, 15, -1}
+        array.Add(6); //{6, 11, 15, -1}
         EXPECT_TRUE(array[0] == 6 && array[1] == 11);
+        array.RemoveAt(2); //{6, 11, -1}
+
+        for (auto&& value : array)
+        {
+            PL_INFO("", "{0}", value);
+        }
     }
 
     TEST(StackTest, All)
     {
         Stack<int32> array(8);
-
-        EXPECT_TRUE(array[0] == 6 && array[1] == 11);
     }
 }

@@ -32,6 +32,25 @@ namespace Engine
         {
             return (a + b - 1) / b;
         }
+
+        static uint32 FloorLog2(uint32 value)
+        {
+            // see http://codinggorilla.domemtech.com/?p=81 or http://en.wikipedia.org/wiki/Binary_logarithm but modified to return 0 for a input value of 0
+            // 686ms on test data
+            uint32 pos = 0;
+            if (value >= 1 << 16) { value >>= 16; pos += 16; }
+            if (value >= 1 << 8) { value >>= 8; pos += 8; }
+            if (value >= 1 << 4) { value >>= 4; pos += 4; }
+            if (value >= 1 << 2) { value >>= 2; pos += 2; }
+            if (value >= 1 << 1) { pos += 1; }
+            return (value == 0) ? 0 : pos;
+        }
+
+        static uint32 CountLeadingZeros(uint32 value)
+        {
+            if (value == 0) return 32;
+            return 31 - FloorLog2(value);
+        }
     };
 
 }

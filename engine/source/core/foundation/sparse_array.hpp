@@ -2,14 +2,83 @@
 
 #include "foundation/bit_array.hpp"
 #include "foundation/list.hpp"
+#include "foundation/type_traits.hpp"
 
 namespace Engine
 {
+    constexpr uint32 kSparseArrayIndexNone = MAX_UINT32;
+
+    template <typename ContainerType, typename ElementType, typename BitIterator>
+    class ConstSparseIterator
+    {
+    public:
+        ConstSparseIterator(const ContainerType& container, BitIterator bitIter)
+            : Container(container)
+            , BitIterator(bitIter)
+        {}
+
+        const ElementType& operator*() const { return Container[GetIndex()]; }
+
+        const ElementType& operator->() const { return Container[GetIndex()]; }
+
+        ConstSparseIterator& operator++ ()
+        {
+            ++BitIterator;
+            return *this;
+        }
+
+        uint32 GetIndex() const { return BitIterator.GetIndex(); }
+
+        friend bool operator== (const ConstSparseIterator& lhs, const ConstSparseIterator& rhs)
+        {
+            return (&lhs.Container == &rhs.Container) && (lhs.BitIterator == rhs.BitIterator);
+        }
+
+        friend bool operator!= (const ConstSparseIterator& lhs, const ConstSparseIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+    protected:
+        const ContainerType& Container;
+        BitIterator BitIterator;
+    };
+
+    template <typename ContainerType, typename ElementType, typename BitIterator>
+    class SparseIterator : public ConstSparseIterator<ContainerType, ElementType, BitIterator>
+    {
+        using Super = ConstSparseIterator<ContainerType, ElementType, BitIterator>;
+    public:
+        SparseIterator(ContainerType& container, BitIterator bitIter)
+            : Super(container, bitIter)
+        {}
+
+        ElementType& operator*() const { return const_cast<ElementType&>(Super::operator*()); }
+
+        ElementType& operator->() const { return const_cast<ElementType&>(Super::operator->()); }
+
+        SparseIterator& operator++ ()
+        {
+            Super::operator++();
+            return *this;
+        }
+
+        uint32 GetIndex() const { return Super::GetIndex(); }
+
+        friend bool operator== (const SparseIterator& lhs, const SparseIterator& rhs)
+        {
+            return (&lhs.Container == &rhs.Container) && (lhs.BitIterator == rhs.BitIterator);
+        }
+
+        friend bool operator!= (const SparseIterator& lhs, const SparseIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+    };
+
     template <typename ElementType>
     class SparseArray
     {
-        #define INVALID_LINK_NODE_INDEX MAX_UINT32
-
         union ElementLinkNode
         {
             ElementType Element;
@@ -20,6 +89,12 @@ namespace Engine
             };
         };
 
+        typedef BitArray<HeapAllocator<uint32>> TBitArray;
+
+    public:
+        using ConstIterator = ConstSparseIterator<SparseArray, ElementType, TBitArray::Iterator>;
+        using Iterator = SparseIterator<SparseArray, ElementType, TBitArray::Iterator>;
+
     public:
         SparseArray() = default;
 
@@ -29,6 +104,12 @@ namespace Engine
         {}
 
         ElementType& operator[] (uint32 index)
+        {
+            PL_ASSERT(AllocateFlags[index]);
+            return ElementNodes[index].Element;
+        }
+
+        const ElementType& operator[] (uint32 index) const
         {
             PL_ASSERT(AllocateFlags[index]);
             return ElementNodes[index].Element;
@@ -48,12 +129,12 @@ namespace Engine
         {
             PL_ASSERT(index < GetCount());
             ElementLinkNode& node = ElementNodes[index];
-            if (FirstFreeNodeIndex != INVALID_LINK_NODE_INDEX)
+            if (FirstFreeNodeIndex != kSparseArrayIndexNone)
             {
                 ElementNodes[FirstFreeNodeIndex].PrevIndex = index;
             }
             node.NextIndex = FirstFreeNodeIndex;
-            node.PrevIndex = INVALID_LINK_NODE_INDEX;
+            node.PrevIndex = kSparseArrayIndexNone;
             FirstFreeNodeIndex = index;
             AllocateFlags[index] = false;
         }
@@ -63,10 +144,23 @@ namespace Engine
             return ElementNodes.GetCount();
         }
 
+        uint32 GetCapacity() const
+        {
+            return ElementNodes.GetCapacity();
+        }
+
         ElementLinkNode* GetData()
         {
             return ElementNodes.GetData();
         }
+
+        Iterator begin() { return Iterator(*this, TBitArray::Iterator(AllocateFlags, 0)); }
+
+        ConstIterator begin() const { return ConstIterator(*this, TBitArray::Iterator(AllocateFlags, 0)); }
+
+        Iterator end() { return Iterator(*this, TBitArray::Iterator(AllocateFlags, GetCount())); }
+
+        ConstIterator end() const { return ConstIterator(*this, TBitArray::Iterator(AllocateFlags, GetCount())); }
 
     private:
         template <typename... Args>
@@ -79,13 +173,13 @@ namespace Engine
 
         uint32 AddUnconstructElement()
         {
-            if (GetCount() >= INVALID_LINK_NODE_INDEX)
+            if (GetCount() >= kSparseArrayIndexNone)
             {
                 throw std::overflow_error("index of sparse array can not >= MAX_UINT32");
             }
 
-            uint32 index = INVALID_LINK_NODE_INDEX;
-            if (FirstFreeNodeIndex != INVALID_LINK_NODE_INDEX)
+            uint32 index = kSparseArrayIndexNone;
+            if (FirstFreeNodeIndex != kSparseArrayIndexNone)
             {
                 // return allocated element node
                 PL_ASSERT(!AllocateFlags[FirstFreeNodeIndex]);
@@ -104,8 +198,8 @@ namespace Engine
             return index;
         }
     private:
-        uint32 FirstFreeNodeIndex{ INVALID_LINK_NODE_INDEX };
-        BitArray<HeapAllocator<uint32>> AllocateFlags;
+        uint32 FirstFreeNodeIndex{ kSparseArrayIndexNone };
+        TBitArray AllocateFlags;
         List<ElementLinkNode> ElementNodes;
     };
 }

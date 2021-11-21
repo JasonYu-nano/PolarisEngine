@@ -47,3 +47,19 @@ constexpr bool HasTrivialDestructorV = __has_trivial_destructor(Type);
 
 template <typename Type>
 constexpr bool HasUserDestructorV = __has_user_destructor(Type) || __has_virtual_destructor(Type);
+
+/** return type depend predicate */
+template <bool Predicate, typename TrueType, typename FalseType>
+struct SwitchType;
+
+template <typename TrueType, typename FalseType>
+struct SwitchType<true, TrueType, FalseType>
+{
+    typedef TrueType Value;
+};
+
+template <typename TrueType, typename FalseType>
+struct SwitchType<false, TrueType, FalseType>
+{
+    typedef FalseType Value;
+};

@@ -11,12 +11,107 @@
 
 namespace Engine
 {
+    template <typename ContainerType, typename ElementType, typename SizeType>
+    class ConstIndexIterator
+    {
+    public:
+        ConstIndexIterator(const ContainerType& container, SizeType index)
+            : Container(container)
+            , Index(index)
+        {}
+
+        const ElementType& operator* () const
+        {
+            return Container[Index];
+        }
+
+        const ElementType& operator-> () const
+        {
+            return Container[Index];
+        }
+
+        ConstIndexIterator& operator++ ()
+        {
+            ++Index;
+            return *this;
+        }
+
+        ConstIndexIterator& operator-- ()
+        {
+            --Index;
+            return *this;
+        }
+
+        friend bool operator== (const ConstIndexIterator& lhs, const ConstIndexIterator& rhs)
+        {
+            return (&lhs.Container == &rhs.Container) && (lhs.Index == rhs.Index);
+        }
+
+        friend bool operator!= (const ConstIndexIterator& lhs, const ConstIndexIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+    protected:
+        const ContainerType& Container;
+        SizeType Index;
+    };
+
+    template <typename ContainerType, typename ElementType, typename SizeType>
+    class IndexIterator : public ConstIndexIterator<ContainerType, ElementType, SizeType>
+    {
+        using Super = ConstIndexIterator<ContainerType, ElementType, SizeType>;
+
+    public:
+        IndexIterator(const ContainerType& container, SizeType index)
+            : Super(container, index)
+        {}
+
+        ElementType& operator* () const
+        {
+            return const_cast<ElementType&>(Super::operator*());
+        }
+
+        ElementType& operator-> () const
+        {
+            return const_cast<ElementType&>(Super::operator->());
+        }
+
+        IndexIterator& operator++ ()
+        {
+            Super::operator++();
+            return *this;
+        }
+
+        IndexIterator& operator-- ()
+        {
+            Super::operator--();
+            return *this;
+        }
+
+        friend bool operator== (const IndexIterator& lhs, const IndexIterator& rhs)
+        {
+            return (&lhs.Container == &rhs.Container) && (lhs.Index == rhs.Index);
+        }
+
+        friend bool operator!= (const IndexIterator& lhs, const IndexIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+    };
+
     template <typename ElementType, typename Allocator = HeapAllocator<uint32>>
     class List
     {
         template <typename T> friend class SparseArray;
+
     protected:
         typedef typename Allocator::SizeType SizeType;
+
+    public:
+        using ConstIterator = ConstIndexIterator<List, ElementType, SizeType>;
+        using Iterator = IndexIterator<List, ElementType, SizeType>;
+
     public:
         List()
             : Capacity(AllocatorInstance.GetDefaultCapacity())
@@ -72,6 +167,13 @@ namespace Engine
         }
 
         ElementType& operator[] (SizeType index)
+        {
+            BoundCheck();
+            PL_ASSERT(index < Count);
+            return *(GetData() + index);
+        }
+
+        const ElementType& operator[] (SizeType index) const
         {
             BoundCheck();
             PL_ASSERT(index < Count);
@@ -219,6 +321,26 @@ namespace Engine
             return index < Count;
         }
 
+
+        Iterator begin()
+        {
+            return Iterator(*this, 0);
+        }
+
+        ConstIterator begin() const
+        {
+            return ConstIterator(*this, 0);
+        }
+
+        Iterator end()
+        {
+            return Iterator(*this, Count);
+        }
+
+        ConstIterator end() const
+        {
+            return ConstIterator(*this, Count);
+        }
     private:
         template <typename... Args>
         void EmplaceBack(Args&&... args)
@@ -273,7 +395,7 @@ namespace Engine
             AllocatorInstance.Resize(Capacity, sizeof(ElementType));
         }
 
-        void BoundCheck()
+        void BoundCheck() const
         {
             PL_ASSERT(Count >= 0 && Count <= Capacity);
         }
