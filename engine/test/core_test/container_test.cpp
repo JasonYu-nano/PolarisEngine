@@ -4,6 +4,7 @@
 #include "foundation/sparse_array.hpp"
 #include "foundation/stack.hpp"
 #include "foundation/array.hpp"
+#include "foundation/set.hpp"
 
 namespace Engine
 {

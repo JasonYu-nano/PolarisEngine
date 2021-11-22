@@ -78,19 +78,19 @@ namespace Engine
     public:
         void Add(const KeyType& key)
         {
-            uint32 hashCode = HashFunc.GetHashCode(key);
+            uint32 hashCode = HashFunc::GetHashCode(key);
             Emplace(hashCode, key);
         }
 
         bool Find(const KeyType& key) const
         {
-            return FindIndex(key).IsValid();;
+            return FindIndex(key).IsValid();
         }
     private:
-        template <typename... Args>
-        void Emplace(uint32 hashCode, Args&&... args)
+        void Emplace(const KeyType& key)
         {
-            SetElementIndex index = FindIndex(hashCode);
+            uint32 hashCode = HashFunc::GetHashCode(key);
+            SetElementIndex index = FindIndex(key, hashCode);
             if (index.IsValid())
             {
                 return;
@@ -98,30 +98,26 @@ namespace Engine
 
             if (CheckRehash(Elements.GetCount() + 1))
             {
-                uint32 index = Elements.Add(SetElement());
-                Elements[index].HashIndex = GetHashIndex(hashCode);
-                Elements[index].HashIndex = GetHashIndex(hashCode);
-                LinkElement()
             }
             uint32 index = Elements.AddUnconstructElement();
-            SetElement* element = new(Elements.GetData() + index) KeyType(Forward<Args>(args)...);
-            LinkElement(SetElementIndex{ Index = index }, element, hashCode);
+            SetElement* element = new(Elements.GetData() + index) KeyType(key);
+            LinkElement(SetElementIndex{ index }, element, hashCode);
         }
 
         /** find key index in sparse array */
         SetElementIndex FindIndex(const KeyType& key) const
         {
-            return FindIndex(HashFunc.GetHashCode(key));
+            return FindIndex(key, HashFunc::GetHashCode(key));
         }
 
         /** find key index in sparse array */
-        SetElementIndex FindIndex(uint32 hashCode) const
+        SetElementIndex FindIndex(const KeyType& key, uint32 hashCode) const
         {
             if (Elements.GetCount())
             {
                 for (SetElementIndex index = GetFirstIndex(hashCode); index.IsValid(); index = Elements[index].NextIndex)
                 {
-                    if (Elements[index].Element == Key)
+                    if (Elements[index].Element == key)
                     {
                         // Return the first match, regardless of whether the set has multiple matches for the key or not.
                         return index;
@@ -186,15 +182,16 @@ namespace Engine
             GetFirstIndex(hashCode) = elementIndex;
         }
 
-        friend void* operator new(size_t size, const SetElement& element)
-        {
-            return &element.Element;
-        }
-
     private:
         /** count of hash bucket */
         uint32 BucketCount{ 0 };
         DefaultSetAllocator::HashAllocator HashBucket;
         TSparseArray Elements;
     };
+}
+
+template <typename KeyType>
+void* operator new(size_t size, const typename Engine::Set<KeyType>::SetElement& element)
+{
+    return &element.Element;
 }
