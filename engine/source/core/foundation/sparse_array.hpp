@@ -91,6 +91,8 @@ namespace Engine
 
         typedef BitArray<HeapAllocator<uint32>> TBitArray;
 
+        template <typename T, typename U, typename V> friend class Set;
+
     public:
         using ConstIterator = ConstSparseIterator<SparseArray, ElementType, TBitArray::Iterator>;
         using Iterator = SparseIterator<SparseArray, ElementType, TBitArray::Iterator>;

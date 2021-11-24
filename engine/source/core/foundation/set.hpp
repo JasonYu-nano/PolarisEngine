@@ -69,17 +69,18 @@ namespace Engine
             }
 
             uint32 HashIndex = 0;
-            SetElementIndex NextIndex = 0;
+            SetElementIndex HashNextId = 0;
             KeyType Element;
         };
 
         using TSparseArray = SparseArray<SetElement>;
 
     public:
+        Set() = default;
+
         void Add(const KeyType& key)
         {
-            uint32 hashCode = HashFunc::GetHashCode(key);
-            Emplace(hashCode, key);
+            Emplace(key);
         }
 
         bool Find(const KeyType& key) const
@@ -87,7 +88,8 @@ namespace Engine
             return FindIndex(key).IsValid();
         }
     private:
-        void Emplace(const KeyType& key)
+        template <typename ElementType>
+        void Emplace(ElementType&& key)
         {
             uint32 hashCode = HashFunc::GetHashCode(key);
             SetElementIndex index = FindIndex(key, hashCode);
@@ -99,9 +101,9 @@ namespace Engine
             if (CheckRehash(Elements.GetCount() + 1))
             {
             }
-            uint32 index = Elements.AddUnconstructElement();
-            SetElement* element = new(Elements.GetData() + index) KeyType(key);
-            LinkElement(SetElementIndex{ index }, element, hashCode);
+            uint32 indexInSparseArray = Elements.AddUnconstructElement();
+            SetElement* element = new(Elements.GetData() + indexInSparseArray) SetElement(key);
+            LinkElement(SetElementIndex{ indexInSparseArray }, *element, hashCode);
         }
 
         /** find key index in sparse array */
@@ -115,7 +117,7 @@ namespace Engine
         {
             if (Elements.GetCount())
             {
-                for (SetElementIndex index = GetFirstIndex(hashCode); index.IsValid(); index = Elements[index].NextIndex)
+                for (SetElementIndex index = GetFirstIndex(hashCode); index.IsValid(); index = Elements[index].HashNextId)
                 {
                     if (Elements[index].Element == key)
                     {
@@ -140,7 +142,7 @@ namespace Engine
 
         bool CheckRehash(uint32 elementCount)
         {
-            uint32 desiredBucketCount = SetAllocator.GetNumberOfHashBuckets(elementCount);
+            uint32 desiredBucketCount = SetAllocator::GetNumberOfHashBuckets(elementCount);
             if (elementCount > 0 && (!BucketCount || BucketCount < desiredBucketCount))
             {
                 BucketCount = desiredBucketCount;
@@ -153,26 +155,26 @@ namespace Engine
         void Rehash()
         {
             // Free the old hash.
-            HashBucket.Resize(0, 0, sizeof(SetElementIndex));
+            HashBucket.Resize(0, sizeof(SetElementIndex));
 
-            int32 LocalHashSize = BucketCount;
+            uint32 LocalHashSize = BucketCount;
             if (LocalHashSize)
             {
-                HashBucket.Resize(0, BucketCount, sizeof(SetElementIndex));
-                for (int32 HashIndex = 0; HashIndex < BucketCount; ++HashIndex)
+                HashBucket.Resize(BucketCount, sizeof(SetElementIndex));
+                for (uint32 HashIndex = 0; HashIndex < BucketCount; ++HashIndex)
                 {
                     GetFirstIndex(HashIndex) = SetElementIndex();
                 }
 
                 // Add the existing elements to the new hash.
-                for (typename TSparseArray::ConstIterator iter = Elements.begin(); iter != Elements.end(); ++iter)
+                for (typename TSparseArray::Iterator iter = Elements.begin(); iter != Elements.end(); ++iter)
                 {
-                    LinkElement(SetElementIndex(iter.GetIndex()), *iter, HashFunc.GetHashCode(iter->Element));
+                    LinkElement(SetElementIndex(iter.GetIndex()), *iter, HashFunc::GetHashCode((*iter).Element));
                 }
             }
         }
 
-        void LinkElement(SetElementIndex elementIndex, const SetElement& element, uint32 hashCode) const
+        void LinkElement(SetElementIndex elementIndex, SetElement& element, uint32 hashCode) const
         {
             // get the index of hash bucket.
             element.HashIndex = GetHashIndex(hashCode);

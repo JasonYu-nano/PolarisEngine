@@ -99,4 +99,10 @@ namespace Engine
     {
         Stack<int32> array(8);
     }
+
+    TEST(SetTest, All)
+    {
+        Set<int32> set;
+        set.Add(1);
+    }
 }

@@ -51,6 +51,12 @@ namespace Engine
             if (value == 0) return 32;
             return 31 - FloorLog2(value);
         }
+
+        template <typename T>
+        static T RoundUpToPowerOfTwo(T a)
+        {
+            return a;
+        }
     };
 
 }
