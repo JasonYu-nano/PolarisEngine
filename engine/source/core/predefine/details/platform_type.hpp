@@ -22,5 +22,7 @@ namespace Engine
         #else
         typedef char                    tchar;
         #endif
+
+        typedef unsigned char           byte;
     };
 }

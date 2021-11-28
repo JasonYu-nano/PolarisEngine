@@ -1,6 +1,5 @@
 #include "core_minimal_public.hpp"
 #include "details/windows/windows_application.hpp"
-#include "core_minimal_public.hpp"
 
 namespace Engine
 {
@@ -42,15 +41,15 @@ namespace Engine
 
     HINSTANCE WindowsApplication::GetHInstance()
     {
-        ASSERT(AppInstance != nullptr);
+        PL_ASSERT(AppInstance != nullptr);
 
         return AppInstance->HInstance;
     }
 
     HWND WindowsApplication::GetHWnd()
     {
-        ASSERT(AppInstance != nullptr);
-        ASSERT(AppInstance->Window != nullptr);
+        PL_ASSERT(AppInstance != nullptr);
+        PL_ASSERT(AppInstance->Window != nullptr);
 
         return AppInstance->Window->GetHWnd();
     }

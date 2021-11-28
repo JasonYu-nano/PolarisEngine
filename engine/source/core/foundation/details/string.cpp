@@ -73,7 +73,7 @@ namespace Engine
 
     const tchar& String::At(size_t index) const
     {
-        //ASSERT(index < Length());
+        //PL_ASSERT(index < Length());
         PL_FATAL("Engine", TC("index is invalid"));
         return Internal.at(index);
     }

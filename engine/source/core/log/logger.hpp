@@ -3,7 +3,8 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-#include "core_minimal_private.hpp"
+#include "spdlog/pattern_formatter.h"
+#include "predefine/platform.hpp"
 #include "foundation/smart_ptr.hpp"
 
 namespace Engine
@@ -41,6 +42,12 @@ namespace Engine
             GetLogger()->log(src, level, fmt, std::forward<Args>(args)...);
         }
 
+        static void AssertFail(spdlog::source_loc src, const schar* expr)
+        {
+            GetLogger()->log(src, spdlog::level::critical, "assertion failed: at {0}", expr);
+            abort();
+        }
+
     private:
         static SharedPtr<spdlog::logger> GetLogger()
         {
@@ -56,7 +63,8 @@ namespace Engine
             sinks.push_back(colorSink);
             sinks.push_back(MakeSharedPtr<spdlog::sinks::basic_file_sink_mt>("engine_log", "logs/engine_log.txt"));
             Logger = MakeSharedPtr<spdlog::logger>("engine_log", begin(sinks), end(sinks));
-            Logger->set_pattern("%^[%H:%M:%S] [%s:%#] [%!] %v%$");
+            //TODO: has bug with overriden operator new / delete
+            //Logger->set_pattern("%^[%H:%M:%S] [%s:%#] [%!] %v%$");
         }
 
         SharedPtr<spdlog::logger> Logger;
@@ -67,4 +75,10 @@ namespace Engine
     #define PL_WARN(category, fmt, ...) PL_LOGIMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
     #define PL_ERROR(category, fmt, ...) PL_LOGIMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
     #define PL_FATAL(category, fmt, ...) PL_LOGIMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
+
+#ifdef DEBUG
+    #define PL_ASSERT(expr) ((expr) ? (void)0 : LogSystem::AssertFail(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, #expr))
+#else
+    #define PL_ASSERT(expr)
+#endif
 }
