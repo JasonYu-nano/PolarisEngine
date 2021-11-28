@@ -1,12 +1,12 @@
 #pragma once
-#include "foundation/list.hpp"
+#include "foundation/dynamic_array.hpp"
 
 namespace Engine
 {
     template <typename ElementType, typename Allocator = HeapAllocator<uint32>>
-    class Stack : public List<ElementType, Allocator>
+    class Stack : public DynamicArray<ElementType, Allocator>
     {
-        typedef List<ElementType, Allocator> Super;
+        typedef DynamicArray<ElementType, Allocator> Super;
     public:
         Stack() : Super() {};
 
@@ -14,7 +14,7 @@ namespace Engine
 
         ~Stack()
         {
-            Super::~List();
+            Super::~DynamicArray();
         }
 
         void Push(const ElementType& element)

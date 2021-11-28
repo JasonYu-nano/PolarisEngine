@@ -1,7 +1,7 @@
 #pragma once
 
 #include "foundation/bit_array.hpp"
-#include "foundation/list.hpp"
+#include "foundation/dynamic_array.hpp"
 #include "foundation/type_traits.hpp"
 
 namespace Engine
@@ -102,7 +102,7 @@ namespace Engine
 
         SparseArray(uint32 capacity)
             : AllocateFlags(BitArray(capacity))
-            , ElementNodes(List<ElementLinkNode>(capacity))
+            , ElementNodes(DynamicArray<ElementLinkNode>(capacity))
         {}
 
         ElementType& operator[] (uint32 index)
@@ -202,6 +202,6 @@ namespace Engine
     private:
         uint32 FirstFreeNodeIndex{ kSparseArrayIndexNone };
         TBitArray AllocateFlags;
-        List<ElementLinkNode> ElementNodes;
+        DynamicArray<ElementLinkNode> ElementNodes;
     };
 }

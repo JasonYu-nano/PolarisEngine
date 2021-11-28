@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "foundation/list.hpp"
+#include "foundation/dynamic_array.hpp"
 #include "memory/memory.hpp"
 #include "foundation/sparse_array.hpp"
 #include "foundation/stack.hpp"
@@ -25,7 +25,7 @@ namespace Engine
 
     TEST(ListTest, Construct)
     {
-        List<int> list;
+        DynamicArray<int> list;
         list.Add(1);
         EXPECT_TRUE(list[0] == 1);
         list[0] = 10;
@@ -40,28 +40,28 @@ namespace Engine
         EXPECT_TRUE(list.GetCount() == 0 && list.GetCapacity() == 1);
 
 
-        List<ListTestStruct> listOfStruct(8);
+        DynamicArray<ListTestStruct> listOfStruct(8);
         listOfStruct.Add(ListTestStruct());
         listOfStruct.Add(ListTestStruct());
         listOfStruct.Clear();
 
-        List<int> listOfCopy = { 1, 2, 3, 4, 0 };
+        DynamicArray<int> listOfCopy = { 1, 2, 3, 4, 0 };
         EXPECT_TRUE(listOfCopy[0] == 1 && listOfCopy[4] == 0);
-        List<int> listOfCopy2(4);
+        DynamicArray<int> listOfCopy2(4);
         listOfCopy2 = MoveTemp(listOfCopy);
         EXPECT_TRUE(listOfCopy2[0] == 1 && listOfCopy2[4] == 0);
     }
 
     TEST(ListTest, ConstBitIterator)
     {
-        List<int> list = { 1, 2, 3, 4, 0 };
+        DynamicArray<int> list = { 1, 2, 3, 4, 0 };
 
         for (auto&& value : list)
         {
             PL_INFO("", "{0}", value);
         }
 
-        List<int>::ConstIterator iter = list.begin();
+        DynamicArray<int>::ConstIterator iter = list.begin();
 
         Vector<int> vec = { 1, 2, 3, 4, 0 };
         Vector<int>::const_iterator iter2 = vec.begin();
@@ -104,5 +104,16 @@ namespace Engine
     {
         Set<int32> set;
         set.Add(1);
+        set.Add(2);
+        set.Add(-3);
+        EXPECT_TRUE(set.Contains(1));
+        EXPECT_TRUE(set.Contains(2));
+        EXPECT_TRUE(set.Contains(-3));
+        EXPECT_FALSE(set.Contains(0));
+
+        set.Remove(2);
+        EXPECT_TRUE(set.Contains(1));
+        set.Remove(-3);
+        EXPECT_TRUE(set.Contains(1));
     }
 }

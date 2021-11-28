@@ -41,13 +41,14 @@ namespace Engine
     /** index of set in sparse array */
     struct SetElementIndex
     {
-        bool IsValid() const { return Index == kSparseArrayIndexNone; }
+        bool IsValid() const { return Index != kSparseArrayIndexNone; }
 
         operator uint32() const
         {
             return Index;
         }
 
+        // Index in sparse array
         uint32 Index{ kSparseArrayIndexNone };
     };
 
@@ -78,14 +79,64 @@ namespace Engine
     public:
         Set() = default;
 
+        /**
+         * Adds the specified element to Set.
+         * 
+         * @param T key
+         */
         void Add(const KeyType& key)
         {
             Emplace(key);
         }
 
-        bool Find(const KeyType& key) const
+        /**
+         * Moves the specified element to Set.
+         *
+         * @param T key
+         */
+        void Add(KeyType&& key)
+        {
+            Emplace(key);
+        }
+
+        /**
+         * Determines whether a Set contains the specified element.
+         * 
+         * @param T key
+         * @return boolean true if contains the specified element, otherwise false.
+         */
+        bool Contains(const KeyType& key) const
         {
             return FindIndex(key).IsValid();
+        }
+
+        /**
+         * Removes the specified element from a Set.
+         * 
+         * @param T key
+         * @return boolean true if remove success.
+         */
+        bool Remove(const KeyType& key)
+        {
+            SetElementIndex* index = &GetFirstIndex(HashFunc::GetHashCode(key));
+            bool ret = false;
+            while (index->IsValid())
+            {
+                auto&& setElement = Elements[index->Index];
+                if (setElement.Element == key)
+                {
+                    uint32 pendingRemoveIndex = index->Index;
+                    index->Index = setElement.HashNextId.Index;
+                    Elements.RemoveAt(pendingRemoveIndex);
+                    ret = true;
+                    break;
+                }
+                else
+                {
+                    index = &setElement.HashNextId;
+                }
+            }
+            return ret;
         }
     private:
         template <typename ElementType>
@@ -98,21 +149,19 @@ namespace Engine
                 return;
             }
 
-            if (CheckRehash(Elements.GetCount() + 1))
-            {
-            }
+            CheckRehash(Elements.GetCount() + 1);
             uint32 indexInSparseArray = Elements.AddUnconstructElement();
             SetElement* element = new(Elements.GetData() + indexInSparseArray) SetElement(key);
             LinkElement(SetElementIndex{ indexInSparseArray }, *element, hashCode);
         }
 
-        /** find key index in sparse array */
+        /** Contains key index in sparse array */
         SetElementIndex FindIndex(const KeyType& key) const
         {
             return FindIndex(key, HashFunc::GetHashCode(key));
         }
 
-        /** find key index in sparse array */
+        /** Contains key index in sparse array */
         SetElementIndex FindIndex(const KeyType& key, uint32 hashCode) const
         {
             if (Elements.GetCount())
@@ -129,14 +178,15 @@ namespace Engine
             return SetElementIndex();
         }
 
-        SetElementIndex& GetFirstIndex(int32 hashCode) const
+        /** Contains the head of SetElement list */
+        SetElementIndex& GetFirstIndex(uint32 hashCode) const
         {
-            // quick mod hashCode % BucketCount, BucketCount must be 2 ^ n
             return ((SetElementIndex*)HashBucket.GetAllocation())[GetHashIndex(hashCode)];
         }
 
         uint32 GetHashIndex(int32 hashCode) const
         {
+            // Quick mod hashCode % BucketCount, BucketCount must be 2 ^ n
             return hashCode & (BucketCount - 1);
         }
 
@@ -157,13 +207,13 @@ namespace Engine
             // Free the old hash.
             HashBucket.Resize(0, sizeof(SetElementIndex));
 
-            uint32 LocalHashSize = BucketCount;
-            if (LocalHashSize)
+            if (BucketCount)
             {
                 HashBucket.Resize(BucketCount, sizeof(SetElementIndex));
-                for (uint32 HashIndex = 0; HashIndex < BucketCount; ++HashIndex)
+                // Init HashBucket
+                for (uint32 hashIndex = 0; hashIndex < BucketCount; ++hashIndex)
                 {
-                    GetFirstIndex(HashIndex) = SetElementIndex();
+                    ((SetElementIndex*)HashBucket.GetAllocation())[hashIndex] = SetElementIndex();
                 }
 
                 // Add the existing elements to the new hash.

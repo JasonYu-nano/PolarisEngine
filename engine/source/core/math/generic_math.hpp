@@ -52,10 +52,15 @@ namespace Engine
             return 31 - FloorLog2(value);
         }
 
-        template <typename T>
-        static T RoundUpToPowerOfTwo(T a)
+        static uint32 CeilLogTwo(uint32 value)
         {
-            return a;
+            int32 bitMask = ((int32)(CountLeadingZeros(value) << 26)) >> 31;
+            return (32 - CountLeadingZeros(value - 1)) & (~bitMask);
+        }
+
+        static uint32 RoundUpToPowerOfTwo(uint32 value)
+        {
+            return 1 << CeilLogTwo(value);
         }
     };
 

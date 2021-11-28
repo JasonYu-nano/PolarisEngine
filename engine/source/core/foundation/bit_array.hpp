@@ -94,7 +94,7 @@ namespace Engine
             // Mark the current bit as visited.
             UnvisitedBitMask &= ~Mask;
 
-            // Find the first set bit that hasn't been visited yet.
+            // Contains the first set bit that hasn't been visited yet.
             FindFirstSetBit();
 
             return *this;
