@@ -70,7 +70,7 @@ option("with_test")
 option_end()
 
 option("with_benchmark")
-    set_default(false)
+    set_default(true)
     set_showmenu(true)
 option_end()
 
@@ -112,6 +112,6 @@ if has_config("with_test") then
     includes("test")
 end
 
-if has_config("with_benchmark") then
+if has_config("with_benchmark") and is_plat("windows") then
     includes("benchmark")
 end

@@ -79,11 +79,9 @@ static void BM_DyanmicArrayLoop(benchmark::State& state)
     }
     for (auto _ : state) 
     {
-        auto iter = array.begin();
-        while (iter != array.end())
+        for (auto _ : array)
         {
-            (*iter)++;
-            ++iter;
+
         }
     }
 }
@@ -97,11 +95,9 @@ static void BM_VectorLoop(benchmark::State& state)
     }
     for (auto _ : state) 
     {
-        auto iter = array.begin();
-        while (iter != array.end())
+        for (auto _ : array)
         {
-            (*iter)++;
-            ++iter;
+
         }
     }
 }

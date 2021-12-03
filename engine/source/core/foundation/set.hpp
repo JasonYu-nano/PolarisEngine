@@ -6,6 +6,22 @@
 
 namespace Engine
 {
+    template <typename ContainerType, typename ElementType>
+    class ConstSetIterator
+    {
+        ConstIndexIterator& operator++ ();
+
+        friend bool operator== (const ConstSetIterator& lhs, const ConstSetIterator& rhs);
+
+        friend bool operator!= (const ConstSetIterator& lhs, const ConstSetIterator& rhs);
+    };
+
+    template <typename ContainerType, typename ElementType>
+    class SetIterator
+    {
+
+    };
+
     template <typename Type>
     struct DefaultHashFunc
     {
@@ -77,7 +93,16 @@ namespace Engine
         using TSparseArray = SparseArray<SetElement>;
 
     public:
+        using Iterator = SetIterator<Set, KeyType>;
+        using ConstIterator = ConstSetIterator<Set, KeyType>;
+
+    public:
         Set() = default;
+
+        Set(std::initializer_list<KeyType> initializer)
+        {
+
+        }
 
         /**
          * Adds the specified element to Set.
@@ -138,6 +163,14 @@ namespace Engine
             }
             return ret;
         }
+
+        Iterator begin();
+
+        ConstIterator begin() const;
+
+        Iterator end();
+
+        ConstIterator end() const;
     private:
         template <typename ElementType>
         void Emplace(ElementType&& key)
