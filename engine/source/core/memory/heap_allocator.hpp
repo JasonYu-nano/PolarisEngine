@@ -8,11 +8,11 @@
 
 namespace Engine
 {
-    template<typename UIntType, EnableIfT<IsUnsignedIntegral<typename UIntType>::value, bool> = true>
+    template<typename IntType, EnableIfT<IsIntegral<typename IntType>::value, bool> = true>
     class HeapAllocator
     {
     public:
-        typedef UIntType SizeType;
+        typedef IntType SizeType;
 
         HeapAllocator() = default;
 

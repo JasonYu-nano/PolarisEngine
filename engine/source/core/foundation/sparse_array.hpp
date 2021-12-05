@@ -8,18 +8,18 @@ namespace Engine
 {
     constexpr uint32 kSparseArrayIndexNone = MAX_UINT32;
 
-    template <typename ContainerType, typename ElementType, typename BitIterator>
+    template <typename ContainerType, typename ElementType, typename BitIteratorType>
     class ConstSparseIterator
     {
     public:
-        ConstSparseIterator(const ContainerType& container, BitIterator bitIter)
+        ConstSparseIterator(const ContainerType& container, BitIteratorType bitIter)
             : Container(container)
             , BitIterator(bitIter)
         {}
 
         const ElementType& operator*() const { return Container[GetIndex()]; }
 
-        const ElementType& operator->() const { return Container[GetIndex()]; }
+        const ElementType* operator->() const { return &Container[GetIndex()]; }
 
         ConstSparseIterator& operator++ ()
         {
@@ -41,21 +41,21 @@ namespace Engine
 
     protected:
         const ContainerType& Container;
-        BitIterator BitIterator;
+        BitIteratorType BitIterator;
     };
 
-    template <typename ContainerType, typename ElementType, typename BitIterator>
-    class SparseIterator : public ConstSparseIterator<ContainerType, ElementType, BitIterator>
+    template <typename ContainerType, typename ElementType, typename BitIteratorType>
+    class SparseIterator : public ConstSparseIterator<ContainerType, ElementType, BitIteratorType>
     {
-        using Super = ConstSparseIterator<ContainerType, ElementType, BitIterator>;
+        using Super = ConstSparseIterator<ContainerType, ElementType, BitIteratorType>;
     public:
-        SparseIterator(ContainerType& container, BitIterator bitIter)
+        SparseIterator(ContainerType& container, BitIteratorType bitIter)
             : Super(container, bitIter)
         {}
 
         ElementType& operator*() const { return const_cast<ElementType&>(Super::operator*()); }
 
-        ElementType& operator->() const { return const_cast<ElementType&>(Super::operator->()); }
+        ElementType* operator->() const { return const_cast<ElementType*>(Super::operator->()); }
 
         SparseIterator& operator++ ()
         {
@@ -141,6 +141,30 @@ namespace Engine
             AllocateFlags[index] = false;
         }
 
+        void Reserve(uint32 count)
+        {
+            if (GetCount() < count)
+            {
+                uint32 elementToAdd = count - GetCount();
+                uint32 startIndex = ElementNodes.AddUnconstructElement(elementToAdd);
+
+                uint32 remain = count;
+                while (remain > startIndex)
+                {
+                    uint32 freeIndex = --remain;
+                    if (FirstFreeNodeIndex != kSparseArrayIndexNone)
+                    {
+                        GetData()[FirstFreeNodeIndex].PrevIndex = freeIndex;
+                    }
+                    GetData()[freeIndex].PrevIndex = kSparseArrayIndexNone;
+                    GetData()[freeIndex].NextIndex = FirstFreeNodeIndex != kSparseArrayIndexNone ? FirstFreeNodeIndex : kSparseArrayIndexNone;
+                    FirstFreeNodeIndex = freeIndex;
+                    //TODO: Add multi value to bit array
+                    AllocateFlags.Add(false);
+                }
+            }
+        }
+
         uint32 GetCount() const
         {
             return ElementNodes.GetCount();
@@ -149,6 +173,11 @@ namespace Engine
         uint32 GetCapacity() const
         {
             return ElementNodes.GetCapacity();
+        }
+
+        const ElementLinkNode* GetData() const
+        {
+            return ElementNodes.GetData();
         }
 
         ElementLinkNode* GetData()

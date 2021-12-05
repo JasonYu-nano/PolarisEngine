@@ -103,4 +103,46 @@ namespace Engine
             return MAX_INT8;
         }
     };
+
+    template <>
+    struct NumericLimits<int16>
+    {
+        static constexpr int16 Min()
+        {
+            return MIN_INT16;
+        }
+
+        static constexpr int16 Max()
+        {
+            return MAX_INT16;
+        }
+    };
+
+    template <>
+    struct NumericLimits<int32>
+    {
+        static constexpr int32 Min()
+        {
+            return MIN_INT32;
+        }
+
+        static constexpr int32 Max()
+        {
+            return MAX_INT32;
+        }
+    };
+
+    template <>
+    struct NumericLimits<int64>
+    {
+        static constexpr int64 Min()
+        {
+            return MIN_INT64;
+        }
+
+        static constexpr int64 Max()
+        {
+            return MAX_INT64;
+        }
+    };
 }

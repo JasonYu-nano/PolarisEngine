@@ -95,6 +95,26 @@ namespace Engine
         }
     }
 
+    TEST(SparseArrayTest, Iterator)
+    {
+        SparseArray<int32> array(8);
+        uint32 index1 = array.Add(-20);
+        uint32 index2 = array.Add(11);
+        array.Add(15);
+        array.Add(-1); //{-20, 11, 15, -1}
+
+
+        for (auto&& value : array)
+        {
+            PL_INFO("", "{0}", value);
+        }
+
+        for (SparseArray<int32>::ConstIterator iter = array.begin(); iter != array.end(); ++iter)
+        {
+            PL_INFO("", "{0}", *iter);
+        }
+    }
+
     TEST(StackTest, All)
     {
         Stack<int32> array(8);
@@ -115,5 +135,15 @@ namespace Engine
         EXPECT_TRUE(set.Contains(1));
         set.Remove(-3);
         EXPECT_TRUE(set.Contains(1));
+    }
+
+    TEST(SetTest, Iterator)
+    {
+        Set<int32> kSet{ 4, 6, 9, 3 };
+
+        for (Set<int32>::ConstIterator iter = kSet.begin(); iter != kSet.end(); ++iter)
+        {
+            EXPECT_TRUE(kSet.Contains(*iter));
+        }
     }
 }

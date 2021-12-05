@@ -2,32 +2,82 @@
 
 #include "misc/type_hash.hpp"
 #include "foundation/sparse_array.hpp"
-#include "foundation/stl_misc.hpp"
 
 namespace Engine
 {
-    template <typename ContainerType, typename ElementType>
+#pragma region iterator
+    template <typename ContainerType, typename KeyType>
     class ConstSetIterator
     {
-        ConstIndexIterator& operator++ ();
+        using ConstInnerIterator = typename ContainerType::TSparseArray::ConstIterator;
+    public:
+        ConstSetIterator(const ConstInnerIterator& iter)
+            : InnerIterator(iter)
+        {}
 
-        friend bool operator== (const ConstSetIterator& lhs, const ConstSetIterator& rhs);
+        const KeyType& operator*() const { return (*InnerIterator).Element; }
 
-        friend bool operator!= (const ConstSetIterator& lhs, const ConstSetIterator& rhs);
+        const KeyType* operator->() const { return InnerIterator->Element; }
+
+        ConstSetIterator& operator++ ()
+        {
+            ++InnerIterator;
+            return *this;
+        }
+
+        friend bool operator== (const ConstSetIterator& lhs, const ConstSetIterator& rhs)
+        {
+            return lhs.InnerIterator == rhs.InnerIterator;
+        }
+
+        friend bool operator!= (const ConstSetIterator& lhs, const ConstSetIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+    protected:
+        ConstInnerIterator InnerIterator;
     };
 
-    template <typename ContainerType, typename ElementType>
-    class SetIterator
+    template <typename ContainerType, typename KeyType>
+    class SetIterator : public ConstSetIterator<ContainerType, KeyType>
     {
+        using Super = ConstSetIterator<ContainerType, KeyType>;
+        using ConstInnerIterator = typename ContainerType::TSparseArray::ConstIterator;
+    public:
+        SetIterator(const ConstInnerIterator& iter)
+            : Super(iter)
+        {}
 
+        KeyType& operator*() { return const_cast<KeyType&>(Super::operator *()); }
+
+        KeyType* operator->() { return const_cast<KeyType*>(Super::operator ->()); }
+
+        SetIterator& operator++ ()
+        {
+            Super::operator++();
+            return *this;
+        }
+
+        friend bool operator== (const SetIterator& lhs, const SetIterator& rhs)
+        {
+            return lhs.InnerIterator == rhs.InnerIterator;
+        }
+
+        friend bool operator!= (const SetIterator& lhs, const SetIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
     };
+
+#pragma endregion iterator
 
     template <typename Type>
     struct DefaultHashFunc
     {
         static uint32 GetHashCode(const Type& value)
         {
-            return ::Engine::GetHashCode(value);
+            return Engine::GetHashCode(value);
         }
     };
 
@@ -92,6 +142,9 @@ namespace Engine
 
         using TSparseArray = SparseArray<SetElement>;
 
+        friend class ConstSetIterator<Set, KeyType>;
+        friend class SetIterator<Set, KeyType>;
+
     public:
         using Iterator = SetIterator<Set, KeyType>;
         using ConstIterator = ConstSetIterator<Set, KeyType>;
@@ -101,7 +154,7 @@ namespace Engine
 
         Set(std::initializer_list<KeyType> initializer)
         {
-
+            Append(initializer);
         }
 
         /**
@@ -122,6 +175,15 @@ namespace Engine
         void Add(KeyType&& key)
         {
             Emplace(key);
+        }
+
+        void Append(std::initializer_list<KeyType> initializer)
+        {
+            Reserve(Elements.GetCount() + (int32)initializer.size());
+            for (auto&& element : initializer)
+            {
+                Add(element);
+            }
         }
 
         /**
@@ -164,13 +226,38 @@ namespace Engine
             return ret;
         }
 
-        Iterator begin();
+        /**
+         * Preallocates enough memory to contain Number elements.
+         * 
+         * @param count uint32
+         */
+        void Reserve(uint32 count)
+        {
+            if (count > Elements.GetCount())
+            {
+                Elements.Reserve(count);
 
-        ConstIterator begin() const;
+                const uint32 newBucketCount = SetAllocator::GetNumberOfHashBuckets(count);
+                if (!BucketCount || BucketCount < newBucketCount)
+                {
+                    BucketCount = newBucketCount;
+                    Rehash();
+                }
+            }
+        }
 
-        Iterator end();
+        void Resize(uint32 capacity)
+        {
+            
+        }
 
-        ConstIterator end() const;
+        Iterator begin() { return Iterator(Elements.begin()); }
+
+        ConstIterator begin() const { return ConstIterator(const_cast<const TSparseArray>(Elements).begin()); }
+
+        Iterator end() { return Iterator(Elements.end()); }
+
+        ConstIterator end() const { return ConstIterator(const_cast<const TSparseArray>(Elements).end()); }
     private:
         template <typename ElementType>
         void Emplace(ElementType&& key)

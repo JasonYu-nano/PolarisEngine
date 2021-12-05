@@ -31,16 +31,19 @@ template<bool Test, typename Type = void>
 using EnableIfT = typename std::enable_if<Test, Type>::type;
 
 template <typename Type>
-using IsIntegral = std::is_integral<Type>;
-
-template <typename Type>
 using IsPointer = std::is_pointer<Type>;
 
 template <typename Type>
 constexpr bool IsUnsignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, uint8, uint16, uint32, uint64>;
 
 template <typename Type>
+constexpr bool IsIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, int8, uint8, int16, uint16, int32, uint32, int64, uint64>;
+
+template <typename Type>
 struct IsUnsignedIntegral : std::bool_constant<IsUnsignedIntegralV<Type>> {};
+
+template <typename Type>
+struct IsIntegral : std::bool_constant<IsIntegralV<Type>> {};
 
 template <typename Type>
 constexpr bool HasTrivialDestructorV = __has_trivial_destructor(Type);
