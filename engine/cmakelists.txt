@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.18.0)
+
+project(PolarisEngine LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+#compile option
+option(shared "build with dynamic link" ON)
+option(unicode "build with unicode string" ON)
+option(with_test "build with unit test" ON)
+option(with_benchmark "build with benchmark" ON)
+
+if(shared)
+    add_compile_definitions(SHARED_LIB)
+endif()
+
+if(unicode)
+    add_compile_definitions(UNICODE)
+endif()
+
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/conan.cmake)
+
+conan_cmake_configure(REQUIRES spdlog/1.8.2 GENERATORS cmake_find_package OPTIONS spdlog:shared=True spdlog:wchar_support=True)
+
+conan_cmake_install(PATH_OR_REFERENCE .
+                    BUILD missing
+                    REMOTE conan-center)
+
+find_package(spdlog)
+
+add_subdirectory(source)
