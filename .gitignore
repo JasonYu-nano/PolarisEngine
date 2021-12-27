@@ -40,3 +40,4 @@
 vsxmake2019/
 generated/
 !**/third_parties/**/*.lib
+cmake-build-debug/

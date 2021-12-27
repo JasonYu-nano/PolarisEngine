@@ -75,7 +75,7 @@ option("with_benchmark")
 option_end()
 
 if has_config("shared") then
-    add_defines("SHARED_LIB")
+    add_defines("PL_SHARED")
 end
 
 if has_config("unicode") then

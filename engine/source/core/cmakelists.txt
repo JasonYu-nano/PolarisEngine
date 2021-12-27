@@ -10,6 +10,26 @@ else()
     add_library(${target} STATIC ${project_files})
 endif()
 
+# compile marco
+target_compile_definitions(${target} PRIVATE CORE_EXPORT)
+
+if(WIN32)
+    if(unicode)
+        target_compile_definitions(${target} PUBLIC ENGINE_ROOT_PATH=L"${CMAKE_SOURCE_DIR}")
+    elseif()
+        target_compile_definitions(${target} PUBLIC ENGINE_ROOT_PATH="${CMAKE_SOURCE_DIR}")
+    endif()
+elseif()
+    target_compile_definitions(${target} PUBLIC ENGINE_ROOT_PATH="${CMAKE_SOURCE_DIR}")
+endif()
+
+# pch
+target_precompile_headers(${target} PRIVATE precompiled_core.hpp)
+
+# include dir
+target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core)
+
+
 # add 3rd dependency
 conan_cmake_configure(REQUIRES spdlog/1.8.2 GENERATORS cmake_find_package OPTIONS spdlog:shared=True spdlog:wchar_support=True)
 
@@ -26,14 +46,11 @@ if(fmt_FOUND)
 endif()
 
 if(spdlog_FOUND)
-    target_include_directories(${target} PRIVATE ${spdlog_INCLUDE_DIR})
-    target_link_libraries(${target} ${spdlog_LIBRARY})
+    target_include_directories(${target} PUBLIC ${spdlog_INCLUDE_DIR})
+    target_link_libraries(${target} ${spdlog_LIBRARIES})
+    target_compile_definitions(${target} PUBLIC ${spdlog_DEFINITIONS})
+    message("spdlib is : ${spdlog_LIBRARIES}")
 endif()
 
-target_precompile_headers(${target} PRIVATE precompiled_core.hpp)
-
-target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core)
-
-add_compile_definitions(ENGINE_ROOT_PATH="${PROJECT_ABSOLUTE_SOURCE_DIR}")
-
+# ide
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
