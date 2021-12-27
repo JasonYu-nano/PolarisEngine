@@ -1,22 +1,38 @@
+set(target core)
+
 set(project_dir "${CMAKE_CURRENT_LIST_DIR}")
 
 file(GLOB_RECURSE project_files *.hpp *.cpp)
 
 if(shared)
-    add_library(Core SHARED ${project_files})
+    add_library(${target} SHARED ${project_files})
 else()
-    add_library(Core STATIC ${project_files})
+    add_library(${target} STATIC ${project_files})
 endif()
 
-#find_package(spdlog)
+# add 3rd dependency
+conan_cmake_configure(REQUIRES spdlog/1.8.2 GENERATORS cmake_find_package OPTIONS spdlog:shared=True spdlog:wchar_support=True)
+
+conan_cmake_install(PATH_OR_REFERENCE .
+        BUILD missing
+        REMOTE conan-center)
+
+find_package(fmt)
+find_package(spdlog)
+
+if(fmt_FOUND)
+    target_include_directories(${target} PRIVATE ${fmt_INCLUDE_DIR})
+    target_link_libraries(${target} ${fmt_LIBRARY})
+endif()
 
 if(spdlog_FOUND)
-    target_include_directories(Core PRIVATE ${spdlog_INCLUDE_DIR})
-    target_link_libraries(Core ${spdlog_LIBRARY})
+    target_include_directories(${target} PRIVATE ${spdlog_INCLUDE_DIR})
+    target_link_libraries(${target} ${spdlog_LIBRARY})
 endif()
 
-#set_precompiled_header(Core core/precompiled.hpp)
-#set_precompiled_header(Core core/precompiled_core.hpp)
+target_precompile_headers(${target} PRIVATE precompiled_core.hpp)
+
+target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core)
 
 add_compile_definitions(ENGINE_ROOT_PATH="${PROJECT_ABSOLUTE_SOURCE_DIR}")
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "core/file_system/platform_file_interface.hpp"
+#include "file_system/platform_file_interface.hpp"
 
 namespace Engine
 {
