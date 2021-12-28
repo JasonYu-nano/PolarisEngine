@@ -1,5 +1,6 @@
 #pragma once
 #include "file_system/platform_file_interface.hpp"
+#include <windows.h>
 
 namespace Engine
 {

@@ -29,6 +29,12 @@ elseif(${CMAKE_BUILD_TYPE} EQUAL "RelWithDebInfo")
 elseif(${CMAKE_BUILD_TYPE} EQUAL "Release")
     add_compile_definitions("SHIPPING")
 endif()
+#add_compile_definitions(SPDLOG_SHARED_LIB)
+
+if(WIN32)
+    add_compile_definitions(WIN32)
+    add_compile_definitions(_WIN32)
+endif()
 
 # add cmake find path
 

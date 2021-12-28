@@ -24,17 +24,29 @@ elseif()
 endif()
 
 # pch
-target_precompile_headers(${target} PRIVATE precompiled_core.hpp)
+# target_precompile_headers(${target} PRIVATE precompiled_core.hpp)
 
 # include dir
 target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core)
 
 
 # add 3rd dependency
-conan_cmake_configure(REQUIRES spdlog/1.8.2 GENERATORS cmake_find_package OPTIONS spdlog:shared=True spdlog:wchar_support=True)
 
+set(build_type "Release")
+if(${CMAKE_BUILD_TYPE} EQUAL "Debug")
+    set(build_type "Debug")
+endif()
+
+conan_cmake_configure(REQUIRES spdlog/1.8.2
+        GENERATORS cmake_find_package
+        BUILD_TYPE ${build_type}
+        OPTIONS spdlog:shared=True spdlog:wchar_support=True)
+
+conan_cmake_autodetect(settings)
+message(${settings})
 conan_cmake_install(PATH_OR_REFERENCE .
         BUILD missing
+        SETTINGS ${settings}
         REMOTE conan-center)
 
 find_package(fmt)
@@ -49,7 +61,6 @@ if(spdlog_FOUND)
     target_include_directories(${target} PUBLIC ${spdlog_INCLUDE_DIR})
     target_link_libraries(${target} ${spdlog_LIBRARIES})
     target_compile_definitions(${target} PUBLIC ${spdlog_DEFINITIONS})
-    message("spdlib is : ${spdlog_LIBRARIES}")
 endif()
 
 # ide
