@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-    constexpr uint32 kSparseArrayIndexNone = MAX_UINT32;
+    constexpr int32 kSparseArrayIndexNone = -1;
 
     template <typename ContainerType, typename ElementType, typename BitIteratorType>
     class ConstSparseIterator
@@ -27,7 +27,7 @@ namespace Engine
             return *this;
         }
 
-        uint32 GetIndex() const { return BitIterator.GetIndex(); }
+        int32 GetIndex() const { return BitIterator.GetIndex(); }
 
         friend bool operator== (const ConstSparseIterator& lhs, const ConstSparseIterator& rhs)
         {
@@ -63,7 +63,7 @@ namespace Engine
             return *this;
         }
 
-        uint32 GetIndex() const { return Super::GetIndex(); }
+        int32 GetIndex() const { return Super::GetIndex(); }
 
         friend bool operator== (const SparseIterator& lhs, const SparseIterator& rhs)
         {
@@ -84,12 +84,13 @@ namespace Engine
             ElementType Element;
             struct
             {
-                uint32 PrevIndex;
-                uint32 NextIndex;
+                int32 PrevIndex;
+                int32 NextIndex;
             };
         };
 
-        typedef BitArray<HeapAllocator<uint32>> TBitArray;
+        using TDynamicArray = DynamicArray<ElementLinkNode, HeapAllocator<int32>>;
+        using TBitArray = BitArray<HeapAllocator<uint32>>;
 
         template <typename T, typename U, typename V> friend class Set;
 
@@ -100,20 +101,20 @@ namespace Engine
     public:
         SparseArray() = default;
 
-        SparseArray(uint32 capacity)
-            : AllocateFlags(BitArray(capacity))
-            , ElementNodes(DynamicArray<ElementLinkNode>(capacity))
+        explicit SparseArray(int32 capacity)
+            : AllocateFlags(TBitArray(capacity))
+            , ElementNodes(TDynamicArray(capacity))
         {}
 
-        ElementType& operator[] (uint32 index)
+        ElementType& operator[] (int32 index)
         {
-            PL_ASSERT(AllocateFlags[index]);
+            PL_ASSERT(0 <=index && AllocateFlags[index]);
             return ElementNodes[index].Element;
         }
 
-        const ElementType& operator[] (uint32 index) const
+        const ElementType& operator[] (int32 index) const
         {
-            PL_ASSERT(AllocateFlags[index]);
+            PL_ASSERT(0 <= index && AllocateFlags[index]);
             return ElementNodes[index].Element;
         }
 
@@ -127,9 +128,9 @@ namespace Engine
             return Emplace(element);
         }
 
-        void RemoveAt(uint32 index)
+        void RemoveAt(int32 index)
         {
-            PL_ASSERT(index < GetCount());
+            PL_ASSERT(0 <= index && index < GetCount());
             ElementLinkNode& node = ElementNodes[index];
             if (FirstFreeNodeIndex != kSparseArrayIndexNone)
             {
@@ -141,17 +142,17 @@ namespace Engine
             AllocateFlags[index] = false;
         }
 
-        void Reserve(uint32 count)
+        void Reserve(int32 count)
         {
             if (GetCount() < count)
             {
-                uint32 elementToAdd = count - GetCount();
-                uint32 startIndex = ElementNodes.AddUnconstructElement(elementToAdd);
+                int32 elementToAdd = count - GetCount();
+                int32 startIndex = ElementNodes.AddUnconstructElement(elementToAdd);
 
-                uint32 remain = count;
+                int32 remain = count;
                 while (remain > startIndex)
                 {
-                    uint32 freeIndex = --remain;
+                    int32 freeIndex = --remain;
                     if (FirstFreeNodeIndex != kSparseArrayIndexNone)
                     {
                         GetData()[FirstFreeNodeIndex].PrevIndex = freeIndex;
@@ -165,12 +166,12 @@ namespace Engine
             }
         }
 
-        uint32 GetCount() const
+        int32 GetCount() const
         {
             return ElementNodes.GetCount();
         }
 
-        uint32 GetCapacity() const
+        int32 GetCapacity() const
         {
             return ElementNodes.GetCapacity();
         }
@@ -195,21 +196,21 @@ namespace Engine
 
     private:
         template <typename... Args>
-        uint32 Emplace(Args&&... args)
+        int32 Emplace(Args&&... args)
         {
-            uint32 index = AddUnconstructElement();
+            int32 index = AddUnconstructElement();
             new(GetData() + index) ElementType(Forward<Args>(args)...);
             return index;
         }
 
-        uint32 AddUnconstructElement()
+        int32 AddUnconstructElement()
         {
             if (GetCount() >= kSparseArrayIndexNone)
             {
                 throw std::overflow_error("index of sparse array can not >= MAX_UINT32");
             }
 
-            uint32 index = kSparseArrayIndexNone;
+            int32 index = kSparseArrayIndexNone;
             if (FirstFreeNodeIndex != kSparseArrayIndexNone)
             {
                 // return allocated element node
@@ -229,8 +230,8 @@ namespace Engine
             return index;
         }
     private:
-        uint32 FirstFreeNodeIndex{ kSparseArrayIndexNone };
+        int32 FirstFreeNodeIndex{ kSparseArrayIndexNone };
         TBitArray AllocateFlags;
-        DynamicArray<ElementLinkNode> ElementNodes;
+        TDynamicArray ElementNodes;
     };
 }

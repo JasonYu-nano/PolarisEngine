@@ -119,7 +119,7 @@ namespace Engine
             : Capacity(AllocatorInstance.GetDefaultCapacity())
         {}
 
-        DynamicArray(SizeType capacity)
+        explicit DynamicArray(SizeType capacity)
             : Capacity(Math::Max(capacity, AllocatorInstance.GetDefaultCapacity()))
         {
             AllocatorInstance.Resize(Capacity, sizeof(ElementType));
@@ -232,7 +232,7 @@ namespace Engine
 
         bool Remove(const ElementType& element)
         {
-            RemoveMatch([](const ElementType& inElement) {
+            RemoveMatch([&element](const ElementType& inElement) {
                 return element == inElement;
             });
         }
@@ -273,7 +273,7 @@ namespace Engine
             {
                 return GetData() + index;
             }
-            throw std::out_of_range{};
+            throw std::out_of_range{"Index an element out of range"};
         }
 
         ElementType* GetData()

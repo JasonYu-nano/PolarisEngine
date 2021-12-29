@@ -11,7 +11,7 @@ namespace Engine
     {
         using ConstInnerIterator = typename ContainerType::TSparseArray::ConstIterator;
     public:
-        ConstSetIterator(const ConstInnerIterator& iter)
+        explicit ConstSetIterator(const ConstInnerIterator& iter)
             : InnerIterator(iter)
         {}
 
@@ -45,7 +45,7 @@ namespace Engine
         using Super = ConstSetIterator<ContainerType, KeyType>;
         using ConstInnerIterator = typename ContainerType::TSparseArray::ConstIterator;
     public:
-        SetIterator(const ConstInnerIterator& iter)
+        explicit SetIterator(const ConstInnerIterator& iter)
             : Super(iter)
         {}
 
@@ -109,13 +109,13 @@ namespace Engine
     {
         bool IsValid() const { return Index != kSparseArrayIndexNone; }
 
-        operator uint32() const
+        explicit operator int32() const
         {
             return Index;
         }
 
         // Index in sparse array
-        uint32 Index{ kSparseArrayIndexNone };
+        int32 Index{ kSparseArrayIndexNone };
     };
 
     using DefaultSetAllocator = SetAllocator<HeapAllocator<uint32>, HeapAllocator<uint32>>;
@@ -125,18 +125,18 @@ namespace Engine
     {
         struct SetElement
         {
-            SetElement(const KeyType& element)
+            explicit SetElement(const KeyType& element)
             {
                 Element = element;
             }
 
-            SetElement(KeyType&& element)
+            explicit SetElement(KeyType&& element)
             {
                 Element = element;
             }
 
             uint32 HashIndex = 0;
-            SetElementIndex HashNextId = 0;
+            SetElementIndex HashNextId;
             KeyType Element;
         };
 
@@ -229,15 +229,15 @@ namespace Engine
         /**
          * Preallocates enough memory to contain Number elements.
          * 
-         * @param count uint32
+         * @param count int32
          */
-        void Reserve(uint32 count)
+        void Reserve(int32 count)
         {
-            if (count > Elements.GetCount())
+            if (count > static_cast<int32>(Elements.GetCount()))
             {
                 Elements.Reserve(count);
 
-                const uint32 newBucketCount = SetAllocator::GetNumberOfHashBuckets(count);
+                const uint32 newBucketCount = SetAllocator::GetNumberOfHashBuckets(static_cast<uint32>(count));
                 if (!BucketCount || BucketCount < newBucketCount)
                 {
                     BucketCount = newBucketCount;
@@ -246,9 +246,10 @@ namespace Engine
             }
         }
 
-        void Resize(uint32 capacity)
+        //TODO: impl
+        void Resize(int32 capacity)
         {
-            
+            PL_ASSERT(capacity >= 0);
         }
 
         Iterator begin() { return Iterator(Elements.begin()); }
@@ -270,7 +271,7 @@ namespace Engine
             }
 
             CheckRehash(Elements.GetCount() + 1);
-            uint32 indexInSparseArray = Elements.AddUnconstructElement();
+            int32 indexInSparseArray = Elements.AddUnconstructElement();
             SetElement* element = new(Elements.GetData() + indexInSparseArray) SetElement(key);
             LinkElement(SetElementIndex{ indexInSparseArray }, *element, hashCode);
         }
@@ -295,7 +296,7 @@ namespace Engine
                     }
                 }
             }
-            return SetElementIndex();
+            return SetElementIndex{};
         }
 
         /** Contains the head of SetElement list */
@@ -304,15 +305,15 @@ namespace Engine
             return ((SetElementIndex*)HashBucket.GetAllocation())[GetHashIndex(hashCode)];
         }
 
-        uint32 GetHashIndex(int32 hashCode) const
+        uint32 GetHashIndex(uint32 hashCode) const
         {
             // Quick mod hashCode % BucketCount, BucketCount must be 2 ^ n
             return hashCode & (BucketCount - 1);
         }
 
-        bool CheckRehash(uint32 elementCount)
+        bool CheckRehash(int32 elementCount)
         {
-            uint32 desiredBucketCount = SetAllocator::GetNumberOfHashBuckets(elementCount);
+            uint32 desiredBucketCount = SetAllocator::GetNumberOfHashBuckets(static_cast<uint32>(elementCount));
             if (elementCount > 0 && (!BucketCount || BucketCount < desiredBucketCount))
             {
                 BucketCount = desiredBucketCount;
