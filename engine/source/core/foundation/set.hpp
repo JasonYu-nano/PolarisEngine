@@ -81,6 +81,29 @@ namespace Engine
         }
     };
 
+    /**
+     * Determine default hash function and equals function of set key
+     * @tparam Key
+     */
+    template <typename Key>
+    struct DefaultSetKeyFunc
+    {
+        static uint32 GetHashCode(const Key& key)
+        {
+            return Engine::GetHashCode(key);
+        }
+
+        static const Key& GetKey(const Key& element)
+        {
+            return element;
+        }
+
+        static bool Equals(const Key& lKey, const Key& rKey)
+        {
+            return lKey == rKey;
+        }
+    };
+
     /** Encapsulates the allocators used by a set in a single type. */
     template <
         typename InSparseArrayAllocator,
@@ -120,39 +143,40 @@ namespace Engine
 
     using DefaultSetAllocator = SetAllocator<HeapAllocator<uint32>, HeapAllocator<uint32>>;
 
-    template <typename KeyType, typename HashFunc = DefaultHashFunc<KeyType>, typename SetAllocator = DefaultSetAllocator>
+    template <typename ElementType, typename KeyFunc = DefaultSetKeyFunc<ElementType>, typename SetAllocator = DefaultSetAllocator>
     class Set
     {
         struct SetElement
         {
-            explicit SetElement(const KeyType& element)
+            explicit SetElement(const ElementType& element)
             {
                 Element = element;
             }
 
-            explicit SetElement(KeyType&& element)
+            explicit SetElement(ElementType&& element)
             {
                 Element = element;
             }
 
             uint32 HashIndex = 0;
             SetElementIndex HashNextId;
-            KeyType Element;
+            ElementType Element;
         };
 
         using TSparseArray = SparseArray<SetElement>;
 
-        friend class ConstSetIterator<Set, KeyType>;
-        friend class SetIterator<Set, KeyType>;
+        friend class ConstSetIterator<Set, ElementType>;
+        friend class SetIterator<Set, ElementType>;
+        template <typename K, typename V> friend class Map;
 
     public:
-        using Iterator = SetIterator<Set, KeyType>;
-        using ConstIterator = ConstSetIterator<Set, KeyType>;
+        using Iterator = SetIterator<Set, ElementType>;
+        using ConstIterator = ConstSetIterator<Set, ElementType>;
 
     public:
         Set() = default;
 
-        Set(std::initializer_list<KeyType> initializer)
+        Set(std::initializer_list<ElementType> initializer)
         {
             Append(initializer);
         }
@@ -160,24 +184,24 @@ namespace Engine
         /**
          * Adds the specified element to Set.
          * 
-         * @param T key
+         * @param T element
          */
-        void Add(const KeyType& key)
+        void Add(const ElementType& element)
         {
-            Emplace(key);
+            Emplace(element);
         }
 
         /**
          * Moves the specified element to Set.
          *
-         * @param T key
+         * @param T element
          */
-        void Add(KeyType&& key)
+        void Add(ElementType&& element)
         {
-            Emplace(key);
+            Emplace(element);
         }
 
-        void Append(std::initializer_list<KeyType> initializer)
+        void Append(std::initializer_list<ElementType> initializer)
         {
             Reserve(Elements.GetCount() + (int32)initializer.size());
             for (auto&& element : initializer)
@@ -192,9 +216,31 @@ namespace Engine
          * @param T key
          * @return boolean true if contains the specified element, otherwise false.
          */
+        template <typename KeyType>
         bool Contains(const KeyType& key) const
         {
             return FindIndex(key).IsValid();
+        }
+
+        template <typename KeyType>
+        ElementType* Find(const KeyType& key) const
+        {
+            ElementType* ret = nullptr;
+            SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
+            while (elementIndex->IsValid())
+            {
+                auto&& setElement = Elements[elementIndex->Index];
+                if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
+                {
+                    ret = const_cast<ElementType*>(&setElement.Element);
+                    break;
+                }
+                else
+                {
+                    elementIndex = const_cast<SetElementIndex*>(&setElement.HashNextId);
+                }
+            }
+            return ret;
         }
 
         /**
@@ -203,24 +249,25 @@ namespace Engine
          * @param T key
          * @return boolean true if remove success.
          */
+        template <typename KeyType>
         bool Remove(const KeyType& key)
         {
-            SetElementIndex* index = &GetFirstIndex(HashFunc::GetHashCode(key));
+            SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
             bool ret = false;
-            while (index->IsValid())
+            while (elementIndex->IsValid())
             {
-                auto&& setElement = Elements[index->Index];
-                if (setElement.Element == key)
+                auto&& setElement = Elements[elementIndex->Index];
+                if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
                 {
-                    uint32 pendingRemoveIndex = index->Index;
-                    index->Index = setElement.HashNextId.Index;
+                    uint32 pendingRemoveIndex = elementIndex->Index;
+                    elementIndex->Index = setElement.HashNextId.Index;
                     Elements.RemoveAt(pendingRemoveIndex);
                     ret = true;
                     break;
                 }
                 else
                 {
-                    index = &setElement.HashNextId;
+                    elementIndex = &setElement.HashNextId;
                 }
             }
             return ret;
@@ -260,36 +307,71 @@ namespace Engine
 
         ConstIterator end() const { return ConstIterator(const_cast<const TSparseArray>(Elements).end()); }
     private:
-        template <typename ElementType>
-        void Emplace(ElementType&& key)
+        template <typename InElementType>
+        InElementType& EmplaceV2(InElementType&& element)
         {
-            uint32 hashCode = HashFunc::GetHashCode(key);
-            SetElementIndex index = FindIndex(key, hashCode);
+            int32 indexInSparseArray = Elements.AddUnconstructElement();
+            SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(element);
+
+            uint32 hashCode = KeyFunc::GetHashCode(KeyFunc::GetKey(element));
+
+            if (Elements.GetCount() > 1) // already add en element in sparse array
+            {
+                SetElementIndex index = FindIndex(KeyFunc::GetKey(element), hashCode);
+                if (index.IsValid())
+                {
+                    SetElement& setElement = Elements[index.Index];
+                    setElement.~SetElement();
+                    Memory::Memmove(&setElement, item, sizeof(SetElement));
+                    Elements.RemoveWithoutDestruct(indexInSparseArray);
+                    return setElement.Element;
+                }
+            }
+
+            CheckRehash(Elements.GetCount());
+            LinkElement(SetElementIndex{ indexInSparseArray }, *item, hashCode);
+            return item->Element;
+        }
+
+        template <typename InElementType>
+        InElementType& Emplace(InElementType&& element)
+        {
+            //TODO: Maybe we should construct first, cause hashCode is relative with instance address
+            uint32 hashCode = KeyFunc::GetHashCode(KeyFunc::GetKey(element));
+
+            SetElementIndex index = FindIndex(KeyFunc::GetKey(element), hashCode);
             if (index.IsValid())
             {
-                return;
+                auto&& setElement = Elements[index.Index];
+                setElement.Element.~ElementType();
+                setElement.Element = element;
+                return setElement.Element;
             }
+
 
             CheckRehash(Elements.GetCount() + 1);
             int32 indexInSparseArray = Elements.AddUnconstructElement();
-            SetElement* element = new(Elements.GetData() + indexInSparseArray) SetElement(key);
-            LinkElement(SetElementIndex{ indexInSparseArray }, *element, hashCode);
+            SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(element);
+            LinkElement(SetElementIndex{ indexInSparseArray }, *item, hashCode);
+            return item->Element;
         }
 
         /** Contains key index in sparse array */
+        template <typename KeyType>
         SetElementIndex FindIndex(const KeyType& key) const
         {
-            return FindIndex(key, HashFunc::GetHashCode(key));
+            return FindIndex(key, KeyFunc::GetHashCode(key));
         }
 
         /** Contains key index in sparse array */
+        template <typename KeyType>
         SetElementIndex FindIndex(const KeyType& key, uint32 hashCode) const
         {
-            if (Elements.GetCount())
+            if (Elements.GetCount() > 0)
             {
                 for (SetElementIndex index = GetFirstIndex(hashCode); index.IsValid(); index = Elements[index].HashNextId)
                 {
-                    if (Elements[index].Element == key)
+                    if (KeyFunc::Equals(KeyFunc::GetKey(Elements[index].Element), key))
                     {
                         // Return the first match, regardless of whether the set has multiple matches for the key or not.
                         return index;
@@ -340,7 +422,7 @@ namespace Engine
                 // Add the existing elements to the new hash.
                 for (typename TSparseArray::Iterator iter = Elements.begin(); iter != Elements.end(); ++iter)
                 {
-                    LinkElement(SetElementIndex(iter.GetIndex()), *iter, HashFunc::GetHashCode((*iter).Element));
+                    LinkElement(SetElementIndex(iter.GetIndex()), *iter, KeyFunc::GetHashCode(KeyFunc::GetKey((*iter).Element)));
                 }
             }
         }

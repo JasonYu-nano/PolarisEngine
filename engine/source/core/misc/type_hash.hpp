@@ -1,6 +1,7 @@
 #pragma once
 
 #include "predefine/platform.hpp"
+#include "foundation/type_traits.hpp"
 
 namespace Engine
 {
@@ -52,5 +53,12 @@ namespace Engine
     inline uint32 GetHashCode(const double value)
     {
         return GetHashCode(*(uint64*)&value);
+    }
+
+    inline uint32 GetHashCode(const void* value)
+    {
+        std::uintptr_t ptrInt = reinterpret_cast<std::uintptr_t>(value);
+
+        return GetHashCode(ptrInt);
     }
 }

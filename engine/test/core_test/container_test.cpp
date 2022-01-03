@@ -5,6 +5,7 @@
 #include "foundation/stack.hpp"
 #include "foundation/array.hpp"
 #include "foundation/set.hpp"
+#include "foundation/map.hpp"
 
 namespace Engine
 {
@@ -67,7 +68,7 @@ namespace Engine
         Vector<int>::const_iterator iter2 = vec.begin();
     }
 
-    TEST(BitArrayTest, All)
+    TEST(BitArrayTest, Base)
     {
         BitArray array;
         array.Add(true);
@@ -76,7 +77,7 @@ namespace Engine
         EXPECT_TRUE(!array[0]);
     }
 
-    TEST(SparseArrayTest, All)
+    TEST(SparseArrayTest, Base)
     {
         SparseArray<int32> array(8);
         uint32 index1 = array.Add(-20);
@@ -115,17 +116,18 @@ namespace Engine
         }
     }
 
-    TEST(StackTest, All)
+    TEST(StackTest, Base)
     {
         Stack<int32> array(8);
     }
 
-    TEST(SetTest, All)
+    TEST(SetTest, Base)
     {
         Set<int32> set;
         set.Add(1);
         set.Add(2);
         set.Add(-3);
+        set.Add(2);
         EXPECT_TRUE(set.Contains(1));
         EXPECT_TRUE(set.Contains(2));
         EXPECT_TRUE(set.Contains(-3));
@@ -137,6 +139,36 @@ namespace Engine
         EXPECT_TRUE(set.Contains(1));
     }
 
+    struct TestA
+    {
+        TestA()
+                : Ptr(Memory::Malloc(100))
+        {}
+
+        ~TestA()
+        {
+            PL_INFO("", TC("destruct TestA"));
+            Memory::Free(Ptr);
+            Ptr = nullptr;
+        }
+
+        void* Ptr;
+
+        friend uint32 GetHashCode(const TestA& inst)
+        {
+            return GetHashCode(reinterpret_cast<uint64>(inst.Ptr));
+        }
+    };
+
+    TEST(SetTest, Ptr)
+    {
+        Set<TestA*> set;
+        TestA* item = new TestA();
+        set.Add(item);
+        set.Add(item);
+        EXPECT_TRUE(set.Contains(item));
+    }
+
     TEST(SetTest, Iterator)
     {
         Set<int32> kSet{ 4, 6, 9, 3 };
@@ -145,5 +177,19 @@ namespace Engine
         {
             EXPECT_TRUE(kSet.Contains(*iter));
         }
+    }
+
+    TEST(MapTest, Base)
+    {
+        Map<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {1, 1.6f}};
+        EXPECT_TRUE(*(map.Find(1)) == 1.6f);
+        EXPECT_TRUE(*(map.Find(2)) == 2.5f);
+
+        float& v = map.FindOrAdd(1, 1.8f);
+        EXPECT_TRUE(v == 1.6f);
+
+        map.Remove(1111);
+        map.Remove(1);
+        EXPECT_TRUE(map.Find(1) == nullptr);
     }
 }

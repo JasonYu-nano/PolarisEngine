@@ -132,14 +132,8 @@ namespace Engine
         {
             PL_ASSERT(0 <= index && index < GetCount());
             ElementLinkNode& node = ElementNodes[index];
-            if (FirstFreeNodeIndex != kSparseArrayIndexNone)
-            {
-                ElementNodes[FirstFreeNodeIndex].PrevIndex = index;
-            }
-            node.NextIndex = FirstFreeNodeIndex;
-            node.PrevIndex = kSparseArrayIndexNone;
-            FirstFreeNodeIndex = index;
-            AllocateFlags[index] = false;
+            node.~ElementLinkNode();
+            RemoveWithoutDestruct(index, &node);
         }
 
         void Reserve(int32 count)
@@ -223,6 +217,25 @@ namespace Engine
             }
 
             return index;
+        }
+
+        void RemoveWithoutDestruct(int32 index, ElementLinkNode* node = nullptr)
+        {
+            if (node == nullptr)
+            {
+                node = &ElementNodes[index];
+            }
+
+            PL_ASSERT(node != nullptr);
+
+            if (FirstFreeNodeIndex != kSparseArrayIndexNone)
+            {
+                ElementNodes[FirstFreeNodeIndex].PrevIndex = index;
+            }
+            node->NextIndex = FirstFreeNodeIndex;
+            node->PrevIndex = kSparseArrayIndexNone;
+            FirstFreeNodeIndex = index;
+            AllocateFlags[index] = false;
         }
     private:
         int32 FirstFreeNodeIndex{ kSparseArrayIndexNone };
