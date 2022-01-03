@@ -306,37 +306,11 @@ namespace Engine
         Iterator end() { return Iterator(Elements.end()); }
 
         ConstIterator end() const { return ConstIterator(const_cast<const TSparseArray>(Elements).end()); }
+
     private:
-        template <typename InElementType>
-        InElementType& EmplaceV2(InElementType&& element)
-        {
-            int32 indexInSparseArray = Elements.AddUnconstructElement();
-            SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(element);
-
-            uint32 hashCode = KeyFunc::GetHashCode(KeyFunc::GetKey(element));
-
-            if (Elements.GetCount() > 1) // already add en element in sparse array
-            {
-                SetElementIndex index = FindIndex(KeyFunc::GetKey(element), hashCode);
-                if (index.IsValid())
-                {
-                    SetElement& setElement = Elements[index.Index];
-                    setElement.~SetElement();
-                    Memory::Memmove(&setElement, item, sizeof(SetElement));
-                    Elements.RemoveWithoutDestruct(indexInSparseArray);
-                    return setElement.Element;
-                }
-            }
-
-            CheckRehash(Elements.GetCount());
-            LinkElement(SetElementIndex{ indexInSparseArray }, *item, hashCode);
-            return item->Element;
-        }
-
         template <typename InElementType>
         InElementType& Emplace(InElementType&& element)
         {
-            //TODO: Maybe we should construct first, cause hashCode is relative with instance address
             uint32 hashCode = KeyFunc::GetHashCode(KeyFunc::GetKey(element));
 
             SetElementIndex index = FindIndex(KeyFunc::GetKey(element), hashCode);
