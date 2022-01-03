@@ -1,4 +1,4 @@
-#include "precompiled_core.hpp"
+//#include "precompiled_core.hpp"
 #include "foundation/string.hpp"
 #include "math/hash_helper.hpp"
 #include "log/logger.hpp"

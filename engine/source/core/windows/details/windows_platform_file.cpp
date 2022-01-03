@@ -1,9 +1,9 @@
-#include "core/precompiled_core.hpp"
+#include "precompiled_core.hpp"
 #include <corecrt_io.h>
-#include "core/foundation/regex.hpp"
-#include "core/windows/windows_platform_file.hpp"
-#include "core/file_system/path.hpp"
-#include "core/foundation/queue.hpp"
+#include "foundation/regex.hpp"
+#include "windows/windows_platform_file.hpp"
+#include "file_system/path.hpp"
+#include "foundation/queue.hpp"
 
 using namespace Engine;
 

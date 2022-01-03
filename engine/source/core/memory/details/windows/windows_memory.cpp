@@ -1,6 +1,6 @@
 #include "precompiled_core.hpp"
 #include "memory/details/windows/windows_memory.hpp"
-#include "core/memory/ansi_c_malloc.hpp"
+#include "memory/ansi_c_malloc.hpp"
 
 namespace Engine
 {
