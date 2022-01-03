@@ -233,7 +233,7 @@ namespace Engine
 
         void Insert(int32 index, bool value)
         {
-            PL_ASSERT(0 <= index && index <= GetCount())
+            PL_ASSERT(0 <= index && index <= GetCount());
             InsertUnconstructElement(index, 1);
             uint32& data = GetData()[index / kElementBits];
 

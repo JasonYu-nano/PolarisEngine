@@ -22,11 +22,11 @@ if(unicode)
     add_compile_definitions(UNICODE)
 endif()
 
-if(${CMAKE_BUILD_TYPE} EQUAL "Debug")
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     add_compile_definitions(DEBUG)
-elseif(${CMAKE_BUILD_TYPE} EQUAL "RelWithDebInfo")
+elseif(${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo")
     add_compile_definitions(DEVELOPMENT)
-elseif(${CMAKE_BUILD_TYPE} EQUAL "Release")
+elseif(${CMAKE_BUILD_TYPE} MATCHES "Release")
     add_compile_definitions("SHIPPING")
 endif()
 #add_compile_definitions(SPDLOG_SHARED_LIB)
@@ -39,11 +39,24 @@ endif()
 # add cmake find path
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/source/core)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+# set output
+# TODO: use different dir for config
+set(CMAKE_DEBUG_POSTFIX "d")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin)
 
 #add sub dir
 
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 
 add_subdirectory(source)
+
+if(with_test)
+    add_subdirectory(test)
+endif()
+
+if(with_benchmark)
+    add_subdirectory(benchmark)
+endif()

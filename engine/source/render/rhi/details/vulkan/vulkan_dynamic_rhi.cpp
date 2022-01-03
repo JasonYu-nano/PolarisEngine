@@ -1,5 +1,5 @@
 //#include "GLFW/glfw3.h"
-#include "core/core_minimal_public.hpp"
+#include "core_minimal_public.hpp"
 #include "rhi/details/vulkan/vulkan_dynamic_rhi.hpp"
 #include "rhi/details/vulkan/vulkan_platform.hpp"
 
@@ -267,7 +267,7 @@ namespace Engine
         Set<uint32> queueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
 
         float queuePriority = 1.0f;
-        for (uint32_t queueFamily : queueFamilies) {
+        for (uint32 queueFamily : queueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueCreateInfo.queueFamilyIndex = queueFamily;

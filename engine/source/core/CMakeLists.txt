@@ -32,14 +32,11 @@ target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core)
 
 # add 3rd dependency
 
-set(build_type "Release")
-if(${CMAKE_BUILD_TYPE} EQUAL "Debug")
-    set(build_type "Debug")
-endif()
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/source/core)
 
 conan_cmake_configure(REQUIRES spdlog/1.8.2
         GENERATORS cmake_find_package
-        BUILD_TYPE ${build_type}
+        IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
         OPTIONS spdlog:shared=True spdlog:wchar_support=True)
 
 conan_cmake_autodetect(settings)
@@ -65,3 +62,8 @@ endif()
 
 # ide
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
+set_target_properties(${target} PROPERTIES FOLDER "Engine")
+
+if(MSVC)
+    target_compile_options(${target} PUBLIC /wd4251)
+endif()

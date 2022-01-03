@@ -109,7 +109,7 @@ namespace Engine
     {
         bool IsValid() const { return Index != kSparseArrayIndexNone; }
 
-        explicit operator int32() const
+        operator int32() const
         {
             return Index;
         }

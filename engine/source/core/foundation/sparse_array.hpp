@@ -205,11 +205,6 @@ namespace Engine
 
         int32 AddUnconstructElement()
         {
-            if (GetCount() >= kSparseArrayIndexNone)
-            {
-                throw std::overflow_error("index of sparse array can not >= MAX_UINT32");
-            }
-
             int32 index = kSparseArrayIndexNone;
             if (FirstFreeNodeIndex != kSparseArrayIndexNone)
             {
