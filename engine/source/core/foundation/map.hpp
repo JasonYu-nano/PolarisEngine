@@ -9,6 +9,56 @@
 
 namespace Engine
 {
+    template <typename PairIterType, typename PairType>
+    class ConstMapIterator
+    {
+    public:
+        explicit ConstMapIterator(const PairIterType& pairIter)
+            : PairIter(pairIter)
+        {}
+
+        const PairType& operator*() const { return *PairIter; }
+
+        const PairType* operator->() const { return &(*PairIter); }
+
+        ConstMapIterator& operator++ ()
+        {
+            ++PairIter;
+            return *this;
+        }
+
+        friend bool operator== (const ConstMapIterator& lhs, const ConstMapIterator& rhs)
+        {
+            return lhs.PairIter == rhs.PairIter;
+        }
+
+        friend bool operator!= (const ConstMapIterator& lhs, const ConstMapIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+    protected:
+        PairIterType PairIter;
+    };
+    //TODO: cast iterator to const_iterator
+    template <typename PairIterType, typename PairType>
+    class MapIterator : public ConstMapIterator<PairIterType, PairType>
+    {
+        using Super = ConstMapIterator<PairIterType, PairType>;
+    public:
+        explicit MapIterator(const PairIterType& pairIter) : Super(pairIter) {}
+
+        PairType& operator*() const { return *(this->PairIter); }
+
+        PairType* operator->() const { return &(*(this->PairIter)); }
+
+        MapIterator& operator++ ()
+        {
+            Super::operator++();
+            return *this;
+        }
+    };
+
     template <typename KeyType, typename ValueType>
     class Pair
     {
@@ -58,11 +108,15 @@ namespace Engine
     template <typename KeyType, typename ValueType>
     class Map
     {
-        using TPairContainer = Set<Pair<KeyType, ValueType>, MapDefaultHashFunc<KeyType, ValueType>>;
+        using TPairType = Pair<KeyType, ValueType>;
+        using TPairContainer = Set<TPairType, MapDefaultHashFunc<KeyType, ValueType>>;
+    public:
+        using ConstIterator = ConstMapIterator<typename TPairContainer::ConstIterator, TPairType>;
+        using Iterator = MapIterator<typename TPairContainer::Iterator, TPairType>;
     public:
         Map() = default;
 
-        Map(std::initializer_list<Pair<KeyType, ValueType>> initializer)
+        Map(std::initializer_list<TPairType> initializer)
         {
             for (const auto& pair : initializer)
             {
@@ -112,7 +166,7 @@ namespace Engine
 
         ValueType* Find(const KeyType& key)
         {
-            if (Pair<KeyType, ValueType>* pair = Pairs.Find(key))
+            if (TPairType* pair = Pairs.Find(key))
             {
                 return &pair->Value;
             }
@@ -129,6 +183,25 @@ namespace Engine
             return Pairs.Remove(key);
         }
 
+        Iterator begin()
+        {
+            return Iterator(Pairs.begin());
+        }
+
+        ConstIterator begin() const
+        {
+            return ConstIterator(Pairs.begin());
+        }
+
+        Iterator end()
+        {
+            return Iterator(Pairs.end());
+        }
+
+        ConstIterator end() const
+        {
+            return ConstIterator(Pairs.begin());
+        }
     protected:
         template <typename InKeyType, typename InValueType>
         ValueType& Emplace(InKeyType&& key, InValueType&& value)
@@ -140,7 +213,7 @@ namespace Engine
         template <typename InKeyType, typename InValueType>
         InValueType& FindOrAddImpl(InKeyType&& key, InValueType&& value)
         {
-            if (Pair<KeyType, ValueType>* pair = Pairs.Find(Forward<InKeyType>(key)))
+            if (TPairType* pair = Pairs.Find(Forward<InKeyType>(key)))
             {
                 return pair->Value;
             }

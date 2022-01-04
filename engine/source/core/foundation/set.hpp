@@ -49,9 +49,9 @@ namespace Engine
             : Super(iter)
         {}
 
-        KeyType& operator*() { return const_cast<KeyType&>(Super::operator *()); }
+        KeyType& operator*() const { return const_cast<KeyType&>(Super::operator *()); }
 
-        KeyType* operator->() { return const_cast<KeyType*>(Super::operator ->()); }
+        KeyType* operator->() const { return const_cast<KeyType*>(Super::operator ->()); }
 
         SetIterator& operator++ ()
         {

@@ -192,4 +192,18 @@ namespace Engine
         map.Remove(1);
         EXPECT_TRUE(map.Find(1) == nullptr);
     }
+
+    TEST(MapTest, Iterator)
+    {
+        Map<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {3, 1.6f}};
+        for (const auto& pair : map)
+        {
+            PL_INFO("", TC("key:{0} value:{1}"), pair.Key, pair.Value);
+        }
+
+        for (Map<int32, float>::Iterator iter = map.begin(); iter != map.end(); ++iter)
+        {
+            PL_INFO("", TC("key:{0} value:{1}"), iter->Key, iter->Value);
+        }
+    }
 }
