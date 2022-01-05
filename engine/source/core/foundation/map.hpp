@@ -9,6 +9,7 @@
 
 namespace Engine
 {
+#pragma region iterator
     template <typename PairIterType, typename PairType>
     class ConstMapIterator
     {
@@ -40,7 +41,7 @@ namespace Engine
     protected:
         PairIterType PairIter;
     };
-    //TODO: cast iterator to const_iterator
+
     template <typename PairIterType, typename PairType>
     class MapIterator : public ConstMapIterator<PairIterType, PairType>
     {
@@ -48,9 +49,9 @@ namespace Engine
     public:
         explicit MapIterator(const PairIterType& pairIter) : Super(pairIter) {}
 
-        PairType& operator*() const { return *(this->PairIter); }
+        PairType& operator*() const { return const_cast<PairType&>(*(this->PairIter)); }
 
-        PairType* operator->() const { return &(*(this->PairIter)); }
+        PairType* operator->() const { return const_cast<PairType*>(&(*(this->PairIter))); }
 
         MapIterator& operator++ ()
         {
@@ -58,6 +59,7 @@ namespace Engine
             return *this;
         }
     };
+#pragma endregion iterator
 
     template <typename KeyType, typename ValueType>
     class Pair
@@ -112,7 +114,7 @@ namespace Engine
         using TPairContainer = Set<TPairType, MapDefaultHashFunc<KeyType, ValueType>>;
     public:
         using ConstIterator = ConstMapIterator<typename TPairContainer::ConstIterator, TPairType>;
-        using Iterator = MapIterator<typename TPairContainer::Iterator, TPairType>;
+        using Iterator = MapIterator<typename TPairContainer::ConstIterator, TPairType>;
     public:
         Map() = default;
 

@@ -24,21 +24,34 @@ namespace Engine
         int32* Z{ nullptr };
     };
 
-    TEST(ListTest, Construct)
+    TEST(DynamicArrayTest, Base)
     {
-        DynamicArray<int> list;
-        list.Add(1);
-        EXPECT_TRUE(list[0] == 1);
-        list[0] = 10;
-        EXPECT_TRUE(list[0] == 10);
+        DynamicArray<int> array;
+        array.Add(1);
+        EXPECT_TRUE(array[0] == 1);
 
-        list.Insert(0, 9);
-        list.Insert(2, 11);
-        EXPECT_TRUE(list[0] == 9 && list[1] == 10 && list[2] == 11);
+        array[0] = 10;
+        EXPECT_TRUE(array[0] == 10);
 
-        EXPECT_TRUE(list.GetCount() == 3);
-        list.Clear(1);
-        EXPECT_TRUE(list.GetCount() == 0 && list.GetCapacity() == 1);
+        array.RemoveAt(0);
+        EXPECT_TRUE(array.IsEmpty());
+
+        array.Add(10);
+        array.Insert(0, 9);
+        array.Insert(2, 11);
+        EXPECT_TRUE(array[0] == 9 && array[1] == 10 && array[2] == 11);
+
+        array.Remove(10);
+        EXPECT_TRUE(array[0] == 9 && array[1] == 11);
+        EXPECT_TRUE(array.GetCount() == 2);
+
+        array.RemoveMatch([](const int& item){
+           return item > 0;
+        });
+        EXPECT_TRUE(array.IsEmpty());
+
+        array.Clear(1);
+        EXPECT_TRUE(array.IsEmpty() && array.GetCapacity() == 1);
 
 
         DynamicArray<ListTestStruct> listOfStruct(8);
@@ -53,19 +66,27 @@ namespace Engine
         EXPECT_TRUE(listOfCopy2[0] == 1 && listOfCopy2[4] == 0);
     }
 
-    TEST(ListTest, ConstBitIterator)
+    TEST(DynamicArrayTest, Iterator)
     {
-        DynamicArray<int> list = { 1, 2, 3, 4, 0 };
+        DynamicArray<int> array = {1, 2, 3, 4, 0 };
 
-        for (auto&& value : list)
+        for (auto&& value : array)
         {
-            PL_INFO("", "{0}", value);
+            PL_INFO("", TC("item of array is: {0}"), value);
         }
 
-        DynamicArray<int>::ConstIterator iter = list.begin();
+        for (DynamicArray<int>::Iterator iter = array.begin(); iter != array.end(); ++iter)
+        {
+            if (*iter > 2)
+            {
+                iter.RemoveSelf();
+            }
+        }
 
-        Vector<int> vec = { 1, 2, 3, 4, 0 };
-        Vector<int>::const_iterator iter2 = vec.begin();
+        for (DynamicArray<int>::ConstIterator iter = array.begin(); iter != array.end(); ++iter)
+        {
+            PL_INFO("", TC("item of array is: {0}"), *iter);
+        }
     }
 
     TEST(BitArrayTest, Base)
@@ -201,7 +222,7 @@ namespace Engine
             PL_INFO("", TC("key:{0} value:{1}"), pair.Key, pair.Value);
         }
 
-        for (Map<int32, float>::Iterator iter = map.begin(); iter != map.end(); ++iter)
+        for (Map<int32, float>::ConstIterator iter = map.begin(); iter != map.end(); ++iter)
         {
             PL_INFO("", TC("key:{0} value:{1}"), iter->Key, iter->Value);
         }

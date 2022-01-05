@@ -16,7 +16,7 @@ namespace Engine
     class ConstIndexIterator
     {
     public:
-        ConstIndexIterator(const ContainerType& container, SizeType index)
+        ConstIndexIterator(ContainerType& container, SizeType index)
             : Container(container)
             , Index(index)
         {}
@@ -26,9 +26,9 @@ namespace Engine
             return Container[Index];
         }
 
-        const ElementType& operator-> () const
+        const ElementType* operator-> () const
         {
-            return Container[Index];
+            return &Container[Index];
         }
 
         ConstIndexIterator& operator++ ()
@@ -43,6 +43,11 @@ namespace Engine
             return *this;
         }
 
+        SizeType GetIndex() const
+        {
+            return Index;
+        }
+
         friend bool operator== (const ConstIndexIterator& lhs, const ConstIndexIterator& rhs)
         {
             return (&lhs.Container == &rhs.Container) && (lhs.Index == rhs.Index);
@@ -54,7 +59,7 @@ namespace Engine
         }
 
     protected:
-        const ContainerType& Container;
+        ContainerType& Container;
         SizeType Index;
     };
 
@@ -64,7 +69,7 @@ namespace Engine
         using Super = ConstIndexIterator<ContainerType, ElementType, SizeType>;
 
     public:
-        IndexIterator(const ContainerType& container, SizeType index)
+        IndexIterator(ContainerType& container, SizeType index)
             : Super(container, index)
         {}
 
@@ -88,6 +93,12 @@ namespace Engine
         {
             Super::operator--();
             return *this;
+        }
+
+        void RemoveSelf()
+        {
+            this->Container.RemoveAt(this->Index);
+            this->Index--;
         }
 
         friend bool operator== (const IndexIterator& lhs, const IndexIterator& rhs)
@@ -232,28 +243,32 @@ namespace Engine
 
         bool Remove(const ElementType& element)
         {
-            RemoveMatch([&element](const ElementType& inElement) {
+            return RemoveMatch([&element](const ElementType& inElement) {
                 return element == inElement;
-            });
+            }) > 0;
         }
 
-        void RemoveMatch(TFunction<bool(const ElementType& element)> predicate)
+        SizeType RemoveMatch(TFunction<bool(const ElementType& element)> predicate)
         {
             if (Count <= 0)
             {
-                return;
+                return 0;
             }
 
-            SizeType searchIndex = Count - 1;
-            while (searchIndex >= 0)
+            SizeType searchCount = Count;
+            SizeType matchCount = 0;
+            while (searchCount > 0)
             {
-                ElementType* element = GetData() + searchIndex;
-                if (predicate(element))
+                ElementType* element = GetData() + searchCount -1;
+                if (predicate(*element))
                 {
-                    RemoveAt(searchIndex);
+                    RemoveAt(searchCount - 1);
+                    matchCount++;
                 }
-                searchIndex--;
+                searchCount--;
             }
+
+            return matchCount;
         }
 
         void Clear(SizeType slack = 0)

@@ -41,4 +41,4 @@ vsxmake2019/
 generated/
 !**/third_parties/**/*.lib
 cmake-build-debug/
-engine/build_clion/
+build_clion/
