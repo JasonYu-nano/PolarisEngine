@@ -63,12 +63,11 @@ namespace Engine
     {
     public:
          explicit RelativeBitRef(int32 BitIndex)
-            : DWORDIndex(BitIndex >> kElementBitsLogTwo)
+            : Index(BitIndex >> kElementBitsLogTwo)
             , Mask(1 << (BitIndex & (kElementBits - 1)))
-        {
-        }
+        {}
 
-        int32 DWORDIndex;
+        int32 Index;
         uint32 Mask;
     };
 
@@ -120,19 +119,19 @@ namespace Engine
             const int32 lastDWORDIndex = (arrayCount - 1) / kElementBits;
 
             // Advance to the next non-zero uint32.
-            uint32 remainingBitMask = rawData[DWORDIndex] & UnvisitedBitMask;
+            uint32 remainingBitMask = rawData[Index] & UnvisitedBitMask;
             while (!remainingBitMask)
             {
-                ++DWORDIndex;
+                ++Index;
                 BaseBitIndex += kElementBits;
-                if (DWORDIndex > lastDWORDIndex)
+                if (Index > lastDWORDIndex)
                 {
                     // We've advanced past the end of the array.
                     CurrentBitIndex = arrayCount;
                     return;
                 }
 
-                remainingBitMask = rawData[DWORDIndex];
+                remainingBitMask = rawData[Index];
                 UnvisitedBitMask = ~0;
             }
 
@@ -172,7 +171,6 @@ namespace Engine
         BitIterator& operator++()
         {
             Super::operator++();
-
             return *this;
         }
 

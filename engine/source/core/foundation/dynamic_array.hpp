@@ -136,7 +136,10 @@ namespace Engine
             AllocatorInstance.Resize(Capacity, sizeof(ElementType));
         }
 
-        DynamicArray(ElementType* rawPtr, uint64 count) {};
+        DynamicArray(ElementType* rawPtr, SizeType count)
+        {
+            CopyElement(rawPtr, count);
+        }
 
         DynamicArray(std::initializer_list<ElementType> initializer) 
         {
@@ -194,9 +197,8 @@ namespace Engine
         }
 
         /**
-         * Add an element at end.
-         *
-         * @param T element
+         * Add an element at end
+         * @param element
          */
         void Add(const ElementType& element)
         {
@@ -205,9 +207,8 @@ namespace Engine
         };
 
         /**
-         * Move an element to end.
-         *
-         * @param T element pending move
+         * Move an element to end
+         * @param element
          */
         void Add(ElementType&& element)
         {
@@ -215,18 +216,42 @@ namespace Engine
             EmplaceBack(Forward<ElementType&&>(element));
         }
 
+        /**
+         * Add an element use default constuctor, return the reference of element.
+         * @return Reference of element
+         */
+        ElementType& AddDefault()
+        {
+            EmplaceBack();
+            return GetData()[Count - 1];
+        }
+
+        /**
+         * Inset element at specifier position
+         * @param index
+         * @param element
+         */
         void Insert(SizeType index, const ElementType& element)
         {
             AddressCheck(&element);
             EmplaceAt(index, element);
         };
 
+        /**
+         * Inset element at specifier position
+         * @param index
+         * @param element
+         */
         void Insert(SizeType index, ElementType&& element)
         {
             AddressCheck(&element);
             EmplaceAt(index, element);
         };
 
+        /**
+         * Remove element at position
+         * @param index
+         */
         void RemoveAt(SizeType index)
         {
             PL_ASSERT(IsValidIndex(index));
@@ -241,6 +266,11 @@ namespace Engine
             //TODO: check need shink
         }
 
+        /**
+         * Remove all elements equals param
+         * @param element
+         * @return has element been removed
+         */
         bool Remove(const ElementType& element)
         {
             return RemoveMatch([&element](const ElementType& inElement) {
@@ -248,6 +278,11 @@ namespace Engine
             }) > 0;
         }
 
+        /**
+         * Remove all elements match the predicate
+         * @param predicate
+         * @return count of elements been removed
+         */
         SizeType RemoveMatch(TFunction<bool(const ElementType& element)> predicate)
         {
             if (Count <= 0)
@@ -271,6 +306,10 @@ namespace Engine
             return matchCount;
         }
 
+        /**
+         * Remove all elements
+         * @param slack remain capacity
+         */
         void Clear(SizeType slack = 0)
         {
             DestructElements(GetData(), Count);

@@ -26,7 +26,9 @@ namespace Engine
 
     TEST(DynamicArrayTest, Base)
     {
-        DynamicArray<int> array;
+        DynamicArray<int> array(10);
+        EXPECT_TRUE(array.GetCapacity() == 10);
+
         array.Add(1);
         EXPECT_TRUE(array[0] == 1);
 
@@ -36,7 +38,8 @@ namespace Engine
         array.RemoveAt(0);
         EXPECT_TRUE(array.IsEmpty());
 
-        array.Add(10);
+        int& item = array.AddDefault();
+        item = 10;
         array.Insert(0, 9);
         array.Insert(2, 11);
         EXPECT_TRUE(array[0] == 9 && array[1] == 10 && array[2] == 11);
@@ -64,6 +67,12 @@ namespace Engine
         DynamicArray<int> listOfCopy2(4);
         listOfCopy2 = MoveTemp(listOfCopy);
         EXPECT_TRUE(listOfCopy2[0] == 1 && listOfCopy2[4] == 0);
+    }
+
+    TEST(DynamicArrayTest, OtherConstruct)
+    {
+        int rawData[] =  {1, 2, 3, 4};
+        DynamicArray<int> array(rawData, 4);
     }
 
     TEST(DynamicArrayTest, Iterator)
