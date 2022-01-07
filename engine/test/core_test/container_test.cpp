@@ -73,6 +73,14 @@ namespace Engine
     {
         int rawData[] =  {1, 2, 3, 4};
         DynamicArray<int> array(rawData, 4);
+
+        DynamicArray<int, FixedAllocator<int, 5>> fixedArray;
+        EXPECT_TRUE(fixedArray.GetCapacity() == 5);
+        fixedArray = {5, 4, 3, 2, 1};
+
+        array = fixedArray;
+        EXPECT_TRUE(array[0] == 5);
+        EXPECT_TRUE(array[4] == 1);
     }
 
     TEST(DynamicArrayTest, Iterator)

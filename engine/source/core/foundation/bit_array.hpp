@@ -1,7 +1,7 @@
 #pragma once
 #include "definitions_core.hpp"
 #include "predefine/platform.hpp"
-#include "memory/heap_allocator.hpp"
+#include "memory/allocator_policies.hpp"
 #include "math/generic_math.hpp"
 
 namespace Engine
@@ -327,7 +327,8 @@ namespace Engine
 
         void Expansion()
         {
-            int32 elementCount = AllocatorInstance.CaculateValidCapacity(Math::DivideAndCeil(Count, kElementBits), Capacity / kElementBits, kElementBits);
+            int32 elementCount = AllocatorInstance.CalculateValidCapacity(Math::DivideAndCeil(Count, kElementBits),
+                                                                          Capacity / kElementBits, kElementBits);
             AllocatorInstance.Resize(elementCount, kElementBits);
             Capacity = elementCount * kElementBits;
             PL_ASSERT(Count <= Capacity);

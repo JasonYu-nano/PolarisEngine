@@ -4,7 +4,7 @@
 #include "definitions_core.hpp"
 #include "predefine/platform.hpp"
 #include "math/generic_math.hpp"
-#include "memory/heap_allocator.hpp"
+#include "memory/allocator_policies.hpp"
 #include "log/logger.hpp"
 #include "foundation/type_traits.hpp"
 #include "foundation/functional.hpp"
@@ -156,6 +156,12 @@ namespace Engine
             MoveElement(Forward<DynamicArray&&>(other));
         }
 
+        template <typename OtherAllocator>
+        explicit DynamicArray(const DynamicArray<ElementType, OtherAllocator>& other)
+        {
+            CopyElement(other.GetData(), other.GetCount());
+        }
+
         virtual ~DynamicArray()
         {
             Clear();
@@ -179,6 +185,14 @@ namespace Engine
         {
             DestructElements(GetData(), Count);
             MoveElement(Forward<DynamicArray&&>(other));
+            return *this;
+        }
+
+        template <typename OtherAllocator>
+        DynamicArray& operator=(const DynamicArray<ElementType, OtherAllocator>& other)
+        {
+            DestructElements(GetData(), Count);
+            CopyElement(other.GetData(), (SizeType)other.GetCount());
             return *this;
         }
 
@@ -446,7 +460,7 @@ namespace Engine
 
         void Expansion()
         {
-            Capacity = AllocatorInstance.CaculateValidCapacity(Count, Capacity, sizeof(ElementType));
+            Capacity = AllocatorInstance.CalculateValidCapacity(Count, Capacity, sizeof(ElementType));
             PL_ASSERT(Count <= Capacity);
             AllocatorInstance.Resize(Capacity, sizeof(ElementType));
         }
