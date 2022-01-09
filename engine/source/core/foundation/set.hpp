@@ -130,7 +130,7 @@ namespace Engine
     /** index of set in sparse array */
     struct SetElementIndex
     {
-        bool IsValid() const { return Index != kSparseArrayIndexNone; }
+        bool IsValid() const { return Index != INDEX_NONE; }
 
         operator int32() const
         {
@@ -138,7 +138,7 @@ namespace Engine
         }
 
         // Index in sparse array
-        int32 Index{ kSparseArrayIndexNone };
+        int32 Index{ INDEX_NONE };
     };
 
     using DefaultSetAllocator = SetAllocator<HeapAllocator<uint32>, HeapAllocator<uint32>>;

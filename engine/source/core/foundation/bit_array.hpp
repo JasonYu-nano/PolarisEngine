@@ -63,6 +63,7 @@ namespace Engine
         uint32 Mask;
     };
 
+#pragma region iterator
     class RelativeBitRef
     {
     public:
@@ -293,6 +294,7 @@ namespace Engine
             return !(lhs == rhs);
         }
     };
+#pragma endregion iterator
 
     template <typename Allocator = HeapAllocator<int32>>
     class BitArray
@@ -310,11 +312,12 @@ namespace Engine
         BitArray() 
             : Capacity(static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits)
         {
-            AllocatorInstance.Resize(Math::DivideAndCeil(Capacity, kElementBits), sizeof(uint32));
+            AllocatorInstance.Resize(AllocatorInstance.GetDefaultCapacity(), sizeof(uint32));
         };
 
         explicit BitArray(int32 capacity)
-            : Capacity(Math::Max(capacity, static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits))
+            : Capacity(Math::Max(Math::CeilToMultiple(capacity, kElementBits),
+                 static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits))
         {
             AllocatorInstance.Resize(Math::DivideAndCeil(Capacity, kElementBits), sizeof(uint32));
         }
@@ -327,17 +330,22 @@ namespace Engine
 
         BitArray(const bool* ptr, int32 count)
         {
+            PL_ASSERT(count >= 0);
+            Resize(Math::CeilToMultiple(count, kElementBits));
             InitBits(ptr, count);
         }
 
         BitArray(std::initializer_list<bool> initializer)
         {
-            InitBits(initializer.begin(), static_cast<int32>(initializer.size()));
+            int32 count = static_cast<int32>(initializer.size());
+            PL_ASSERT(count >= 0);
+            Resize(Math::CeilToMultiple(count, kElementBits));
+            InitBits(initializer.begin(), count);
         }
 
         BitArray(const BitArray& other)
         {
-            CopyBits(other.GetData(), other.GetCount());
+            CopyBits(const_cast<uint32*>(other.GetData()), other.GetCount());
         }
 
         BitArray(BitArray&& other) noexcept
@@ -392,6 +400,16 @@ namespace Engine
         {
             CopyBits(other.GetData(), other.GetCount());
             return *this;
+        }
+
+        bool operator== (const BitArray& other) const
+        {
+            if (Count != other.Count)
+            {
+                return false;
+            }
+
+            return Memory::Memcmp((void*)GetData(), (void*)other.GetData(), GetElementCount() * sizeof(uint32));
         }
 
         void Add(bool value)
@@ -455,20 +473,22 @@ namespace Engine
             }
         }
 
+        void Resize(int32 capacity)
+        {
+            PL_ASSERT(capacity >= 0);
+            const int32 defaultBitCount = static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits;
+            const int32 newCapacity = Math::Max(defaultBitCount, Math::CeilToMultiple(capacity, kElementBits));
+            if (newCapacity != Capacity)
+            {
+                AllocatorInstance.Resize(Math::DivideAndCeil(newCapacity, kElementBits), sizeof(uint32));
+                Capacity = newCapacity;
+            }
+        }
+
         void Clear(int32 slack = 0)
         {
             Count = 0;
-            const int32 defaultBitCount = static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits;
-            const int32 capacity = Math::Max(defaultBitCount, slack);
-            if (Capacity < capacity)
-            {
-                AllocatorInstance.Resize(Math::DivideAndCeil(capacity, kElementBits), sizeof(uint32));
-                Capacity  = capacity;
-            }
-            else
-            {
-                // Cause bit array use less memory, don't need to shink
-            }
+            Resize(slack);
         }
 
         int32 GetCount() const { return Count;  }
@@ -490,13 +510,15 @@ namespace Engine
             return (const uint32*)AllocatorInstance.GetAllocation();
         }
 
-        ValidIterator CreateValidIterator()
+        ValidIterator CreateValidIterator(int32 startIndex = 0)
         {
-            return ValidIterator(*this, 0);
+            PL_ASSERT(startIndex >= 0 && startIndex <= Count);
+            return ValidIterator(*this, startIndex);
         }
 
-        ConstValidIterator CreateValidIterator() const
+        ConstValidIterator CreateValidIterator(int32 startIndex = 0) const
         {
+            PL_ASSERT(startIndex >= 0 && startIndex <= Count);
             return ConstValidIterator(*this, 0);
         }
 
@@ -522,8 +544,6 @@ namespace Engine
     private:
         void InitBits(const bool* ptr, int32 count)
         {
-            //TODO: Resize first
-
             PL_ASSERT(count > 0);
             for (int idx = 0; idx < count; ++idx)
             {
@@ -600,7 +620,7 @@ namespace Engine
         void Expansion()
         {
             int32 elementCount = AllocatorInstance.CalculateValidCapacity(Math::DivideAndCeil(Count, kElementBits),
-                                                                          Capacity / kElementBits, kElementBits);
+                                                                          Capacity / kElementBits, sizeof(uint32));
             AllocatorInstance.Resize(elementCount, sizeof(uint32));
             Capacity = elementCount * kElementBits;
             PL_ASSERT(Count <= Capacity);
@@ -623,6 +643,6 @@ namespace Engine
     private:
         Allocator AllocatorInstance;
         int32 Count{ 0 }; //as bit
-        int32 Capacity{ 0 }; //as bit
+        int32 Capacity{ 0 }; //as bit, always is a multiple of kElementBits
     };
 }

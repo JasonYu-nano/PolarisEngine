@@ -3,11 +3,11 @@
 #include "foundation/bit_array.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/type_traits.hpp"
+#include "predefine/common_marco.hpp"
 
 namespace Engine
 {
-    constexpr int32 kSparseArrayIndexNone = -1;
-
+#pragma region iterator
     template <typename ContainerType, typename ElementType, typename BitIteratorType>
     class ConstSparseIterator
     {
@@ -75,6 +75,7 @@ namespace Engine
             return !(lhs == rhs);
         }
     };
+#pragma endregion iterator
 
     template <typename ElementType>
     class SparseArray
@@ -95,8 +96,8 @@ namespace Engine
         template <typename T, typename U, typename V> friend class Set;
 
     public:
-        using ConstIterator = ConstSparseIterator<SparseArray, ElementType, TBitArray::Iterator>;
-        using Iterator = SparseIterator<SparseArray, ElementType, TBitArray::Iterator>;
+        using ConstIterator = ConstSparseIterator<SparseArray, ElementType, TBitArray::ConstValidIterator>;
+        using Iterator = SparseIterator<SparseArray, ElementType, TBitArray::ConstValidIterator>;
 
     public:
         SparseArray() = default;
@@ -105,6 +106,80 @@ namespace Engine
             : AllocateFlags(TBitArray(capacity))
             , ElementNodes(TDynamicArray(capacity))
         {}
+
+        SparseArray(ElementType* ptr, int32 count)
+        {
+            CopyElement(ptr, count);
+        }
+
+        SparseArray(std::initializer_list<ElementType> initializer)
+        {
+            CopyElement(initializer.begin(), static_cast<int32>(initializer.size()));
+        }
+
+        SparseArray(const SparseArray& other)
+            : FirstFreeNodeIndex(other.FirstFreeNodeIndex)
+            , FreeElementCount(other.FreeElementCount)
+            , AllocateFlags(other.AllocateFlags)
+            , ElementNodes(other.ElementNodes)
+        {}
+
+        SparseArray(SparseArray&& other) noexcept
+            : FirstFreeNodeIndex(other.FirstFreeNodeIndex)
+            , FreeElementCount(other.FreeElementCount)
+            , AllocateFlags(MoveTemp(other.AllocateFlags))
+            , ElementNodes(MoveTemp(other.ElementNodes))
+        {
+            other.FirstFreeNodeIndex = INDEX_NONE;
+            other.FreeElementCount = 0;
+        }
+
+        SparseArray& operator= (std::initializer_list<ElementType> initializer)
+        {
+
+        }
+
+        SparseArray& operator= (const SparseArray& other)
+        {
+            FirstFreeNodeIndex = other.FirstFreeNodeIndex;
+            FreeElementCount = other.FreeElementCount;
+            AllocateFlags = other.AllocateFlags;
+            ElementNodes = other.ElementNodes;
+            return *this;
+        }
+
+        SparseArray& operator= (SparseArray&& other) noexcept
+        {
+            FirstFreeNodeIndex = other.FirstFreeNodeIndex;
+            other.FirstFreeNodeIndex = INDEX_NONE;
+            FreeElementCount = other.FreeElementCount;
+            other.FreeElementCount = 0;
+            AllocateFlags = MoveTemp(other.AllocateFlags);
+            ElementNodes = MoveTemp(other.ElementNodes);
+            return *this;
+        }
+
+        bool operator== (const SparseArray& other) const
+        {
+            if (GetMaxIndex() != other.GetMaxIndex())
+            {
+                return false;
+            }
+
+            for (int32 idx = 0; idx < GetMaxIndex(); ++idx)
+            {
+                if (HasElement(idx) != other.HasElement(idx))
+                {
+                    return false;
+                }
+
+                if (HasElement(idx) && (*this)[idx] != other[idx])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         ElementType& operator[] (int32 index)
         {
@@ -128,39 +203,80 @@ namespace Engine
             return Emplace(element);
         }
 
+        void Insert(int32 index, const ElementType& element)
+        {
+            InsertUnconstructElement(index);
+            new(GetData() + index) ElementType(element);
+        }
+
+        void Insert(int32 index, ElementType&& element)
+        {
+            InsertUnconstructElement(index);
+            new(GetData() + index) ElementType(element);
+        }
+
         void RemoveAt(int32 index)
         {
-            PL_ASSERT(0 <= index && index < GetCount());
+            PL_ASSERT(0 <= index && index < GetMaxIndex());
             ElementLinkNode& node = ElementNodes[index];
             node.~ElementLinkNode();
             RemoveWithoutDestruct(index, &node);
         }
 
+        void Clear(int32 slack)
+        {
+            if constexpr (HasUserDestructorV<ElementType>)
+            {
+                typedef ElementType DestructItemsElementTypeTypedef;
+                for (Iterator iter = begin(); iter != end(); ++iter)
+                {
+                    *iter.~DestructItemsElementTypeTypedef();
+                }
+            }
+
+            FirstFreeNodeIndex = INDEX_NONE;
+            FreeElementCount = 0;
+            ElementNodes.Clear(slack);
+            AllocateFlags.Clear(slack);
+        }
+
         void Reserve(int32 count)
         {
-            if (GetCount() < count)
+            if (GetMaxIndex() < count)
             {
-                int32 elementToAdd = count - GetCount();
+                int32 elementToAdd = count - GetMaxIndex();
                 int32 startIndex = ElementNodes.AddUnconstructElement(elementToAdd);
 
                 int32 remain = count;
                 while (remain > startIndex)
                 {
                     int32 freeIndex = --remain;
-                    if (FirstFreeNodeIndex != kSparseArrayIndexNone)
+                    if (FirstFreeNodeIndex != INDEX_NONE)
                     {
                         GetData()[FirstFreeNodeIndex].PrevIndex = freeIndex;
                     }
-                    GetData()[freeIndex].PrevIndex = kSparseArrayIndexNone;
-                    GetData()[freeIndex].NextIndex = FirstFreeNodeIndex != kSparseArrayIndexNone ? FirstFreeNodeIndex : kSparseArrayIndexNone;
+                    GetData()[freeIndex].PrevIndex = INDEX_NONE;
+                    GetData()[freeIndex].NextIndex = FirstFreeNodeIndex != INDEX_NONE ? FirstFreeNodeIndex : INDEX_NONE;
                     FirstFreeNodeIndex = freeIndex;
                     //TODO: Add multi value to bit array
                     AllocateFlags.Add(false);
                 }
+                FreeElementCount += elementToAdd;
             }
         }
 
+        bool HasElement(int32 index) const
+        {
+            PL_ASSERT(index >= 0 && index < GetMaxIndex());
+            return AllocateFlags[index];
+        }
+
         int32 GetCount() const
+        {
+            return ElementNodes.GetCount() - FreeElementCount;
+        }
+
+        int32 GetMaxIndex() const
         {
             return ElementNodes.GetCount();
         }
@@ -180,13 +296,13 @@ namespace Engine
             return ElementNodes.GetData();
         }
 
-        Iterator begin() { return Iterator(*this, TBitArray::Iterator(AllocateFlags, 0)); }
+        Iterator begin() { return Iterator(*this, AllocateFlags.CreateValidIterator()); }
 
-        ConstIterator begin() const { return ConstIterator(*this, TBitArray::Iterator(AllocateFlags, 0)); }
+        ConstIterator begin() const { return ConstIterator(*this, AllocateFlags.CreateValidIterator()); }
 
-        Iterator end() { return Iterator(*this, TBitArray::Iterator(AllocateFlags, GetCount())); }
+        Iterator end() { return Iterator(*this, AllocateFlags.CreateValidIterator(AllocateFlags.GetCount())); }
 
-        ConstIterator end() const { return ConstIterator(*this, TBitArray::Iterator(AllocateFlags, GetCount())); }
+        ConstIterator end() const { return ConstIterator(*this, AllocateFlags.CreateValidIterator(AllocateFlags.GetCount())); }
 
     private:
         template <typename... Args>
@@ -197,10 +313,20 @@ namespace Engine
             return index;
         }
 
+        void CopyElement(const ElementType* data, int32 count)
+        {
+            PL_ASSERT(count >= 0);
+            Reserve(count);
+            for (int32 idx = 0; idx < count; ++idx)
+            {
+                Add(data[idx]);
+            }
+        }
+
         int32 AddUnconstructElement()
         {
-            int32 index = kSparseArrayIndexNone;
-            if (FirstFreeNodeIndex != kSparseArrayIndexNone)
+            int32 index = INDEX_NONE;
+            if (FirstFreeNodeIndex != INDEX_NONE)
             {
                 // return allocated element node
                 PL_ASSERT(!AllocateFlags[FirstFreeNodeIndex]);
@@ -208,6 +334,7 @@ namespace Engine
                 index = FirstFreeNodeIndex;
                 AllocateFlags[index] = true;
                 FirstFreeNodeIndex = node.NextIndex;
+                FreeElementCount--;
             }
             else
             {
@@ -219,6 +346,37 @@ namespace Engine
             return index;
         }
 
+        void InsertUnconstructElement(int32 index)
+        {
+            if (index >= ElementNodes.GetCount())
+            {
+                Reserve(index + 1);
+            }
+
+            PL_ASSERT(AllocateFlags[index] == false);
+
+            FreeElementCount--;
+            ElementLinkNode& node = ElementNodes[index];
+            int32 prevIndex = node.PrevIndex;
+            int32 nextIndex = node.NextIndex;
+            if (prevIndex != INDEX_NONE)
+            {
+                ElementNodes[prevIndex].NextIndex = nextIndex;
+            }
+
+            if (nextIndex != INDEX_NONE)
+            {
+                ElementNodes[nextIndex].PrevIndex = prevIndex;
+            }
+
+            if (FirstFreeNodeIndex == index)
+            {
+                FirstFreeNodeIndex = nextIndex;
+            }
+
+            AllocateFlags[index] = true;
+        }
+
         void RemoveWithoutDestruct(int32 index, ElementLinkNode* node = nullptr)
         {
             if (node == nullptr)
@@ -228,17 +386,19 @@ namespace Engine
 
             PL_ASSERT(node != nullptr);
 
-            if (FirstFreeNodeIndex != kSparseArrayIndexNone)
+            if (FirstFreeNodeIndex != INDEX_NONE)
             {
                 ElementNodes[FirstFreeNodeIndex].PrevIndex = index;
             }
             node->NextIndex = FirstFreeNodeIndex;
-            node->PrevIndex = kSparseArrayIndexNone;
+            node->PrevIndex = INDEX_NONE;
             FirstFreeNodeIndex = index;
             AllocateFlags[index] = false;
+            FreeElementCount++;
         }
     private:
-        int32 FirstFreeNodeIndex{ kSparseArrayIndexNone };
+        int32 FirstFreeNodeIndex{ INDEX_NONE };
+        int32 FreeElementCount{ 0 };
         TBitArray AllocateFlags;
         TDynamicArray ElementNodes;
     };

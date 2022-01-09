@@ -33,6 +33,17 @@ namespace Engine
             return (a + b - 1) / b;
         }
 
+        template <typename T>
+        static T CeilToMultiple(T a, T multiple)
+        {
+            if (a == 0)
+            {
+                return 0;
+            }
+
+            return ((a - 1) / multiple + 1) * multiple;
+        }
+
         static uint32 FloorLog2(uint32 value)
         {
             // see http://codinggorilla.domemtech.com/?p=81 or http://en.wikipedia.org/wiki/Binary_logarithm but modified to return 0 for a input value of 0

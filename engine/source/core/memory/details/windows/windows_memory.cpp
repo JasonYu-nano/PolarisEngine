@@ -30,4 +30,9 @@ namespace Engine
     {
         ::memset(dest, byte, size);
     }
+
+    bool WindowsMemory::Memcmp(void* lBuffer, void* rBuffer, size_t size)
+    {
+        return ::memcmp(lBuffer, rBuffer, size) == 0;
+    }
 }

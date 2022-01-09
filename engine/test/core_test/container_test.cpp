@@ -112,7 +112,7 @@ namespace Engine
     TEST(BitArrayTest, Base)
     {
         BitArray array(10);
-        EXPECT_TRUE(array.GetCapacity() == 10);
+        EXPECT_TRUE(array.GetCapacity() == 32);
         array.Add(true);
         EXPECT_TRUE(array[0]);
         array[0] = false;
@@ -129,6 +129,9 @@ namespace Engine
         array3 = {false};
         EXPECT_TRUE(array3[0] == false);
         EXPECT_TRUE(array3.GetElementCount() == 1);
+
+        BitArray array4(array3);
+        EXPECT_TRUE(array3 == array4);
     }
 
     TEST(BitArrayTest, Iterator)
@@ -153,18 +156,21 @@ namespace Engine
         SparseArray<int32> array(8);
         uint32 index1 = array.Add(-20);
         uint32 index2 = array.Add(11);
+        EXPECT_TRUE(index1 == 0 && index2 && 1);
         array.Add(15);
         array.Add(-1); //{-20, 11, 15, -1}
-
-        array.RemoveAt(0); //{11, 15, -1}
+        array.RemoveAt(0); //{null, 11, 15, -1}
         array.Add(6); //{6, 11, 15, -1}
         EXPECT_TRUE(array[0] == 6 && array[1] == 11);
-        array.RemoveAt(2); //{6, 11, -1}
+        array.RemoveAt(2); //{6, 11, null, -1}
 
-        for (auto&& value : array)
-        {
-            PL_INFO("", "{0}", value);
-        }
+        SparseArray<int32> array2 = {6, 11, -1};
+        EXPECT_FALSE(array == array2);
+
+        array2.Insert(3, -1); //{6, 11, -1, -1}
+        array2.RemoveAt(2); //{6, 11, null, -1}
+
+        EXPECT_TRUE(array == array2);
     }
 
     TEST(SparseArrayTest, Iterator)
@@ -178,12 +184,10 @@ namespace Engine
 
         for (auto&& value : array)
         {
-            PL_INFO("", "{0}", value);
         }
 
         for (SparseArray<int32>::ConstIterator iter = array.begin(); iter != array.end(); ++iter)
         {
-            PL_INFO("", "{0}", *iter);
         }
     }
 

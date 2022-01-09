@@ -25,6 +25,8 @@ namespace Engine
 
         static void Memset(void* dest, uint8 byte, size_t size);
 
+        static bool Memcmp(void* lBuffer, void* rBuffer, size_t size);
+
         /**
          * see UE4 FBitArrayMemory::MemmoveBitsWordOrder
          * 

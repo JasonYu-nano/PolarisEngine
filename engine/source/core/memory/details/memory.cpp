@@ -41,9 +41,14 @@ namespace Engine
         PlatformMemory::Memmove(dest, src, size);
     }
 
-    void Memory::Memset(void *dest, uint8 byte, size_t size)
+    void Memory::Memset(void* dest, uint8 byte, size_t size)
     {
         PlatformMemory::Memset(dest, byte, size);
+    }
+
+    bool Memory::Memcmp(void* lBuffer, void* rBuffer, size_t size)
+    {
+        return PlatformMemory::Memcmp(lBuffer, rBuffer, size);
     }
 
     void Memory::MemmoveBits(uint32* startDest, int32 destOffset, uint32* startSrc, int32 srcOffset, uint32 bitCount)
