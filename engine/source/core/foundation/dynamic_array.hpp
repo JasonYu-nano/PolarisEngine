@@ -75,12 +75,12 @@ namespace Engine
 
         ElementType& operator* () const
         {
-            return const_cast<ElementType&>(Super::operator*());
+            return const_cast<ElementType&>(this->Container[this->Index]);
         }
 
-        ElementType& operator-> () const
+        ElementType* operator-> () const
         {
-            return const_cast<ElementType&>(Super::operator->());
+            return const_cast<ElementType*>(&(this->Container[this->Index]));
         }
 
         IndexIterator& operator++ ()
@@ -146,7 +146,7 @@ namespace Engine
             CopyElement(initializer.begin(), (SizeType)initializer.size());
         };
 
-        DynamicArray(const DynamicArray& other) 
+        DynamicArray(const DynamicArray& other)
         {
             CopyElement(other.GetData(), other.Count);
         }
@@ -194,6 +194,31 @@ namespace Engine
             DestructElements(GetData(), Count);
             CopyElement(other.GetData(), (SizeType)other.GetCount());
             return *this;
+        }
+
+        bool operator== (DynamicArray other) const
+        {
+            if (Count != other.Count)
+            {
+                return false;
+            }
+
+            const ElementType* selfPtr = GetData();
+            const ElementType* otherPtr = other.GetData();
+            for (SizeType i = 0; i < Count; ++i)
+            {
+                if (selfPtr[i] != otherPtr[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool operator!= (DynamicArray other) const
+        {
+            return !(*this == other);
         }
 
         ElementType& operator[] (SizeType index)
@@ -497,7 +522,7 @@ namespace Engine
 
         void CopyElement(const ElementType* data, SizeType count)
         {
-            PL_ASSERT(data && count > 0 && Count <= 0);
+            PL_ASSERT(data && count > 0);
             Count = count;
             Expansion();
             ConstructElements(GetData(), data, count);
@@ -505,9 +530,11 @@ namespace Engine
 
         void MoveElement(DynamicArray&& other)
         {
+            AllocatorInstance = MoveTemp(other.AllocatorInstance);
             Count = other.Count;
             Capacity = other.Capacity;
-            AllocatorInstance = MoveTemp(other.AllocatorInstance);
+            other.Count = 0;
+            other.Capacity = 0;
         }
 
     protected:

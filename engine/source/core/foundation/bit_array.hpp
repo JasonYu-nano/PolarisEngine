@@ -25,25 +25,25 @@ namespace Engine
 
         BitRef& operator= (bool value)
         {
+            uint32& data = const_cast<uint32&>(Data);
             if (value)
             {
-                Data |= Mask;
+                data |= Mask;
             }
             else
             {
-                Data &= ~Mask;
+                data &= ~Mask;
             }
             return* this;
         }
     private:
-        uint32& Data;
+        const uint32& Data;
         uint32 Mask;
     };
 
     class ConstBitRef
     {
     public:
-
         ConstBitRef(const uint32& data, uint32 mask)
             : Data(data)
             , Mask(mask)
@@ -54,6 +54,10 @@ namespace Engine
             return (Data & Mask) != 0;
         }
 
+        explicit operator BitRef() const
+        {
+            return BitRef(const_cast<uint32&>(Data), Mask);
+        }
     private:
         const uint32& Data;
         uint32 Mask;
@@ -71,11 +75,15 @@ namespace Engine
         uint32 Mask;
     };
 
+    /**
+     * A const iterator always move to next 'true' index
+     * @tparam ContainerType
+     */
     template <typename ContainerType>
-    class ConstBitIterator : public RelativeBitRef
+    class ConstBitValidIterator : public RelativeBitRef
     {
     public:
-        explicit ConstBitIterator(const ContainerType& container, int32 startIndex = 0)
+        explicit ConstBitValidIterator(const ContainerType& container, int32 startIndex = 0)
             : RelativeBitRef(startIndex)
             , Container(container)
             , UnvisitedBitMask((~0U) << (startIndex & (kElementBits - 1)))
@@ -88,7 +96,17 @@ namespace Engine
             }
         }
 
-        ConstBitIterator& operator++()
+        ConstBitRef operator* () const
+        {
+            return Container[CurrentBitIndex];
+        }
+
+        explicit operator bool() const
+        {
+            return CurrentBitIndex < Container.GetCount();
+        }
+
+        ConstBitValidIterator& operator++()
         {
             // Mark the current bit as visited.
             UnvisitedBitMask &= ~Mask;
@@ -101,12 +119,12 @@ namespace Engine
 
         int32 GetIndex() const { return CurrentBitIndex; }
 
-        friend bool operator==(const ConstBitIterator& lhs, const ConstBitIterator& rhs)
+        friend bool operator==(const ConstBitValidIterator& lhs, const ConstBitValidIterator& rhs)
         {
             return lhs.CurrentBitIndex == rhs.CurrentBitIndex && &lhs.Container == &rhs.Container;
         }
 
-        friend bool operator!=(const ConstBitIterator& lhs, const ConstBitIterator& rhs)
+        friend bool operator!=(const ConstBitValidIterator& lhs, const ConstBitValidIterator& rhs)
         {
             return !(lhs == rhs);
         }
@@ -159,16 +177,25 @@ namespace Engine
         uint32 BaseBitIndex;
     };
 
+    /**
+     * An iterator always move to next 'true' index
+     * @tparam ContainerType
+     */
     template <typename ContainerType>
-    class BitIterator : public ConstBitIterator<ContainerType>
+    class BitValidIterator : public ConstBitValidIterator<ContainerType>
     {
-        using Super = ConstBitIterator<ContainerType>;
+        using Super = ConstBitValidIterator<ContainerType>;
     public:
-        BitIterator(ContainerType& container, uint32 startIndex = 0)
+        BitValidIterator(ContainerType& container, uint32 startIndex = 0)
             : Super(container, startIndex)
         {}
 
-        BitIterator& operator++()
+        BitRef operator* () const
+        {
+            return static_cast<BitRef>(this->Container[this->CurrentBitIndex]);
+        }
+
+        BitValidIterator& operator++()
         {
             Super::operator++();
             return *this;
@@ -176,12 +203,92 @@ namespace Engine
 
         int32 GetIndex() const { return Super::GetIndex(); }
 
-        friend bool operator==(const BitIterator& lhs, const BitIterator& rhs)
+        friend bool operator==(const BitValidIterator& lhs, const BitValidIterator& rhs)
         {
             return lhs.CurrentBitIndex == rhs.CurrentBitIndex && &lhs.Container == &rhs.Container;
         }
 
-        friend bool operator!=(const BitIterator& lhs, const BitIterator& rhs)
+        friend bool operator!=(const BitValidIterator& lhs, const BitValidIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+    };
+
+    template <typename ContainerType>
+    class ConstBitIndexIterator
+    {
+    public:
+        explicit ConstBitIndexIterator(const ContainerType& container, int32 index = 0)
+            : Container(container)
+            , Index(index)
+        {}
+
+        ConstBitRef operator* () const
+        {
+            return Container[Index];
+        }
+
+        ConstBitIndexIterator& operator++ ()
+        {
+            ++Index;
+            return *this;
+        }
+
+        ConstBitIndexIterator& operator-- ()
+        {
+            --Index;
+            return *this;
+        }
+
+        int32 GetIndex() const { return Index; }
+
+        friend bool operator==(const ConstBitIndexIterator& lhs, const ConstBitIndexIterator& rhs)
+        {
+            return lhs.Index == rhs.Index && &lhs.Container == &rhs.Container;
+        }
+
+        friend bool operator!=(const ConstBitIndexIterator& lhs, const ConstBitIndexIterator& rhs)
+        {
+            return !(lhs == rhs);
+        }
+    protected:
+        const ContainerType& Container;
+        uint32 Index;
+    };
+
+    template <typename ContainerType>
+    class BitIndexIterator : public ConstBitIndexIterator<ContainerType>
+    {
+        using Super = ConstBitIndexIterator<ContainerType>;
+    public:
+        explicit BitIndexIterator(const ContainerType& container, int32 index = 0) : Super(container, index)
+        {}
+
+        BitRef operator* () const
+        {
+            return static_cast<BitRef>(this->Container[this->Index]);
+        }
+
+        BitIndexIterator& operator++ ()
+        {
+            ++this->Index;
+            return *this;
+        }
+
+        BitIndexIterator& operator-- ()
+        {
+            --this->Index;
+            return *this;
+        }
+
+        int32 GetIndex() const { return this->Index; }
+
+        friend bool operator==(const BitIndexIterator& lhs, const BitIndexIterator& rhs)
+        {
+            return lhs.Index == rhs.Index && &lhs.Container == &rhs.Container;
+        }
+
+        friend bool operator!=(const BitIndexIterator& lhs, const BitIndexIterator& rhs)
         {
             return !(lhs == rhs);
         }
@@ -191,23 +298,63 @@ namespace Engine
     class BitArray
     {
     public:
-        using ConstIterator = ConstBitIterator<BitArray>;
-        using Iterator = BitIterator<BitArray>;
+        /** A const iterator always move to next 'true' index */
+        using ConstValidIterator = ConstBitValidIterator<BitArray>;
+        /** An iterator always move to next 'true' index */
+        using ValidIterator = BitValidIterator<BitArray>;
+        /** A const iterator move to next index */
+        using ConstIterator = ConstBitIndexIterator<BitArray>;
+        /** An iterator move to next index */
+        using Iterator = BitIndexIterator<BitArray>;
     public:
         BitArray() 
             : Capacity(static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits)
         {
-            AllocatorInstance.Resize(Math::DivideAndCeil(Capacity, kElementBits), kElementBits);
+            AllocatorInstance.Resize(Math::DivideAndCeil(Capacity, kElementBits), sizeof(uint32));
         };
 
         explicit BitArray(int32 capacity)
             : Capacity(Math::Max(capacity, static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits))
         {
-            AllocatorInstance.Resize(Math::DivideAndCeil(Capacity, kElementBits), kElementBits);
+            AllocatorInstance.Resize(Math::DivideAndCeil(Capacity, kElementBits), sizeof(uint32));
         }
 
-        //TODO: impl
-        BitArray(bool defaultValue, int32 count);
+        BitArray(bool defaultValue, int32 count)
+        {
+            AddBits(count);
+            SetBits(GetData(), defaultValue, GetElementCount());
+        }
+
+        BitArray(const bool* ptr, int32 count)
+        {
+            InitBits(ptr, count);
+        }
+
+        BitArray(std::initializer_list<bool> initializer)
+        {
+            InitBits(initializer.begin(), static_cast<int32>(initializer.size()));
+        }
+
+        BitArray(const BitArray& other)
+        {
+            CopyBits(other.GetData(), other.GetCount());
+        }
+
+        BitArray(BitArray&& other) noexcept
+        {
+            MoveArray(Forward<BitArray>(other));
+        }
+
+        template <typename OtherAllocator>
+        explicit BitArray(const BitArray<OtherAllocator>& other)
+        {
+            CopyBits(other.GetData(), other.GetCount());
+        }
+
+        ~BitArray()
+        {
+            Clear(0);
+        }
 
         BitRef operator[] (int32 index)
         {
@@ -221,9 +368,35 @@ namespace Engine
             return ConstBitRef(GetData()[index / kElementBits], 1 << (index & (kElementBits - 1)));
         }
 
+        BitArray& operator= (std::initializer_list<bool> initializer)
+        {
+            Clear(static_cast<int32>(initializer.size()));
+            InitBits(initializer.begin(), static_cast<int32>(initializer.size()));
+            return *this;
+        }
+
+        BitArray& operator= (const BitArray& other)
+        {
+            CopyBits(other.GetData(), other.GetCount());
+            return *this;
+        }
+
+        BitArray& operator= (BitArray&& other) noexcept
+        {
+            MoveArray(Forward<BitArray>(other));
+            return *this;
+        }
+
+        template <typename OtherAllocator>
+        BitArray& operator= (const BitArray<OtherAllocator>& other)
+        {
+            CopyBits(other.GetData(), other.GetCount());
+            return *this;
+        }
+
         void Add(bool value)
         {
-            int32 index = AddUnconstructElement(1);
+            int32 index = AddBits(1);
             uint32& data = GetData()[index / kElementBits];
             uint32 bitOffset = (index % kElementBits);
             data = (data & ~(1 << bitOffset)) | (((uint32)value) << bitOffset);
@@ -282,7 +455,28 @@ namespace Engine
             }
         }
 
+        void Clear(int32 slack = 0)
+        {
+            Count = 0;
+            const int32 defaultBitCount = static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits;
+            const int32 capacity = Math::Max(defaultBitCount, slack);
+            if (Capacity < capacity)
+            {
+                AllocatorInstance.Resize(Math::DivideAndCeil(capacity, kElementBits), sizeof(uint32));
+                Capacity  = capacity;
+            }
+            else
+            {
+                // Cause bit array use less memory, don't need to shink
+            }
+        }
+
         int32 GetCount() const { return Count;  }
+
+        int32 GetElementCount() const
+        {
+            return Math::DivideAndCeil(Count, kElementBits);
+        }
 
         int32 GetCapacity() const { return Capacity; }
 
@@ -295,8 +489,49 @@ namespace Engine
         {
             return (const uint32*)AllocatorInstance.GetAllocation();
         }
+
+        ValidIterator CreateValidIterator()
+        {
+            return ValidIterator(*this, 0);
+        }
+
+        ConstValidIterator CreateValidIterator() const
+        {
+            return ConstValidIterator(*this, 0);
+        }
+
+        Iterator begin()
+        {
+            return Iterator(*this, 0);
+        }
+
+        ConstIterator begin() const
+        {
+            return ConstIterator(*this, 0);
+        }
+
+        Iterator end()
+        {
+            return Iterator(*this, Count);
+        }
+
+        ConstIterator end() const
+        {
+            return ConstIterator(*this, Count);
+        }
     private:
-        int32 AddUnconstructElement(int32 count)
+        void InitBits(const bool* ptr, int32 count)
+        {
+            //TODO: Resize first
+
+            PL_ASSERT(count > 0);
+            for (int idx = 0; idx < count; ++idx)
+            {
+                Add(ptr[idx]);
+            }
+        }
+
+        int32 AddBits(int32 count)
         {
             PL_ASSERT(count > 0);
             int32 oldCount = Count;
@@ -325,11 +560,48 @@ namespace Engine
             }
         }
 
+        void CopyBits(uint32* data, int32 count)
+        {
+            PL_ASSERT(count > 0);
+            Clear(count);
+            Count = count;
+            if (count > 0)
+            {
+                Memory::Memcpy(GetData(), data, GetElementCount() * sizeof(uint32));
+            }
+        }
+
+        void SetBits(uint32* dest, bool value, int32 count)
+        {
+            const int32 elementCount = Math::DivideAndCeil(count, kElementBits);
+            if (elementCount > 8)
+            {
+                Memory::Memset(dest, value ? 0xff : 0, elementCount * sizeof(int32));
+            }
+            else
+            {
+                uint32 element = value ? ~0u : 0u;
+                for (int32 i = 0; i < elementCount; ++i)
+                {
+                    dest[i] = element;
+                }
+            }
+        }
+
+        void MoveArray(BitArray&& other)
+        {
+            AllocatorInstance = MoveTemp(other.AllocatorInstance);
+            Count = other.Count;
+            Capacity = other.Capacity;
+            other.Count = 0;
+            other.Capacity = 0;
+        }
+
         void Expansion()
         {
             int32 elementCount = AllocatorInstance.CalculateValidCapacity(Math::DivideAndCeil(Count, kElementBits),
                                                                           Capacity / kElementBits, kElementBits);
-            AllocatorInstance.Resize(elementCount, kElementBits);
+            AllocatorInstance.Resize(elementCount, sizeof(uint32));
             Capacity = elementCount * kElementBits;
             PL_ASSERT(Count <= Capacity);
         }

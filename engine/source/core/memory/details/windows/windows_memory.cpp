@@ -25,4 +25,9 @@ namespace Engine
     {
         ::memmove(dest, src, size);
     }
+
+    void WindowsMemory::Memset(void *dest, uint8 byte, size_t size)
+    {
+        ::memset(dest, byte, size);
+    }
 }

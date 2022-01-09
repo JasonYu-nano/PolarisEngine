@@ -23,6 +23,8 @@ namespace Engine
          */
         static void Memmove(void* dest, void* src, size_t size);
 
+        static void Memset(void* dest, uint8 byte, size_t size);
+
         /**
          * see UE4 FBitArrayMemory::MemmoveBitsWordOrder
          * 

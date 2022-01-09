@@ -81,6 +81,9 @@ namespace Engine
         array = fixedArray;
         EXPECT_TRUE(array[0] == 5);
         EXPECT_TRUE(array[4] == 1);
+
+        DynamicArray<int> array2 = {5, 4, 3, 2, 1};
+        EXPECT_TRUE(array == array2);
     }
 
     TEST(DynamicArrayTest, Iterator)
@@ -108,11 +111,41 @@ namespace Engine
 
     TEST(BitArrayTest, Base)
     {
-        BitArray array;
+        BitArray array(10);
+        EXPECT_TRUE(array.GetCapacity() == 10);
         array.Add(true);
         EXPECT_TRUE(array[0]);
         array[0] = false;
         EXPECT_TRUE(!array[0]);
+
+        BitArray array2(true, 10);
+        EXPECT_TRUE(array2.GetCount() == 10);
+        EXPECT_TRUE(array2[0] == true);
+        EXPECT_TRUE(array2[9] == true);
+
+        BitArray array3{true, true, false};
+        array3.Insert(1, false);
+        EXPECT_TRUE(array3[1] == false && array3[2] == true && array3[3] == false);
+        array3 = {false};
+        EXPECT_TRUE(array3[0] == false);
+        EXPECT_TRUE(array3.GetElementCount() == 1);
+    }
+
+    TEST(BitArrayTest, Iterator)
+    {
+        BitArray array = {true, false, true, false, true, false};
+        BitArray<>::Iterator iter = array.begin();
+        (*iter) = false;
+        EXPECT_TRUE(array[0] == false);
+        for (BitRef value : array)
+        {
+            PL_INFO("", TC("item of bit array is {0}"), value);
+        }
+
+        for (auto iter = array.CreateValidIterator(); (bool)iter; ++iter)
+        {
+            PL_INFO("", TC("item of bit array is {0}"), *iter);
+        }
     }
 
     TEST(SparseArrayTest, Base)
