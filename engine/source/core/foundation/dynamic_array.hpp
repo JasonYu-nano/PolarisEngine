@@ -116,7 +116,7 @@ namespace Engine
     template <typename ElementType, typename Allocator = HeapAllocator<uint32>>
     class DynamicArray
     {
-        template <typename T> friend class SparseArray;
+        template <typename T, typename U> friend class SparseArray;
 
     protected:
         typedef typename Allocator::SizeType SizeType;
@@ -176,6 +176,7 @@ namespace Engine
 
         DynamicArray& operator=(const DynamicArray& other)
         {
+            PL_ASSERT(this != &other);
             DestructElements(GetData(), Count);
             CopyElement(other.GetData(), other.Count);
             return *this;
@@ -183,6 +184,7 @@ namespace Engine
 
         DynamicArray& operator=(DynamicArray&& other) noexcept
         {
+            PL_ASSERT(this != &other);
             DestructElements(GetData(), Count);
             MoveElement(Forward<DynamicArray&&>(other));
             return *this;

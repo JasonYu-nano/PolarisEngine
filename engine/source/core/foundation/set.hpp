@@ -6,12 +6,11 @@
 namespace Engine
 {
 #pragma region iterator
-    template <typename ContainerType, typename KeyType>
+    template <typename SparseIteratorType, typename KeyType>
     class ConstSetIterator
     {
-        using ConstInnerIterator = typename ContainerType::TSparseArray::ConstIterator;
     public:
-        explicit ConstSetIterator(const ConstInnerIterator& iter)
+        explicit ConstSetIterator(const SparseIteratorType& iter)
             : InnerIterator(iter)
         {}
 
@@ -36,16 +35,15 @@ namespace Engine
         }
 
     protected:
-        ConstInnerIterator InnerIterator;
+        SparseIteratorType InnerIterator;
     };
 
-    template <typename ContainerType, typename KeyType>
-    class SetIterator : public ConstSetIterator<ContainerType, KeyType>
+    template <typename SparseIteratorType, typename KeyType>
+    class SetIterator : public ConstSetIterator<SparseIteratorType, KeyType>
     {
-        using Super = ConstSetIterator<ContainerType, KeyType>;
-        using ConstInnerIterator = typename ContainerType::TSparseArray::ConstIterator;
+        using Super = ConstSetIterator<SparseIteratorType, KeyType>;
     public:
-        explicit SetIterator(const ConstInnerIterator& iter)
+        explicit SetIterator(const SparseIteratorType& iter)
             : Super(iter)
         {}
 
@@ -71,15 +69,6 @@ namespace Engine
     };
 
 #pragma endregion iterator
-
-    template <typename Type>
-    struct DefaultHashFunc
-    {
-        static uint32 GetHashCode(const Type& value)
-        {
-            return Engine::GetHashCode(value);
-        }
-    };
 
     /**
      * Determine default hash function and equals function of set key
@@ -170,8 +159,8 @@ namespace Engine
         template <typename K, typename V> friend class Map;
 
     public:
-        using Iterator = SetIterator<Set, ElementType>;
-        using ConstIterator = ConstSetIterator<Set, ElementType>;
+        using Iterator = SetIterator<typename TSparseArray::ConstIterator, ElementType>;
+        using ConstIterator = ConstSetIterator<typename TSparseArray::ConstIterator, ElementType>;
 
     public:
         Set() = default;
@@ -179,6 +168,31 @@ namespace Engine
         Set(std::initializer_list<ElementType> initializer)
         {
             Append(initializer);
+        }
+
+        Set(const Set& other)
+        {
+            CopyElement(other);
+        }
+
+        Set(Set&& other) noexcept
+        {
+            MoveElement(Forward<Set&&>(other));
+        }
+
+        Set& operator= (const Set& other)
+        {
+            PL_ASSERT(*this != other);
+            // SetElementIndex don't need destruct
+            CopyElement(other);
+            return *this;
+        }
+
+        Set& operator= (Set&& other) noexcept
+        {
+            PL_ASSERT(*this != other);
+            MoveElement(Forward<Set&&>(other));
+            return *this;
         }
 
         /**
@@ -271,6 +285,11 @@ namespace Engine
                 }
             }
             return ret;
+        }
+
+        int32 GetCount() const
+        {
+            return Elements.GetCount();
         }
 
         /**
@@ -409,6 +428,22 @@ namespace Engine
             // Link the element into the hash bucket.
             element.HashNextId = GetFirstIndex(hashCode);
             GetFirstIndex(hashCode) = elementIndex;
+        }
+
+        void CopyElement(const Set& other)
+        {
+            BucketCount = other.BucketCount;
+            HashBucket.Resize(BucketCount, sizeof(SetElementIndex));
+            Memory::Memcpy(HashBucket.GetAllocation(), const_cast<byte*>(other.HashBucket.GetAllocation()), sizeof(SetElementIndex) * BucketCount);
+            Elements = other.Elements;
+        }
+
+        void MoveElement(Set&& other)
+        {
+            BucketCount = other.BucketCount;
+            other.BucketCount = 0;
+            HashBucket = MoveTemp(other.HashBucket);
+            Elements = MoveTemp(other.Elements);
         }
 
     private:

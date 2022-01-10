@@ -77,7 +77,7 @@ namespace Engine
     };
 #pragma endregion iterator
 
-    template <typename ElementType>
+    template <typename ElementType, typename Allocator = HeapAllocator<int32>>
     class SparseArray
     {
         union ElementLinkNode
@@ -90,7 +90,7 @@ namespace Engine
             };
         };
 
-        using TDynamicArray = DynamicArray<ElementLinkNode, HeapAllocator<int32>>;
+        using TDynamicArray = DynamicArray<ElementLinkNode, Allocator>;
         using TBitArray = BitArray<HeapAllocator<uint32>>;
 
         template <typename T, typename U, typename V> friend class Set;
@@ -134,13 +134,23 @@ namespace Engine
             other.FreeElementCount = 0;
         }
 
+        template <typename OtherAllocator>
+        explicit SparseArray(const SparseArray<ElementType, OtherAllocator>& other)
+            : FirstFreeNodeIndex(other.FirstFreeNodeIndex)
+            , FreeElementCount(other.FreeElementCount)
+            , AllocateFlags(other.AllocateFlags)
+            , ElementNodes(other.ElementNodes)
+        {}
+
         SparseArray& operator= (std::initializer_list<ElementType> initializer)
         {
-
+            Clear(initializer.size());
+            CopyElement(initializer.begin(), static_cast<int32>(initializer.size()));
         }
 
         SparseArray& operator= (const SparseArray& other)
         {
+            PL_ASSERT(this != &other);
             FirstFreeNodeIndex = other.FirstFreeNodeIndex;
             FreeElementCount = other.FreeElementCount;
             AllocateFlags = other.AllocateFlags;
@@ -150,12 +160,23 @@ namespace Engine
 
         SparseArray& operator= (SparseArray&& other) noexcept
         {
+            PL_ASSERT(this != &other);
             FirstFreeNodeIndex = other.FirstFreeNodeIndex;
             other.FirstFreeNodeIndex = INDEX_NONE;
             FreeElementCount = other.FreeElementCount;
             other.FreeElementCount = 0;
             AllocateFlags = MoveTemp(other.AllocateFlags);
             ElementNodes = MoveTemp(other.ElementNodes);
+            return *this;
+        }
+
+        template <typename OtherAllocator>
+        SparseArray& operator= (const SparseArray<ElementType, OtherAllocator>& other)
+        {
+            FirstFreeNodeIndex = other.FirstFreeNodeIndex;
+            FreeElementCount = other.FreeElementCount;
+            AllocateFlags = other.AllocateFlags;
+            ElementNodes = other.ElementNodes;
             return *this;
         }
 

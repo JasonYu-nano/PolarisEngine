@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <set>
-#include <map>
-#include <unordered_map>
 #include <tuple>
 #include "definitions_core.hpp"
 #include "foundation/set.hpp"
@@ -126,6 +123,24 @@ namespace Engine
             }
         }
 
+        Map(const Map& other) : Pairs(other.Pairs) {}
+
+        Map(Map&& other) noexcept : Pairs(MoveTemp(other.Pairs)) {}
+
+        Map& operator= (const Map& other)
+        {
+            PL_ASSERT(this != &other);
+            Pairs = other.Pairs;
+            return *this;
+        }
+
+        Map& operator= (Map&& other) noexcept
+        {
+            PL_ASSERT(this != &other);
+            Pairs = MoveTemp(other.Pairs);
+            return *this;
+        }
+
         ValueType& Add(const KeyType& key, const ValueType& value)
         {
             return Emplace(key, value);
@@ -183,6 +198,11 @@ namespace Engine
         bool Remove(const KeyType& key)
         {
             return Pairs.Remove(key);
+        }
+
+        int32 GetCount() const
+        {
+            return Pairs.GetCount();
         }
 
         Iterator begin()

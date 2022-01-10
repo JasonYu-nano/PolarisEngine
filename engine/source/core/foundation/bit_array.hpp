@@ -385,12 +385,14 @@ namespace Engine
 
         BitArray& operator= (const BitArray& other)
         {
-            CopyBits(other.GetData(), other.GetCount());
+            PL_ASSERT(this != &other);
+            CopyBits(const_cast<uint32*>(other.GetData()), other.GetCount());
             return *this;
         }
 
         BitArray& operator= (BitArray&& other) noexcept
         {
+            PL_ASSERT(this != &other);
             MoveArray(Forward<BitArray>(other));
             return *this;
         }

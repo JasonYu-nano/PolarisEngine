@@ -191,11 +191,6 @@ namespace Engine
         }
     }
 
-    TEST(StackTest, Base)
-    {
-        Stack<int32> array(8);
-    }
-
     TEST(SetTest, Base)
     {
         Set<int32> set;
@@ -203,15 +198,18 @@ namespace Engine
         set.Add(2);
         set.Add(-3);
         set.Add(2);
-        EXPECT_TRUE(set.Contains(1));
-        EXPECT_TRUE(set.Contains(2));
-        EXPECT_TRUE(set.Contains(-3));
-        EXPECT_FALSE(set.Contains(0));
 
-        set.Remove(2);
-        EXPECT_TRUE(set.Contains(1));
-        set.Remove(-3);
-        EXPECT_TRUE(set.Contains(1));
+        Set<int32> set2 = MoveTemp(set);
+        EXPECT_TRUE(set.GetCount() == 0);
+        EXPECT_TRUE(set2.Contains(1));
+        EXPECT_TRUE(set2.Contains(2));
+        EXPECT_TRUE(set2.Contains(-3));
+        EXPECT_FALSE(set2.Contains(0));
+
+        set2.Remove(2);
+        EXPECT_TRUE(set2.Contains(1));
+        set2.Remove(-3);
+        EXPECT_TRUE(set2.Contains(1));
     }
 
     struct TestA
@@ -266,6 +264,10 @@ namespace Engine
         map.Remove(1111);
         map.Remove(1);
         EXPECT_TRUE(map.Find(1) == nullptr);
+
+        Map<int32, float> map2 = MoveTemp(map);
+        EXPECT_TRUE(*map2.Find(2) == 2.5f);
+        EXPECT_TRUE(map.GetCount() == 0 && map2.GetCount() == 1);
     }
 
     TEST(MapTest, Iterator)
