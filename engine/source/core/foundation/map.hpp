@@ -181,7 +181,7 @@ namespace Engine
             return FindOrAddImpl(key, value);
         }
 
-        ValueType* Find(const KeyType& key)
+        ValueType* Find(const KeyType& key) const
         {
             if (TPairType* pair = Pairs.Find(key))
             {
@@ -190,7 +190,7 @@ namespace Engine
             return nullptr;
         }
 
-        bool Contains(const KeyType& key)
+        bool Contains(const KeyType& key) const
         {
             return Pairs.Contains(key);
         }
@@ -198,6 +198,11 @@ namespace Engine
         bool Remove(const KeyType& key)
         {
             return Pairs.Remove(key);
+        }
+
+        void Clear(int32 slack)
+        {
+            Pairs.Clear(slack);
         }
 
         int32 GetCount() const

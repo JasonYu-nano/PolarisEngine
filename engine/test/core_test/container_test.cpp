@@ -268,6 +268,8 @@ namespace Engine
         Map<int32, float> map2 = MoveTemp(map);
         EXPECT_TRUE(*map2.Find(2) == 2.5f);
         EXPECT_TRUE(map.GetCount() == 0 && map2.GetCount() == 1);
+        map2.Clear(2);
+        EXPECT_TRUE(map2.GetCount() == 0);
     }
 
     TEST(MapTest, Iterator)

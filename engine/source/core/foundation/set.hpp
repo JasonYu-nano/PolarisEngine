@@ -287,6 +287,13 @@ namespace Engine
             return ret;
         }
 
+        void Clear(int32 slack = 0)
+        {
+            PL_ASSERT(slack >= 0);
+            HashBucket.Resize(slack, sizeof(SetElementIndex));
+            Elements.Clear(slack);
+        }
+
         int32 GetCount() const
         {
             return Elements.GetCount();
