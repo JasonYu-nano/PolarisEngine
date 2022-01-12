@@ -1,3 +1,1 @@
-#ifndef ASSERT
-    #define ASSERT(x) assert(x)
-#endif
+#define INDEX_NONE (int32) -1

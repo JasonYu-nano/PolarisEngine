@@ -1,7 +1,7 @@
 #include "engine_loop.hpp"
 #include "platform_application.hpp"
-#include "core/memory/memory.hpp"
-#include "render/render_module.hpp"
+#include "memory/memory.hpp"
+#include "render_module.hpp"
 
 namespace Engine
 {

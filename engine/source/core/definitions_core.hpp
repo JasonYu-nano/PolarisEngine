@@ -1,7 +1,7 @@
 #pragma once
 #include "predefine/platform.hpp"
 
-#ifdef SHARED_LIB
+#ifdef PL_SHARED
 #ifdef CORE_EXPORT
     #define CORE_API DLLEXPORT
 #else

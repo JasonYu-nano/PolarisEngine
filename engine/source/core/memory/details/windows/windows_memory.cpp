@@ -1,6 +1,6 @@
 #include "precompiled_core.hpp"
 #include "memory/details/windows/windows_memory.hpp"
-#include "core/memory/ansi_c_malloc.hpp"
+#include "memory/ansi_c_malloc.hpp"
 
 namespace Engine
 {
@@ -24,5 +24,15 @@ namespace Engine
     void WindowsMemory::Memmove(void* dest, void* src, size_t size)
     {
         ::memmove(dest, src, size);
+    }
+
+    void WindowsMemory::Memset(void *dest, uint8 byte, size_t size)
+    {
+        ::memset(dest, byte, size);
+    }
+
+    bool WindowsMemory::Memcmp(void* lBuffer, void* rBuffer, size_t size)
+    {
+        return ::memcmp(lBuffer, rBuffer, size) == 0;
     }
 }

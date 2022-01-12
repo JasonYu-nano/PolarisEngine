@@ -1,6 +1,10 @@
 #include "benchmark/benchmark.h"
 #include "foundation/dynamic_array.hpp"
+#include "foundation/set.hpp"
 #include <vector>
+#include <set>
+#include <unordered_set>
+#include <iostream>
 
 using namespace Engine;
 
@@ -79,11 +83,9 @@ static void BM_DyanmicArrayLoop(benchmark::State& state)
     }
     for (auto _ : state) 
     {
-        auto iter = array.begin();
-        while (iter != array.end())
+        for (auto _ : array)
         {
-            (*iter)++;
-            ++iter;
+
         }
     }
 }
@@ -97,13 +99,104 @@ static void BM_VectorLoop(benchmark::State& state)
     }
     for (auto _ : state) 
     {
-        auto iter = array.begin();
-        while (iter != array.end())
+        for (auto _ : array)
         {
-            (*iter)++;
-            ++iter;
+
         }
     }
+}
+
+static void BM_SetAdd(benchmark::State& state)
+{
+    for (auto _ : state)
+    {
+        Set<uint32> mySet;
+        for (uint32 i = 0; i < 1000; i++)
+        {
+            mySet.Add(i);
+        }
+    }
+}
+
+static void BM_StlHashSetAdd(benchmark::State& state)
+{
+    for (auto _ : state)
+    {
+        std::unordered_set<uint32> mySet;
+        for (uint32 i = 0; i < 1000; i++)
+        {
+            mySet.insert(i);
+        }
+    }
+}
+
+static void BM_StlSetAdd(benchmark::State& state)
+{
+    for (auto _ : state)
+    {
+        std::set<uint32> mySet;
+        for (uint32 i = 0; i < 1000; i++)
+        {
+            mySet.insert(i);
+        }
+    }
+}
+
+static void BM_SetLoop(benchmark::State& state)
+{
+    Set<uint32> mySet;
+    for (uint32 i = 1000; i > 0; i--)
+    {
+        mySet.Add(i);
+    }
+
+    uint32 v = 0;
+    for (auto _ : state)
+    {
+        for (auto&& item : mySet)
+        {
+            v = item;
+        }
+    }
+    std::cout << v;
+}
+
+static void BM_StlHashSetLoop(benchmark::State& state)
+{
+    std::unordered_set<uint32> mySet;
+    for (uint32 i = 1000; i > 0; i--)
+    {
+        mySet.insert(i);
+    }
+
+    uint32 v = 0;
+    for (auto _ : state)
+    {
+        for (auto&& item : mySet)
+        {
+            v = item;
+        }
+    }
+    std::cout << v;
+}
+
+static void BM_StlSetLoop(benchmark::State& state)
+{
+    std::set<uint32> mySet;
+    for (uint32 i = 1000; i > 0; i--)
+    {
+        mySet.insert(i);
+    }
+
+    uint32 v = 0;
+    for (auto _ : state)
+    {
+        for (auto&& item : mySet)
+        {
+            v = item;
+        }
+    }
+    std::cout << v;
 }
 
 BENCHMARK(BM_DyanmicArrayAdd);
@@ -114,5 +207,13 @@ BENCHMARK(BM_VectorRemove);
 
 BENCHMARK(BM_DyanmicArrayLoop);
 BENCHMARK(BM_VectorLoop);
+
+BENCHMARK(BM_SetAdd);
+BENCHMARK(BM_StlHashSetAdd);
+BENCHMARK(BM_StlSetAdd);
+
+BENCHMARK(BM_SetLoop);
+BENCHMARK(BM_StlHashSetLoop);
+BENCHMARK(BM_StlSetLoop);
 
 BENCHMARK_MAIN();

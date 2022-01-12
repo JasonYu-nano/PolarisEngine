@@ -2,7 +2,7 @@
 
 #include "predefine/platform.hpp"
 
-#ifdef SHARED_LIB
+#ifdef PL_SHARED
 #ifdef RENDER_EXPORT
     #define RENDER_API DLLEXPORT
 #else

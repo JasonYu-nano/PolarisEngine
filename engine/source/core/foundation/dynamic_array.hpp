@@ -4,7 +4,7 @@
 #include "definitions_core.hpp"
 #include "predefine/platform.hpp"
 #include "math/generic_math.hpp"
-#include "memory/heap_allocator.hpp"
+#include "memory/allocator_policies.hpp"
 #include "log/logger.hpp"
 #include "foundation/type_traits.hpp"
 #include "foundation/functional.hpp"
@@ -16,7 +16,7 @@ namespace Engine
     class ConstIndexIterator
     {
     public:
-        ConstIndexIterator(const ContainerType& container, SizeType index)
+        ConstIndexIterator(ContainerType& container, SizeType index)
             : Container(container)
             , Index(index)
         {}
@@ -26,9 +26,9 @@ namespace Engine
             return Container[Index];
         }
 
-        const ElementType& operator-> () const
+        const ElementType* operator-> () const
         {
-            return Container[Index];
+            return &Container[Index];
         }
 
         ConstIndexIterator& operator++ ()
@@ -43,6 +43,11 @@ namespace Engine
             return *this;
         }
 
+        SizeType GetIndex() const
+        {
+            return Index;
+        }
+
         friend bool operator== (const ConstIndexIterator& lhs, const ConstIndexIterator& rhs)
         {
             return (&lhs.Container == &rhs.Container) && (lhs.Index == rhs.Index);
@@ -54,7 +59,7 @@ namespace Engine
         }
 
     protected:
-        const ContainerType& Container;
+        ContainerType& Container;
         SizeType Index;
     };
 
@@ -64,18 +69,18 @@ namespace Engine
         using Super = ConstIndexIterator<ContainerType, ElementType, SizeType>;
 
     public:
-        IndexIterator(const ContainerType& container, SizeType index)
+        IndexIterator(ContainerType& container, SizeType index)
             : Super(container, index)
         {}
 
         ElementType& operator* () const
         {
-            return const_cast<ElementType&>(Super::operator*());
+            return const_cast<ElementType&>(this->Container[this->Index]);
         }
 
-        ElementType& operator-> () const
+        ElementType* operator-> () const
         {
-            return const_cast<ElementType&>(Super::operator->());
+            return const_cast<ElementType*>(&(this->Container[this->Index]));
         }
 
         IndexIterator& operator++ ()
@@ -88,6 +93,12 @@ namespace Engine
         {
             Super::operator--();
             return *this;
+        }
+
+        void RemoveSelf()
+        {
+            this->Container.RemoveAt(this->Index);
+            this->Index--;
         }
 
         friend bool operator== (const IndexIterator& lhs, const IndexIterator& rhs)
@@ -105,7 +116,7 @@ namespace Engine
     template <typename ElementType, typename Allocator = HeapAllocator<uint32>>
     class DynamicArray
     {
-        template <typename T> friend class SparseArray;
+        template <typename T, typename U> friend class SparseArray;
 
     protected:
         typedef typename Allocator::SizeType SizeType;
@@ -119,20 +130,23 @@ namespace Engine
             : Capacity(AllocatorInstance.GetDefaultCapacity())
         {}
 
-        DynamicArray(SizeType capacity)
+        explicit DynamicArray(SizeType capacity)
             : Capacity(Math::Max(capacity, AllocatorInstance.GetDefaultCapacity()))
         {
             AllocatorInstance.Resize(Capacity, sizeof(ElementType));
         }
 
-        DynamicArray(ElementType* rawPtr, uint64 count) {};
+        DynamicArray(ElementType* rawPtr, SizeType count)
+        {
+            CopyElement(rawPtr, count);
+        }
 
         DynamicArray(std::initializer_list<ElementType> initializer) 
         {
             CopyElement(initializer.begin(), (SizeType)initializer.size());
         };
 
-        DynamicArray(const DynamicArray& other) 
+        DynamicArray(const DynamicArray& other)
         {
             CopyElement(other.GetData(), other.Count);
         }
@@ -140,6 +154,12 @@ namespace Engine
         DynamicArray(DynamicArray&& other) noexcept
         {
             MoveElement(Forward<DynamicArray&&>(other));
+        }
+
+        template <typename OtherAllocator>
+        explicit DynamicArray(const DynamicArray<ElementType, OtherAllocator>& other)
+        {
+            CopyElement(other.GetData(), other.GetCount());
         }
 
         virtual ~DynamicArray()
@@ -156,6 +176,7 @@ namespace Engine
 
         DynamicArray& operator=(const DynamicArray& other)
         {
+            PL_ASSERT(this != &other);
             DestructElements(GetData(), Count);
             CopyElement(other.GetData(), other.Count);
             return *this;
@@ -163,9 +184,43 @@ namespace Engine
 
         DynamicArray& operator=(DynamicArray&& other) noexcept
         {
+            PL_ASSERT(this != &other);
             DestructElements(GetData(), Count);
             MoveElement(Forward<DynamicArray&&>(other));
             return *this;
+        }
+
+        template <typename OtherAllocator>
+        DynamicArray& operator=(const DynamicArray<ElementType, OtherAllocator>& other)
+        {
+            DestructElements(GetData(), Count);
+            CopyElement(other.GetData(), (SizeType)other.GetCount());
+            return *this;
+        }
+
+        bool operator== (DynamicArray other) const
+        {
+            if (Count != other.Count)
+            {
+                return false;
+            }
+
+            const ElementType* selfPtr = GetData();
+            const ElementType* otherPtr = other.GetData();
+            for (SizeType i = 0; i < Count; ++i)
+            {
+                if (selfPtr[i] != otherPtr[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool operator!= (DynamicArray other) const
+        {
+            return !(*this == other);
         }
 
         ElementType& operator[] (SizeType index)
@@ -183,9 +238,8 @@ namespace Engine
         }
 
         /**
-         * Add an element at end.
-         *
-         * @param T element
+         * Add an element at end
+         * @param element
          */
         void Add(const ElementType& element)
         {
@@ -194,9 +248,8 @@ namespace Engine
         };
 
         /**
-         * Move an element to end.
-         *
-         * @param T element pending move
+         * Move an element to end
+         * @param element
          */
         void Add(ElementType&& element)
         {
@@ -204,18 +257,42 @@ namespace Engine
             EmplaceBack(Forward<ElementType&&>(element));
         }
 
+        /**
+         * Add an element use default constuctor, return the reference of element.
+         * @return Reference of element
+         */
+        ElementType& AddDefault()
+        {
+            EmplaceBack();
+            return GetData()[Count - 1];
+        }
+
+        /**
+         * Inset element at specifier position
+         * @param index
+         * @param element
+         */
         void Insert(SizeType index, const ElementType& element)
         {
             AddressCheck(&element);
             EmplaceAt(index, element);
         };
 
+        /**
+         * Inset element at specifier position
+         * @param index
+         * @param element
+         */
         void Insert(SizeType index, ElementType&& element)
         {
             AddressCheck(&element);
             EmplaceAt(index, element);
         };
 
+        /**
+         * Remove element at position
+         * @param index
+         */
         void RemoveAt(SizeType index)
         {
             PL_ASSERT(IsValidIndex(index));
@@ -230,32 +307,50 @@ namespace Engine
             //TODO: check need shink
         }
 
+        /**
+         * Remove all elements equals param
+         * @param element
+         * @return has element been removed
+         */
         bool Remove(const ElementType& element)
         {
-            RemoveMatch([](const ElementType& inElement) {
+            return RemoveMatch([&element](const ElementType& inElement) {
                 return element == inElement;
-            });
+            }) > 0;
         }
 
-        void RemoveMatch(TFunction<bool(const ElementType& element)> predicate)
+        /**
+         * Remove all elements match the predicate
+         * @param predicate
+         * @return count of elements been removed
+         */
+        SizeType RemoveMatch(TFunction<bool(const ElementType& element)> predicate)
         {
             if (Count <= 0)
             {
-                return;
+                return 0;
             }
 
-            SizeType searchIndex = Count - 1;
-            while (searchIndex >= 0)
+            SizeType searchCount = Count;
+            SizeType matchCount = 0;
+            while (searchCount > 0)
             {
-                ElementType* element = GetData() + searchIndex;
-                if (predicate(element))
+                ElementType* element = GetData() + searchCount -1;
+                if (predicate(*element))
                 {
-                    RemoveAt(searchIndex);
+                    RemoveAt(searchCount - 1);
+                    matchCount++;
                 }
-                searchIndex--;
+                searchCount--;
             }
+
+            return matchCount;
         }
 
+        /**
+         * Remove all elements
+         * @param slack remain capacity
+         */
         void Clear(SizeType slack = 0)
         {
             DestructElements(GetData(), Count);
@@ -273,7 +368,7 @@ namespace Engine
             {
                 return GetData() + index;
             }
-            throw std::out_of_range{};
+            throw std::out_of_range{"Index an element out of range"};
         }
 
         ElementType* GetData()
@@ -392,7 +487,7 @@ namespace Engine
 
         void Expansion()
         {
-            Capacity = AllocatorInstance.CaculateValidCapacity(Count, Capacity, sizeof(ElementType));
+            Capacity = AllocatorInstance.CalculateValidCapacity(Count, Capacity, sizeof(ElementType));
             PL_ASSERT(Count <= Capacity);
             AllocatorInstance.Resize(Capacity, sizeof(ElementType));
         }
@@ -429,7 +524,7 @@ namespace Engine
 
         void CopyElement(const ElementType* data, SizeType count)
         {
-            PL_ASSERT(data && count > 0 && Count <= 0);
+            PL_ASSERT(data && count > 0);
             Count = count;
             Expansion();
             ConstructElements(GetData(), data, count);
@@ -437,9 +532,11 @@ namespace Engine
 
         void MoveElement(DynamicArray&& other)
         {
+            AllocatorInstance = MoveTemp(other.AllocatorInstance);
             Count = other.Count;
             Capacity = other.Capacity;
-            AllocatorInstance = MoveTemp(other.AllocatorInstance);
+            other.Count = 0;
+            other.Capacity = 0;
         }
 
     protected:

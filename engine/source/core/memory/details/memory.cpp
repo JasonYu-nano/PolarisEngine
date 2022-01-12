@@ -1,4 +1,4 @@
-#include "precompiled_core.hpp"
+//#include "precompiled_core.hpp"
 #include "core_minimal_private.hpp"
 #include "memory/memory.hpp"
 #include "memory/malloc_interface.hpp"
@@ -39,6 +39,16 @@ namespace Engine
     void Memory::Memmove(void* dest, void* src, size_t size)
     {
         PlatformMemory::Memmove(dest, src, size);
+    }
+
+    void Memory::Memset(void* dest, uint8 byte, size_t size)
+    {
+        PlatformMemory::Memset(dest, byte, size);
+    }
+
+    bool Memory::Memcmp(void* lBuffer, void* rBuffer, size_t size)
+    {
+        return PlatformMemory::Memcmp(lBuffer, rBuffer, size);
     }
 
     void Memory::MemmoveBits(uint32* startDest, int32 destOffset, uint32* startSrc, int32 srcOffset, uint32 bitCount)

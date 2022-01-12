@@ -16,6 +16,10 @@ namespace Engine
         static void Memcpy(void* dest, void* src, size_t size);
 
         static void Memmove(void* dest, void* src, size_t size);
+
+        static void Memset(void* dest, uint8 byte, size_t size);
+
+        static bool Memcmp(void* lBuffer, void* rBuffer, size_t size);
     private:
         static uint32 SDefaultAlignment;
     };

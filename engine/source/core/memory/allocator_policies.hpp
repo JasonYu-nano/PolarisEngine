@@ -8,17 +8,17 @@
 
 namespace Engine
 {
-    template<typename UIntType, EnableIfT<IsUnsignedIntegral<typename UIntType>::value, bool> = true>
+    template<typename IntType, EnableIfT<IsIntegral<typename IntType>::value, bool> = true>
     class HeapAllocator
     {
     public:
-        typedef UIntType SizeType;
+        typedef IntType SizeType;
 
         HeapAllocator() = default;
 
         HeapAllocator(const HeapAllocator& other) = delete;
 
-        HeapAllocator(HeapAllocator&& other)
+        HeapAllocator(HeapAllocator&& other) noexcept
         {
             Data = other.Data;
             other.Data = nullptr;
@@ -33,7 +33,7 @@ namespace Engine
             }
         }
 
-        HeapAllocator& operator= (HeapAllocator&& other)
+        HeapAllocator& operator= (HeapAllocator&& other) noexcept
         {
             Data = other.Data;
             other.Data = nullptr;
@@ -50,7 +50,7 @@ namespace Engine
             return Data;
         }
 
-        SizeType CaculateValidCapacity(SizeType elementNum, SizeType oldCapacity, size_t elementSize) const
+        SizeType CalculateValidCapacity(SizeType elementNum, SizeType oldCapacity, size_t elementSize) const
         {
             const size_t firstGrow = 4;
             const size_t constantGrow = 16;
@@ -96,5 +96,44 @@ namespace Engine
 
     private:
         byte* Data{ nullptr };
+    };
+
+    template <typename ElementType, uint32 Size>
+    class FixedAllocator
+    {
+    public:
+        using SizeType = int32;
+
+        FixedAllocator& operator= (FixedAllocator&& other) noexcept
+        {
+            Data = other.Data;
+            other.Data = nullptr;
+            return *this;
+        }
+
+        SizeType GetDefaultCapacity() const
+        {
+            return Size;
+        }
+
+        byte* GetAllocation() const
+        {
+            return (byte*)Data;
+        }
+
+        SizeType CalculateValidCapacity(SizeType elementNum, SizeType oldCapacity, size_t elementSize) const
+        {
+            PL_ASSERT(elementNum <= Size);
+            return Size;
+        }
+
+        void Resize(SizeType elementNum, size_t elementSize)
+        {
+            PL_ASSERT(elementNum <= Size);
+            // do nothing
+        }
+
+    private:
+        ElementType Data[Size];
     };
 }
