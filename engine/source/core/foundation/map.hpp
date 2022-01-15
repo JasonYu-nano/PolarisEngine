@@ -104,11 +104,11 @@ namespace Engine
         }
     };
 
-    template <typename KeyType, typename ValueType>
+    template <typename KeyType, typename ValueType, typename KeyFunc = MapDefaultHashFunc<KeyType, ValueType>, typename MapAllocator = DefaultSetAllocator>
     class Map
     {
         using TPairType = Pair<KeyType, ValueType>;
-        using TPairContainer = Set<TPairType, MapDefaultHashFunc<KeyType, ValueType>>;
+        using TPairContainer = Set<TPairType, KeyFunc, MapAllocator>;
     public:
         using ConstIterator = ConstMapIterator<typename TPairContainer::ConstIterator, TPairType>;
         using Iterator = MapIterator<typename TPairContainer::ConstIterator, TPairType>;

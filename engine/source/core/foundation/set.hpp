@@ -156,7 +156,7 @@ namespace Engine
 
         friend class ConstSetIterator<Set, ElementType>;
         friend class SetIterator<Set, ElementType>;
-        template <typename K, typename V> friend class Map;
+        template <typename K, typename V, typename T, typename U> friend class Map;
 
     public:
         using Iterator = SetIterator<typename TSparseArray::ConstIterator, ElementType>;
