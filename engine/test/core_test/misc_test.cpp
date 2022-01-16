@@ -1,0 +1,30 @@
+#include "gtest/gtest.h"
+#include "core_minimal_public.hpp"
+#include "foundation/char.hpp"
+#include "math/city_hash.hpp"
+#include "foundation/fixed_string.hpp"
+
+namespace Engine
+{
+    TEST(CharTest, Base)
+    {
+        schar c = 'C';
+        c = Char<schar>::ToLower(c);
+        EXPECT_TRUE(c == 'c');
+
+        c = Char<schar>::ToUpper(c);
+        EXPECT_TRUE(c == 'C');
+    }
+
+    TEST(FixedString, Base)
+    {
+        FixedString name(TC("Hello_World"));
+        EXPECT_TRUE(name.ToString() == TC("Hello_World"));
+
+        FixedString name2(TC("Hello_World_12"));
+        EXPECT_TRUE(name2.ToString() == TC("Hello_World_12") && name2.GetNumber() == 12);
+
+        FixedString name3(TC("Hello_World_012"));
+        EXPECT_TRUE(name3.GetNumber() == 0);
+    }
+}

@@ -193,4 +193,14 @@ namespace Engine
     {
         return lhs.Internal != rhs.Internal;
     }
+
+    bool String::operator==(const tchar *other)
+    {
+        return Internal == other;
+    }
+
+    bool String::operator!=(const tchar *other)
+    {
+        return Internal != other;
+    }
 }

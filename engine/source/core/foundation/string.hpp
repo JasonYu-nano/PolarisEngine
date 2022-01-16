@@ -2,7 +2,6 @@
 #include <string>
 #include <ostream>
 #include "fmt/core.h"
-//#include <fmt/ostream.h>
 #include "spdlog/fmt/fmt.h"
 #include "definitions_core.hpp"
 #include "foundation/array.hpp"
@@ -104,6 +103,10 @@ namespace Engine
         friend CORE_API bool operator==(const String& lhs, const String& rhs);
 
         friend CORE_API bool operator!=(const String& lhs, const String& rhs);
+
+        bool operator== (const tchar* other);
+
+        bool operator!= (const tchar* other);
 
 #ifdef UNICODE
         friend CORE_API std::wostream& operator<<(std::wostream& out, const String& str) { out << *str; return out; }

@@ -2,7 +2,6 @@
 #include "foundation/dynamic_array.hpp"
 #include "memory/memory.hpp"
 #include "foundation/sparse_array.hpp"
-#include "foundation/stack.hpp"
 #include "foundation/array.hpp"
 #include "foundation/set.hpp"
 #include "foundation/map.hpp"
