@@ -7,15 +7,6 @@
 #include <wchar.h>
 #endif
 
-size_t TStrLen(const tchar* str)
-{
-#ifdef UNICODE
-    return wcslen(str);
-#else
-    return strlen(str);
-#endif
-}
-
 namespace Engine
 {
     String::String(tchar val) : Internal(&val)
@@ -86,7 +77,7 @@ namespace Engine
     bool String::EndWith(const tchar* value) const
     {
         size_t length = Length();
-        size_t valueLength = TStrLen(value);
+        size_t valueLength = StrLen(value);
         if (valueLength <= 0 || length < valueLength)
             return false;
 
@@ -105,7 +96,7 @@ namespace Engine
     bool String::StartWith(const tchar* value) const
     {
         size_t length = Length();
-        size_t valueLength = TStrLen(value);
+        size_t valueLength = StrLen(value);
 
         if (valueLength <= 0 || length < valueLength)
             return false;
@@ -169,9 +160,9 @@ namespace Engine
         return ret;
     }
 
-    String::operator StringView() const
+    String::operator TStringView() const
     {
-        return StringView(this->Data(), this->Length());
+        return TStringView(this->Data(), this->Length());
     }
 
     const tchar* String::operator*() const

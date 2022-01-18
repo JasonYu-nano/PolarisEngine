@@ -2,7 +2,7 @@
 
 namespace Engine
 {
-    struct PlateformType
+    struct PlatformType
     {
         typedef unsigned char           uint8;
         typedef unsigned short int      uint16;

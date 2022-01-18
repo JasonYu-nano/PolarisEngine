@@ -4,5 +4,19 @@
 
 namespace Engine
 {
-    using StringView = std::basic_string_view<tchar>;
+    template <typename CharType, typename SizeType>
+    struct StringView
+    {
+        StringView() = default;
+
+        StringView(const CharType* str, SizeType length)
+            : Length(length)
+            , Data(str)
+        {}
+
+        SizeType Length = 0;
+        const CharType* Data = nullptr;
+    };
+
+    using TStringView = StringView<tchar, size_t>;
 }

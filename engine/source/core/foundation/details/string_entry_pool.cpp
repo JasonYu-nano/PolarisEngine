@@ -14,7 +14,7 @@ namespace Engine
         return entryId;
     }
 
-    FixedEntryId StringEntryPool::Store(const FixedStringView &entry)
+    FixedEntryId StringEntryPool::Store(const FixedStringView& entry)
     {
         FixedEntryId entryId = AllocEntryId(entry);
         std::lock_guard lock(Mutex);
@@ -28,17 +28,10 @@ namespace Engine
         return EntryPool.Find(entryId);
     }
 
-    FixedEntryId StringEntryPool::AllocEntryId(const FixedStringView &entry)
+    FixedEntryId StringEntryPool::AllocEntryId(const FixedStringView& entry)
     {
         FixedEntryId entryId = 0;
-        if (entry.IsWide)
-        {
-            entryId = GetLowerCaseHash(entry.Wide, entry.Length);
-        }
-        else
-        {
-            entryId = GetLowerCaseHash(entry.Ansi, entry.Length);
-        }
+        entryId = GetLowerCaseHash(entry.Data, entry.Length);
         return entryId;
     }
 }

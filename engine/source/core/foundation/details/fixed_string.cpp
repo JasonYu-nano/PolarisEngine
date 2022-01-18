@@ -3,15 +3,9 @@
 
 namespace Engine
 {
-
-    FixedString::FixedString(const wchar *str)
+    FixedString::FixedString(const tchar* str)
     {
-        MakeFixedString(FixedStringView{true, static_cast<int32>(wcslen(str)), {.Wide = str} });
-    }
-
-    FixedString::FixedString(const schar *str)
-    {
-        MakeFixedString(FixedStringView{false, static_cast<int32>(strlen(str)), {.Ansi = str }});
+        MakeFixedString(FixedStringView{str, static_cast<int32>(StrLen(str))});
     }
 
     FixedString::FixedString(const FixedString& other)
@@ -19,18 +13,27 @@ namespace Engine
         , Number(other.Number)
     {}
 
+    FixedString &FixedString::operator=(const FixedString &other)
+    {
+        EntryId = other.EntryId;
+        Number = other.Number;
+        return *this;
+    }
+
+    bool FixedString::operator==(const FixedString &other) const
+    {
+        return EntryId == other.EntryId && Number == other.Number;
+    }
+
+    bool FixedString::operator!=(const FixedString &other) const
+    {
+        return EntryId != other.EntryId || Number != other.Number;
+    }
+
     void FixedString::MakeFixedString(FixedStringView view)
     {
         int32 numberCount = 0;
-        if (view.IsWide)
-        {
-            Number = FixedStringHelper::SplitNumber(view.Wide, view.Length);
-        }
-        else
-        {
-            Number = FixedStringHelper::SplitNumber(view.Ansi, view.Length);
-        }
-
+        Number = FixedStringHelper::SplitNumber(view.Data, view.Length);
         EntryId = StringEntryPool::Get().FindOrStore(view);
     }
 
@@ -44,26 +47,11 @@ namespace Engine
 
         if (Number == SUFFIX_NUMBER_NONE)
         {
-            if (entry->IsWide)
-            {
-                return String(entry->Wide);
-            }
-            else
-            {
-                //TODO: support ansi to string
-                return String::Empty();//entry->Ansi);
-            }
+            return String(entry->Data);
         }
         else
         {
-            if (entry->IsWide)
-            {
-                return Format("{0}_{1}", entry->Wide, SUFFIX_TO_ACTUAL(Number));
-            }
-            else
-            {
-                return String::Empty();//Format("{0}_{1}", entry->Ansi, SUFFIX_TO_ACTUAL(Number));
-            }
+            return Format("{0}_{1}", entry->Data, SUFFIX_TO_ACTUAL(Number));
         }
 
         return String::Empty();

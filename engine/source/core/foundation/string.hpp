@@ -22,10 +22,11 @@ namespace Engine
  */
 #ifdef UNICODE
     #define StrCmp wcscmp
+    #define StrLen wcslen
 #else
     #define StrCmp strcmp
+    #define StrLen strlen
 #endif
-
 
     class CORE_API String
     {
@@ -82,7 +83,7 @@ namespace Engine
         Vector<String> Split(const tchar* delims) const;
 
     public:
-        operator StringView() const;
+        operator TStringView() const;
 
 #ifdef UNICODE
         operator std::wstring() const { return Internal; }

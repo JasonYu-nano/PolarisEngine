@@ -25,16 +25,6 @@ namespace Engine
 
     typedef CorePlatformType::byte      byte;
 
-#ifdef NInterface
-    #undef NInterface
-#endif
-
-    #define NInterface class
-
-#if defined(TEXTS)
-    #undef TEXTS
-#endif
-
 #ifdef UNICODE
     #define TC(x) L ## x
 #else

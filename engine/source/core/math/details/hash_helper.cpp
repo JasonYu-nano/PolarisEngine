@@ -15,8 +15,8 @@ namespace Engine
         return hash;
     }
 
-    uint64 HashHelper::FnvHash(StringView str) noexcept
+    uint64 HashHelper::FnvHash(TStringView str) noexcept
     {
-        return FnvHash(str.data(), str.size());
+        return FnvHash(str.Data, str.Length);
     }
 }

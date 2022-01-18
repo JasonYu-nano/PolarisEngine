@@ -11,11 +11,15 @@ namespace Engine
     public:
         FixedString() = default;
 
-        explicit FixedString(const wchar* str);
-
-        explicit FixedString(const schar* str);
+        explicit FixedString(const tchar* str);
 
         FixedString(const FixedString& other);
+
+        FixedString& operator= (const FixedString& other);
+
+        bool operator== (const FixedString& other) const;
+
+        bool operator!= (const FixedString& other) const;
 
         String ToString() const;
 

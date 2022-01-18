@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    struct WinPlatformType : public PlateformType
+    struct WinPlatformType : public PlatformType
     {
         #ifdef _WIN64
             typedef uint64          size_t;

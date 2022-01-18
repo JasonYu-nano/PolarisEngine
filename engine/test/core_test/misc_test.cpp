@@ -26,5 +26,9 @@ namespace Engine
 
         FixedString name3(TC("Hello_World_012"));
         EXPECT_TRUE(name3.GetNumber() == 0);
+
+        FixedString name4(TC("hello_World_12"));
+        EXPECT_TRUE(name2 == name4);
+        EXPECT_TRUE(name4.ToString() == TC("Hello_World_12"));
     }
 }

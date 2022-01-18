@@ -9,6 +9,6 @@ namespace Engine
     public:
         static uint64 FnvHash(const tchar* str, uint64 n) noexcept;
 
-        static uint64 FnvHash(StringView str) noexcept;
+        static uint64 FnvHash(TStringView str) noexcept;
     };
 }

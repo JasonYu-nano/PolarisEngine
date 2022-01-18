@@ -17,21 +17,12 @@ namespace Engine
 
     constexpr int32 InitialBucketCount = 1 << 9;
 
-    struct FixedStringView
-    {
-        bool IsWide = false;
-        int32 Length = 0;
-        union
-        {
-            const wchar* Wide = nullptr;
-            const schar* Ansi;
-        };
-    };
+    using FixedStringView = StringView<tchar, int32>;
 
     class FixedStringHelper
     {
     public:
-        template<typename CharType>
+        template <typename CharType>
         static constexpr int64 Atoi64(const CharType* str, int32 length)
         {
             int64 number = 0;
@@ -92,7 +83,7 @@ namespace Engine
 
         FixedEntryId FindOrStore(const FixedStringView& entry);
 
-        FixedEntryId Store(const FixedStringView &entry);
+        FixedEntryId Store(const FixedStringView& entry);
 
         FixedStringView* Find(FixedEntryId entryId);
 
