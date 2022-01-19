@@ -77,7 +77,7 @@ namespace Engine
     bool String::EndWith(const tchar* value) const
     {
         size_t length = Length();
-        size_t valueLength = StrLen(value);
+        size_t valueLength = CharUtils::StrLen(value);
         if (valueLength <= 0 || length < valueLength)
             return false;
 
@@ -96,7 +96,7 @@ namespace Engine
     bool String::StartWith(const tchar* value) const
     {
         size_t length = Length();
-        size_t valueLength = StrLen(value);
+        size_t valueLength = CharUtils::StrLen(value);
 
         if (valueLength <= 0 || length < valueLength)
             return false;

@@ -4,6 +4,7 @@
 #include "windows/windows_platform_file.hpp"
 #include "file_system/path.hpp"
 #include "foundation/queue.hpp"
+#include "foundation/char_utils.hpp"
 
 using namespace Engine;
 
@@ -87,7 +88,7 @@ namespace Engine
                 {
                     if (recursion && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
                     {
-                        if (StrCmp(data.cFileName, TC(".")) != 0 && StrCmp(data.cFileName, TC("..")) != 0)
+                        if (CharUtils::StrCmp(data.cFileName, TC(".")) != 0 && CharUtils::StrCmp(data.cFileName, TC("..")) != 0)
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {

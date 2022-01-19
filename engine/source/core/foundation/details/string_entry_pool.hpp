@@ -3,7 +3,7 @@
 #include <shared_mutex>
 #include "foundation/map.hpp"
 #include "foundation/string.hpp"
-#include "foundation/char.hpp"
+#include "foundation/char_utils.hpp"
 #include "math/limit.hpp"
 #include "math/city_hash.hpp"
 
@@ -94,7 +94,7 @@ namespace Engine
             CharType lowerStr[MAX_ENTRY_LENGTH];
             for (int32 idx = 0; idx < length; ++idx)
             {
-                lowerStr[idx] = Char<CharType>::ToLower(str[idx]);
+                lowerStr[idx] = CharUtils::ToLower(str[idx]);
             }
             #ifdef SMALLER_FIXED_STRING
             return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));

@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "core_minimal_public.hpp"
-#include "foundation/char.hpp"
+#include "foundation/char_utils.hpp"
 #include "math/city_hash.hpp"
 #include "foundation/fixed_string.hpp"
 
@@ -9,10 +9,10 @@ namespace Engine
     TEST(CharTest, Base)
     {
         schar c = 'C';
-        c = Char<schar>::ToLower(c);
+        c = CharUtils::ToLower(c);
         EXPECT_TRUE(c == 'c');
 
-        c = Char<schar>::ToUpper(c);
+        c = CharUtils::ToUpper(c);
         EXPECT_TRUE(c == 'C');
     }
 

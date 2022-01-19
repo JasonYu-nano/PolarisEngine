@@ -6,6 +6,7 @@
 #include "definitions_core.hpp"
 #include "foundation/array.hpp"
 #include "foundation/string_view.hpp"
+#include "foundation/char_utils.hpp"
 
 namespace Engine
 {
@@ -13,20 +14,6 @@ namespace Engine
     #undefine Format
 #endif
     #define Format(context, ...) fmt::format(TC(context), __VA_ARGS__)
-
-/**
- * @brief: StrCmp
- * @param: const tchar*
- * @param: const tchar*
- * @return: 0 when lhs == rhs
- */
-#ifdef UNICODE
-    #define StrCmp wcscmp
-    #define StrLen wcslen
-#else
-    #define StrCmp strcmp
-    #define StrLen strlen
-#endif
 
     class CORE_API String
     {
@@ -139,7 +126,7 @@ struct CORE_API std::less<String>
 {
     bool operator()(const String& lhs, const String& rhs) const
     {
-        return StrCmp(*lhs, *rhs);
+        return CharUtils::StrCmp(*lhs, *rhs);
     }
 };
 
