@@ -8,7 +8,7 @@ namespace Engine
 {
     TEST(CharTest, Base)
     {
-        schar c = 'C';
+        ansi c = 'C';
         c = CharUtils::ToLower(c);
         EXPECT_TRUE(c == 'c');
 
@@ -18,17 +18,17 @@ namespace Engine
 
     TEST(FixedString, Base)
     {
-        FixedString name(TC("Hello_World"));
-        EXPECT_TRUE(name.ToString() == TC("Hello_World"));
+        FixedString name(_T("Hello_World"));
+        EXPECT_TRUE(name.ToString() == _T("Hello_World"));
 
-        FixedString name2(TC("Hello_World_12"));
-        EXPECT_TRUE(name2.ToString() == TC("Hello_World_12") && name2.GetNumber() == 12);
+        FixedString name2(_T("Hello_World_12"));
+        EXPECT_TRUE(name2.ToString() == _T("Hello_World_12") && name2.GetNumber() == 12);
 
-        FixedString name3(TC("Hello_World_012"));
+        FixedString name3(_T("Hello_World_012"));
         EXPECT_TRUE(name3.GetNumber() == 0);
 
-        FixedString name4(TC("hello_World_12"));
+        FixedString name4(_T("hello_World_12"));
         EXPECT_TRUE(name2 == name4);
-        EXPECT_TRUE(name4.ToString() == TC("Hello_World_12"));
+        EXPECT_TRUE(name4.ToString() == _T("Hello_World_12"));
     }
 }

@@ -18,9 +18,9 @@ namespace Engine
         typedef wchar_t                 wchar;
 
         #ifdef UNICODE
-        typedef wchar_t                 tchar;
+        typedef wchar_t                 char_t;
         #else
-        typedef char                    tchar;
+        typedef char                    char_t;
         #endif
 
         typedef unsigned char           byte;

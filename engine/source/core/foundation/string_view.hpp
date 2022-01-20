@@ -18,5 +18,5 @@ namespace Engine
         const CharType* Data = nullptr;
     };
 
-    using TStringView = StringView<tchar, size_t>;
+    using TStringView = StringView<char_t, size_t>;
 }

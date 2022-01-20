@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    FixedString::FixedString(const tchar* str)
+    FixedString::FixedString(const char_t* str)
     {
         MakeFixedString(FixedStringView{str, static_cast<int32>(CharUtils::StrLen(str))});
     }

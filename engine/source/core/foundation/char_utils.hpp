@@ -8,26 +8,27 @@ namespace Engine
     class CharUtils
     {
     public:
-        template <typename CharType, EnableIfT<IsCharV<CharType>, bool> = true>
-        static CharType ToUpper(CharType character)
+        template <CharType TChar>
+        static TChar ToUpper(TChar character)
         {
-            return (CharType)(uint32(character) - ((uint32(character) - 'a' < 26u) << 5));
+            return (TChar)(uint32(character) - ((uint32(character) - 'a' < 26u) << 5));
         }
 
-        template <typename CharType, EnableIfT<IsCharV<CharType>, bool> = true>
-        static CharType ToLower(CharType character)
+        template <CharType TChar>
+        static TChar ToLower(TChar character)
         {
-            return (CharType)(uint32(character) + ((uint32(character) - 'A' < 26u) << 5));
+            return (TChar)(uint32(character) + ((uint32(character) - 'A' < 26u) << 5));
         }
 
-        template <class CharType>
-        static size_t StrLen(const CharType* str)
+        template <CharType TChar>
+        static size_t StrLen(const TChar* str)
         {
+            static_assert(false, "Un support type");
             return 0;
         }
 
         template <>
-        static size_t StrLen(const schar* str)
+        static size_t StrLen(const ansi* str)
         {
             return strlen(str);
         }
@@ -38,14 +39,15 @@ namespace Engine
             return wcslen(str);
         }
 
-        template <class CharType>
-        static int32 StrCmp(const CharType* str1, const CharType* str2)
+        template <CharType TChar>
+        static int32 StrCmp(const TChar* str1, const TChar* str2)
         {
+            static_assert(false, "Un support type");
             return 0;
         }
 
         template <>
-        static int32 StrCmp(const schar* str1, const schar* str2)
+        static int32 StrCmp(const ansi* str1, const ansi* str2)
         {
             return strcmp(str1, str2);
         }

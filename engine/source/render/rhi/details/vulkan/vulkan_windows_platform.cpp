@@ -17,11 +17,11 @@ namespace Engine
         {
             return true;
         }
-        PL_ERROR("Render", TC("Failed to create window surface!"));
+        PL_ERROR("Render", _T("Failed to create window surface!"));
         return false;
     }
 
-    void VulkanWindowsHelper::GetExtraExtensions(Vector<const schar*> extensions)
+    void VulkanWindowsHelper::GetExtraExtensions(Vector<const ansi*> extensions)
     {
         extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
         extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);

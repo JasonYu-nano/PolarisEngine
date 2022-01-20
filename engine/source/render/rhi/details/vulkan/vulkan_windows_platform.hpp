@@ -10,7 +10,7 @@ namespace Engine
     {
     public:
         static bool GetSurfaceKHR(const VkInstance& instance, VkSurfaceKHR& outSurface);
-        static void GetExtraExtensions(Vector<const schar*> extensions);
+        static void GetExtraExtensions(Vector<const ansi*> extensions);
     };
 
     typedef VulkanWindowsHelper VulkanPlatformHelper;

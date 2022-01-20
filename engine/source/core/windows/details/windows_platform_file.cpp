@@ -11,17 +11,17 @@ using namespace Engine;
 namespace Engine
 {
 
-    bool WindowsPlatformFile::MakeDir(const tchar* path)
+    bool WindowsPlatformFile::MakeDir(const char_t* path)
     {
         return CreateDirectory(path, reinterpret_cast<SECURITY_ATTRIBUTES*>(NULL)) || GetLastError() == ERROR_ALREADY_EXISTS;
     }
 
-    bool WindowsPlatformFile::RemoveDir(const tchar* path)
+    bool WindowsPlatformFile::RemoveDir(const char_t* path)
     {
         return ::RemoveDirectory(path);
     }
 
-    bool WindowsPlatformFile::MakeFile(const tchar* path)
+    bool WindowsPlatformFile::MakeFile(const char_t* path)
     {
         auto handle = ::CreateFile(path, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
         bool ret = handle != INVALID_HANDLE_VALUE || GetLastError() == ERROR_FILE_EXISTS;
@@ -29,24 +29,24 @@ namespace Engine
         return ret;
     }
 
-    bool WindowsPlatformFile::RemoveFile(const tchar* path)
+    bool WindowsPlatformFile::RemoveFile(const char_t* path)
     {
         return ::DeleteFile(path);
     }
 
-    bool WindowsPlatformFile::FileExists(const tchar* path)
+    bool WindowsPlatformFile::FileExists(const char_t* path)
     {
         uint32 result = ::GetFileAttributes(path);
         return result != 0xFFFFFFFF && !(result & FILE_ATTRIBUTE_DIRECTORY);
     }
 
-    bool WindowsPlatformFile::DirExists(const tchar* path)
+    bool WindowsPlatformFile::DirExists(const char_t* path)
     {
         uint32 result = ::GetFileAttributes(path);
         return result != 0xFFFFFFFF && (result & FILE_ATTRIBUTE_DIRECTORY);
     }
 
-    FileTime WindowsPlatformFile::GetFileTime(const tchar* path)
+    FileTime WindowsPlatformFile::GetFileTime(const char_t* path)
     {
         auto handle = ::CreateFile(path, GENERIC_READ, NULL, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         FileTime ret;
@@ -66,7 +66,7 @@ namespace Engine
         return ret;
     }
 
-    Vector<String> WindowsPlatformFile::QueryFiles(const tchar* searchPath, const tchar* regexExpr, bool recursion)
+    Vector<String> WindowsPlatformFile::QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion)
     {
         Vector<String> ret;
 
@@ -81,14 +81,14 @@ namespace Engine
         {
             String& path = searchQueue.front();
 
-            HANDLE handle = ::FindFirstFile(*Path::MakePath(path, TC("*")), &data);
+            HANDLE handle = ::FindFirstFile(*Path::MakePath(path, _T("*")), &data);
             if (handle != INVALID_HANDLE_VALUE)
             {
                 do
                 {
                     if (recursion && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
                     {
-                        if (CharUtils::StrCmp(data.cFileName, TC(".")) != 0 && CharUtils::StrCmp(data.cFileName, TC("..")) != 0)
+                        if (CharUtils::StrCmp(data.cFileName, _T(".")) != 0 && CharUtils::StrCmp(data.cFileName, _T("..")) != 0)
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {

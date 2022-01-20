@@ -10,21 +10,21 @@ namespace Engine
         WindowsPlatformFile() = default;
         ~WindowsPlatformFile() = default;
 
-        bool MakeDir(const tchar* path) override;
+        bool MakeDir(const char_t* path) override;
 
-        bool RemoveDir(const tchar* path) override;
+        bool RemoveDir(const char_t* path) override;
 
-        bool MakeFile(const tchar* path) override;
+        bool MakeFile(const char_t* path) override;
 
-        bool RemoveFile(const tchar* path) override;
+        bool RemoveFile(const char_t* path) override;
 
-        bool FileExists(const tchar* path) override;
+        bool FileExists(const char_t* path) override;
 
-        bool DirExists(const tchar* path) override;
+        bool DirExists(const char_t* path) override;
 
-        FileTime GetFileTime(const tchar* path) override;
+        FileTime GetFileTime(const char_t* path) override;
 
-        Vector<String> QueryFiles(const tchar* searchPath, const tchar* regexExpr, bool recursion = false) override;
+        Vector<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion = false) override;
     private:
         uint32 GetLastError();
 

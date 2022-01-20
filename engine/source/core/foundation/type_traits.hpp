@@ -69,3 +69,9 @@ struct SwitchType<false, TrueType, FalseType>
 {
     typedef FalseType Value;
 };
+
+template <typename T>
+concept CharType = IsCharV<T>;
+
+template <typename T>
+concept IntegralType = IsIntegralV<T>;

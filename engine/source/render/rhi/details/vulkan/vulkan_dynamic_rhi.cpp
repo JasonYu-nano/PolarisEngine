@@ -71,7 +71,7 @@ namespace Engine
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
-        Vector<const schar*> extensions = GetExtraExtensions();
+        Vector<const ansi*> extensions = GetExtraExtensions();
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -90,18 +90,18 @@ namespace Engine
 
         if (vkCreateInstance(&createInfo, nullptr, &Instance) != VK_SUCCESS) 
         {
-            PL_FATAL("Render", TC("Failed to create vulkan instance"));
+            PL_FATAL("Render", _T("Failed to create vulkan instance"));
             return;
         }
     }
 
-    Vector<const schar*> VulkanDynamicRHI::GetExtraExtensions()
+    Vector<const ansi*> VulkanDynamicRHI::GetExtraExtensions()
     {
         uint32 glfwExtensionCount = 0;
-        /*const schar** glfwExtensions;
+        /*const ansi** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);*/
 
-        Vector<const schar*> extensions;
+        Vector<const ansi*> extensions;
         VulkanPlatformHelper::GetExtraExtensions(extensions);
 #if VULKAN_DEBUG_MODE
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -148,7 +148,7 @@ namespace Engine
         }
         else
         {
-            PL_WARN("Render", TC("CheckValidationLayerSupport failed in vulkan debug mode"));
+            PL_WARN("Render", _T("CheckValidationLayerSupport failed in vulkan debug mode"));
         }
 #endif
     }
@@ -176,7 +176,7 @@ namespace Engine
         }
         else
         {
-            PL_ERROR("Render", TC("Failed to set up debug messenger!"));
+            PL_ERROR("Render", _T("Failed to set up debug messenger!"));
             return;
         }
 #endif
@@ -200,7 +200,7 @@ namespace Engine
 
         if (deviceNum <= 0)
         {
-            PL_ERROR("Render", TC("Failed to find GPUs with Vulkan support"));
+            PL_ERROR("Render", _T("Failed to find GPUs with Vulkan support"));
             return false;
         }
 
@@ -294,7 +294,7 @@ namespace Engine
 
         if (vkCreateDevice(PhysicalDevice, &createInfo, nullptr, &Device) != VK_SUCCESS) 
         {
-            PL_ERROR("Render", TC("Failed to create logical device!"));
+            PL_ERROR("Render", _T("Failed to create logical device!"));
             return false;
         }
 

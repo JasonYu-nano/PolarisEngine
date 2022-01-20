@@ -35,7 +35,7 @@ namespace Engine
     private:
         void InitInstance();
 
-        Vector<const schar*> GetExtraExtensions();
+        Vector<const ansi*> GetExtraExtensions();
 
         bool CheckValidationLayerSupport();
 
@@ -60,7 +60,7 @@ namespace Engine
         VkInstance Instance;
 
         VkDebugUtilsMessengerEXT DebugMessenger;
-        Vector<const schar*> ValidationLayers{ {"VK_LAYER_KHRONOS_validation"} };
+        Vector<const ansi*> ValidationLayers{{"VK_LAYER_KHRONOS_validation"} };
 
         VkPhysicalDevice PhysicalDevice{ nullptr };
         VkDevice Device{ nullptr };

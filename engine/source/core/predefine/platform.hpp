@@ -19,16 +19,18 @@ namespace Engine
 
     typedef CorePlatformType::size_t    size_t;
 
-    typedef CorePlatformType::ansi      schar;
+    typedef CorePlatformType::ansi      ansi;
     typedef CorePlatformType::wchar     wchar;
-    typedef CorePlatformType::tchar     tchar;
+    typedef CorePlatformType::char_t    char_t;
 
     typedef CorePlatformType::byte      byte;
 
+#ifndef _T
 #ifdef UNICODE
-    #define TC(x) L ## x
+    #define _T(x) L ## x
 #else
-    #define TC(x) x
+    #define _T(x) x
+#endif
 #endif
 
 #ifdef OUT

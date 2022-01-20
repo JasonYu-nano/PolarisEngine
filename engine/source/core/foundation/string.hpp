@@ -13,21 +13,21 @@ namespace Engine
 #ifdef Format
     #undefine Format
 #endif
-    #define Format(context, ...) fmt::format(TC(context), __VA_ARGS__)
+    #define Format(context, ...) fmt::format(_T(context), __VA_ARGS__)
 
     class CORE_API String
     {
-        typedef std::basic_string<tchar, std::char_traits<tchar>, std::allocator<tchar>> InnerString;
+        typedef std::basic_string<char_t, std::char_traits<char_t>, std::allocator<char_t>> InnerString;
     public:
         String() = default;
         String(const String& str) = default;
         String(String&& str) = default;
-        String(tchar val);
-        String(const tchar* val);
+        String(char_t val);
+        String(const char_t* val);
         String(InnerString&& val);
 
         static String Concat(const String& lhs, const String& rhs);
-        static String Concat(const String& lhs, const tchar* rhs);
+        static String Concat(const String& lhs, const char_t* rhs);
 
     public:
 
@@ -43,9 +43,9 @@ namespace Engine
 
         inline bool IsValidIndex(size_t index) const;
 
-        const tchar& At(size_t index) const;
+        const char_t& At(size_t index) const;
 
-        const tchar* Data() const;
+        const char_t* Data() const;
 
         String ToUpper() { return *this; }
 
@@ -53,11 +53,11 @@ namespace Engine
 
         String Trim() { return *this; }
 
-        bool EndWith (const tchar* value) const;
+        bool EndWith (const char_t* value) const;
 
-        bool StartWith (const tchar* value) const;
+        bool StartWith (const char_t* value) const;
 
-        String& Append(const tchar* str);
+        String& Append(const char_t* str);
 
         String& Append(const String& str);
 
@@ -67,7 +67,7 @@ namespace Engine
 
         size_t FindLast(const String& delims, size_t pos = std::string::npos) const;
 
-        Vector<String> Split(const tchar* delims) const;
+        Vector<String> Split(const char_t* delims) const;
 
     public:
         operator TStringView() const;
@@ -78,13 +78,13 @@ namespace Engine
         operator std::string() const { return Internal; }
 #endif
 
-        const tchar* operator*() const;
+        const char_t* operator*() const;
 
         String& operator=(const String& lhs) = default;
 
         String& operator=(String&& lhs) = default;
 
-        String& operator+=(const tchar* rhs);
+        String& operator+=(const char_t* rhs);
 
         friend CORE_API String operator+(const String& lhs, const String& rhs);
 
@@ -92,9 +92,9 @@ namespace Engine
 
         friend CORE_API bool operator!=(const String& lhs, const String& rhs);
 
-        bool operator== (const tchar* other);
+        bool operator== (const char_t* other);
 
-        bool operator!= (const tchar* other);
+        bool operator!= (const char_t* other);
 
 #ifdef UNICODE
         friend CORE_API std::wostream& operator<<(std::wostream& out, const String& str) { out << *str; return out; }
