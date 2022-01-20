@@ -12,20 +12,20 @@ namespace Engine
     public:
         virtual ~IPlatformFile() = default;
 
-        virtual bool MakeDir(const tchar* path) = 0;
+        virtual bool MakeDir(const char_t* path) = 0;
 
-        virtual bool RemoveDir(const tchar* path) = 0;
+        virtual bool RemoveDir(const char_t* path) = 0;
 
-        virtual bool MakeFile(const tchar* path) = 0;
+        virtual bool MakeFile(const char_t* path) = 0;
 
-        virtual bool RemoveFile(const tchar* path) = 0;
+        virtual bool RemoveFile(const char_t* path) = 0;
 
-        virtual bool FileExists(const tchar* path) = 0;
+        virtual bool FileExists(const char_t* path) = 0;
 
-        virtual bool DirExists(const tchar* path) = 0;
+        virtual bool DirExists(const char_t* path) = 0;
 
-        virtual FileTime GetFileTime(const tchar* path) = 0;
+        virtual FileTime GetFileTime(const char_t* path) = 0;
 
-        virtual Vector<String> QueryFiles(const tchar* searchPath, const tchar* regexExpr, bool recursion = false) = 0;
+        virtual Vector<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion = false) = 0;
     };
 }

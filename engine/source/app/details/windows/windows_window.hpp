@@ -15,7 +15,7 @@ namespace Engine
         HWND GetHWnd() const { return HWnd; }
 
     public:
-        static const tchar WinClassName[];
+        static const char_t WinClassName[];
     private:
         HWND HWnd{ nullptr };
         HDC HDc{ nullptr };

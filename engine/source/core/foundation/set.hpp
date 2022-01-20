@@ -156,7 +156,7 @@ namespace Engine
 
         friend class ConstSetIterator<Set, ElementType>;
         friend class SetIterator<Set, ElementType>;
-        template <typename K, typename V> friend class Map;
+        template <typename K, typename V, typename T, typename U> friend class Map;
 
     public:
         using Iterator = SetIterator<typename TSparseArray::ConstIterator, ElementType>;
@@ -240,18 +240,21 @@ namespace Engine
         ElementType* Find(const KeyType& key) const
         {
             ElementType* ret = nullptr;
-            SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
-            while (elementIndex->IsValid())
+            if (GetCount() > 0)
             {
-                auto&& setElement = Elements[elementIndex->Index];
-                if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
+                SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
+                while (elementIndex->IsValid())
                 {
-                    ret = const_cast<ElementType*>(&setElement.Element);
-                    break;
-                }
-                else
-                {
-                    elementIndex = const_cast<SetElementIndex*>(&setElement.HashNextId);
+                    auto&& setElement = Elements[elementIndex->Index];
+                    if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
+                    {
+                        ret = const_cast<ElementType*>(&setElement.Element);
+                        break;
+                    }
+                    else
+                    {
+                        elementIndex = const_cast<SetElementIndex*>(&setElement.HashNextId);
+                    }
                 }
             }
             return ret;
@@ -266,22 +269,25 @@ namespace Engine
         template <typename KeyType>
         bool Remove(const KeyType& key)
         {
-            SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
             bool ret = false;
-            while (elementIndex->IsValid())
+            if (GetCount() > 0)
             {
-                auto&& setElement = Elements[elementIndex->Index];
-                if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
+                SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
+                while (elementIndex->IsValid())
                 {
-                    uint32 pendingRemoveIndex = elementIndex->Index;
-                    elementIndex->Index = setElement.HashNextId.Index;
-                    Elements.RemoveAt(pendingRemoveIndex);
-                    ret = true;
-                    break;
-                }
-                else
-                {
-                    elementIndex = &setElement.HashNextId;
+                    auto&& setElement = Elements[elementIndex->Index];
+                    if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
+                    {
+                        uint32 pendingRemoveIndex = elementIndex->Index;
+                        elementIndex->Index = setElement.HashNextId.Index;
+                        Elements.RemoveAt(pendingRemoveIndex);
+                        ret = true;
+                        break;
+                    }
+                    else
+                    {
+                        elementIndex = &setElement.HashNextId;
+                    }
                 }
             }
             return ret;
@@ -384,6 +390,7 @@ namespace Engine
         /** Contains the head of SetElement list */
         SetElementIndex& GetFirstIndex(uint32 hashCode) const
         {
+            PL_ASSERT(GetCount() > 0);
             return ((SetElementIndex*)HashBucket.GetAllocation())[GetHashIndex(hashCode)];
         }
 

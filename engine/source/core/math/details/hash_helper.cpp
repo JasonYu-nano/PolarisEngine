@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    uint64 HashHelper::FnvHash(const tchar* str, uint64 n) noexcept
+    uint64 HashHelper::FnvHash(const char_t* str, uint64 n) noexcept
     {
         static uint64 fnvOffset = 14695981039346656037ull;
         static uint64 fnvPrime = 1099511628211ull;
@@ -15,8 +15,8 @@ namespace Engine
         return hash;
     }
 
-    uint64 HashHelper::FnvHash(StringView str) noexcept
+    uint64 HashHelper::FnvHash(TStringView str) noexcept
     {
-        return FnvHash(str.data(), str.size());
+        return FnvHash(str.Data, str.Length);
     }
 }
