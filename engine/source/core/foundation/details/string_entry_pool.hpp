@@ -72,7 +72,7 @@ namespace Engine
 
     class StringEntryPool
     {
-        using TEntryPool = Map<uint64, FixedStringView/*, MapDefaultHashFunc<uint64, String>, StringEntryPoolAllocator*/>;
+        using TEntryPool = Map<uint64, FixedStringView, MapDefaultHashFunc<uint64, FixedStringView>, StringEntryPoolAllocator>;
     public:
         static StringEntryPool& Get()
         {

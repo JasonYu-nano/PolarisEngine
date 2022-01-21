@@ -200,7 +200,7 @@ namespace Engine
             return Pairs.Remove(key);
         }
 
-        void Clear(int32 slack)
+        void Clear(int32 slack = 0)
         {
             Pairs.Clear(slack);
         }

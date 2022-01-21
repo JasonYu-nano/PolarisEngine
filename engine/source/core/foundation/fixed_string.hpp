@@ -34,4 +34,10 @@ namespace Engine
         FixedEntryId EntryId{ 0 };
         uint32 Number{ SUFFIX_NUMBER_NONE };
     };
+
+    template <>
+    inline uint32 GetHashCode(const FixedString& name)
+    {
+        return (uint32)(name.GetEntryId()) + ((uint32)(name.GetEntryId() >> 32) * 23) + name.GetNumber();
+    }
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "defination_render.hpp"
+#include "definitions_render.hpp"
 
 namespace Engine
 {
