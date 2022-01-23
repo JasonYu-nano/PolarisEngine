@@ -1,6 +1,7 @@
 #pragma once
 #include "predefine/platform.hpp"
 #include "foundation/string.hpp"
+#include "foundation/dynamic_array.hpp"
 #include "foundation/smart_ptr.hpp"
 #include "file_system/platform_file_interface.hpp"
 
@@ -43,7 +44,7 @@ namespace Engine
          * @param recursion recursion search or not, default false
          * @return files or directories match regex
          */
-        Vector<String> QueryFiles(const String& searchPath, const String& regex, bool recursion = false);
+        DynamicArray<String> QueryFiles(const String& searchPath, const String& regex, bool recursion = false);
 
         String GetEngineRootPath() const;
 

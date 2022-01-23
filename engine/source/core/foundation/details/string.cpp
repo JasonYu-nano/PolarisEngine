@@ -139,9 +139,9 @@ namespace Engine
         return Internal.find_last_of(delims.Internal, pos);
     }
 
-    Vector<String> String::Split(const char_t* delims) const
+    DynamicArray<String> String::Split(const char_t* delims) const
     {
-        std::vector<String> ret;
+        DynamicArray<String> ret;
         size_t first = 0;
 
         while (first < Length())
@@ -149,10 +149,14 @@ namespace Engine
             const auto second = FindFirst(delims, first);
 
             if (first != second)
-                ret.emplace_back(Substr(first, second - first));
+            {
+                ret.Add(Substr(first, second - first));
+            }
 
             if (second == InvalidIndex)
+            {
                 break;
+            }
 
             first = second + 1;
         }

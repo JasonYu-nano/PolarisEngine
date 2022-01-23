@@ -2,9 +2,9 @@
 #include "foundation/dynamic_array.hpp"
 #include "memory/memory.hpp"
 #include "foundation/sparse_array.hpp"
-#include "foundation/array.hpp"
 #include "foundation/set.hpp"
 #include "foundation/map.hpp"
+#include <vector>
 
 namespace Engine
 {
@@ -22,6 +22,18 @@ namespace Engine
         int32 Y{ 0 };
         int32* Z{ nullptr };
     };
+
+    TEST(VectorTest, Base)
+    {
+        std::vector<int> a = {1, 2, 3};
+        PL_INFO("", _T("capacity before: {}"), a.capacity());
+
+        a.resize(5);
+        PL_INFO("", _T("capacity after: {}"), a.capacity());
+
+        a.resize(0);
+        PL_INFO("", _T("capacity after: {}"), a.capacity());
+    }
 
     TEST(DynamicArrayTest, Base)
     {
@@ -66,6 +78,18 @@ namespace Engine
         DynamicArray<int> listOfCopy2(4);
         listOfCopy2 = MoveTemp(listOfCopy);
         EXPECT_TRUE(listOfCopy2[0] == 1 && listOfCopy2[4] == 0);
+
+        DynamicArray<int> array2 = {1, 2, 3};
+        array2.Resize(5);
+        EXPECT_TRUE(array2[4] == 0 && array2.GetCount() == 5);
+
+        array2.Resize(3);
+        array2.Resize(5, 4);
+        EXPECT_TRUE(array2[4] == 4);
+
+        int32 oldCapacity = array2.GetCapacity();
+        array2.Resize(0);
+        EXPECT_TRUE(array2.GetCapacity() == oldCapacity);
     }
 
     TEST(DynamicArrayTest, OtherConstruct)

@@ -2,7 +2,6 @@
 #include "core_module.hpp"
 #include "predefine/platform.hpp"
 #include "foundation/string.hpp"
-#include "foundation/array.hpp"
 #include "file_system/file_time.hpp"
 
 namespace Engine
@@ -26,6 +25,6 @@ namespace Engine
 
         virtual FileTime GetFileTime(const char_t* path) = 0;
 
-        virtual Vector<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion = false) = 0;
+        virtual DynamicArray<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion) = 0;
     };
 }

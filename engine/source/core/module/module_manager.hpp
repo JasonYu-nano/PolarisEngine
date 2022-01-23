@@ -33,7 +33,11 @@ namespace Engine
         template <ModuleType Module>
         IModuleInterface* LoadImpl(const FixedString& name)
         {
-            IModuleInterface* module = FindModule(name);
+            IModuleInterface* module;
+            {
+                std::shared_lock lock(ModuleRWMutex);
+                module = FindModule(name);
+            }
             if (module)
             {
                 return module;
@@ -42,6 +46,7 @@ namespace Engine
             {
                 std::lock_guard lock(ModuleRWMutex);
                 module = FindModule(name);
+
                 if (!module)
                 {
                     module = new Module();

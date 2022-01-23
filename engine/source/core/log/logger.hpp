@@ -42,6 +42,12 @@ namespace Engine
             GetLogger()->log(src, level, fmt, std::forward<Args>(args)...);
         }
 
+        template<typename TChar, typename... Args>
+        static void Log(spdlog::level::level_enum level, const ansi* category, const TChar* fmt, Args&&... args)
+        {
+            GetLogger()->log(level, fmt, std::forward<Args>(args)...);
+        }
+
         static void AssertFail(spdlog::source_loc src, const ansi* expr)
         {
             GetLogger()->log(src, spdlog::level::critical, "assertion failed: at {0}", expr);
@@ -70,11 +76,14 @@ namespace Engine
         SharedPtr<spdlog::logger> Logger;
     };
 
-    #define PL_LOGIMPL(level, category, fmt, ...)  {LogSystem::Log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, category, fmt, ## __VA_ARGS__);}
-    #define PL_INFO(category, fmt, ...) PL_LOGIMPL(spdlog::level::info, category, fmt, ## __VA_ARGS__)
-    #define PL_WARN(category, fmt, ...) PL_LOGIMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
-    #define PL_ERROR(category, fmt, ...) PL_LOGIMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
-    #define PL_FATAL(category, fmt, ...) PL_LOGIMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
+    #define PL_LOG_IMPL(level, category, fmt, ...)  {LogSystem::Log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, category, fmt, ## __VA_ARGS__);}
+    #define PL_LOG_WITHOUT_SOURCE(level, category, fmt, ...)  {LogSystem::Log(level, category, fmt, ## __VA_ARGS__);}
+
+    #define PL_VERBOSE(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::trace, category, fmt, ## __VA_ARGS__)
+    #define PL_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::info, category, fmt, ## __VA_ARGS__)
+    #define PL_WARN(category, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
+    #define PL_ERROR(category, fmt, ...) PL_LOG_IMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
+    #define PL_FATAL(category, fmt, ...) PL_LOG_IMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
 
 #ifdef DEBUG
     #define PL_ASSERT(expr) ((expr) ? (void)0 : LogSystem::AssertFail(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, #expr))

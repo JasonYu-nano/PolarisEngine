@@ -9,7 +9,7 @@ namespace Engine
     void EngineLoop::Init()
     {
         auto* app = PlatformApplication::CreateApplication();
-        RenderModule* renderer = ModuleManager::Load<RenderModule>(FixedString(_T("Render")));
+        ModuleManager::Load<RenderModule>(_T("Render"));
     }
 
     void EngineLoop::Tick()

@@ -170,6 +170,17 @@ namespace Engine
             Append(initializer);
         }
 
+        template <typename IteratorType>
+        Set(IteratorType begin, IteratorType end)
+        {
+            do
+            {
+                Add(*begin);
+                ++begin;
+            }
+            while (begin != end);
+        }
+
         Set(const Set& other)
         {
             CopyElement(other);
@@ -303,6 +314,11 @@ namespace Engine
         int32 GetCount() const
         {
             return Elements.GetCount();
+        }
+
+        bool IsEmpty() const
+        {
+            return Elements.IsEmpty();
         }
 
         /**

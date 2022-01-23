@@ -66,9 +66,9 @@ namespace Engine
         return ret;
     }
 
-    Vector<String> WindowsPlatformFile::QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion)
+    DynamicArray<String> WindowsPlatformFile::QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion)
     {
-        Vector<String> ret;
+        DynamicArray<String> ret;
 
         Regex pattern(regexExpr);
 
@@ -92,14 +92,14 @@ namespace Engine
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {
-                                ret.emplace_back(Path::MakePath(path, data.cFileName));
+                                ret.Add(Path::MakePath(path, data.cFileName));
                             }
                             searchQueue.emplace(Path::MakePath(path, data.cFileName));
                         }
                     }
                     else if (!(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && std::regex_match(data.cFileName, pattern))
                     {
-                        ret.emplace_back(Path::MakePath(path, data.cFileName));
+                        ret.Add(Path::MakePath(path, data.cFileName));
                     }
                 } while (::FindNextFile(handle, &data));
             }

@@ -4,7 +4,7 @@
 #include "fmt/core.h"
 #include "spdlog/fmt/fmt.h"
 #include "definitions_core.hpp"
-#include "foundation/array.hpp"
+#include "foundation/dynamic_array.hpp"
 #include "foundation/string_view.hpp"
 #include "foundation/char_utils.hpp"
 
@@ -67,7 +67,7 @@ namespace Engine
 
         size_t FindLast(const String& delims, size_t pos = std::string::npos) const;
 
-        Vector<String> Split(const char_t* delims) const;
+        DynamicArray<String> Split(const char_t* delims) const;
 
     public:
         operator TStringView() const;

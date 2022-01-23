@@ -10,7 +10,6 @@ namespace Engine
 
     IModuleInterface* ModuleManager::FindModule(const FixedString &name)
     {
-        std::shared_lock lock(ModuleRWMutex);
         if (IModuleInterface** module = CachedModule.Find(name))
         {
             return *module;

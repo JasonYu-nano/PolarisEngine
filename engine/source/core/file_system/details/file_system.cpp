@@ -56,34 +56,46 @@ namespace Engine
 
     bool FileSystem::MakeDirTree(const String& path)
     {
-        Vector<String> dirs = Path::SplitPath(path);
-        if (dirs.size() <= 0)
+        DynamicArray<String> dirs = Path::SplitPath(path);
+        if (dirs.GetCount() <= 0)
+        {
             return false;
+        }
         
         String destPath = String::Empty();
-        for (uint32 index = 0; index < dirs.size(); index++)
+        for (int32 index = 0; index < dirs.GetCount(); index++)
         {
             destPath = Path::MakePath(destPath, dirs[index]);
             if (DirExists(destPath))
+            {
                 continue;
+            }
             else if (MakeDir(destPath))
+            {
                 continue;
+            }
             else
+            {
                 return false;
+            }
         }
         return true;
     }
 
     bool FileSystem::ClearDir(const String& path)
     {
-        auto files = PlatformFile->QueryFiles(*path, _T("."));
+        auto files = PlatformFile->QueryFiles(*path, _T("."), false);
         //! files is BFS
-        for (auto iter = files.rbegin(); iter != files.rend(); iter ++)
+        for (auto iter = files.rbegin(); iter != files.rend(); --iter)
         {
             if (IsDirectory(*iter) && !RemoveDir(*iter))
+            {
                 return false;
+            }
             else if (IsFile(*iter) && !RemoveFile(*iter))
+            {
                 return false;
+            }
         }
         return true;
     }
@@ -93,7 +105,7 @@ namespace Engine
         return PlatformFile->GetFileTime(*path);
     }
 
-    Vector<String> FileSystem::QueryFiles(const String& searchPath, const String& regex, bool recursion)
+    DynamicArray<String> FileSystem::QueryFiles(const String& searchPath, const String& regex, bool recursion)
     {
         return PlatformFile->QueryFiles(*searchPath, *regex, recursion);
     }

@@ -22,6 +22,6 @@ namespace Engine
          */
         static String GetShortName(const String& path, bool withExtension = true);
 
-        static Vector<String> SplitPath(const String& path);
+        static DynamicArray<String> SplitPath(const String& path);
     };
 }

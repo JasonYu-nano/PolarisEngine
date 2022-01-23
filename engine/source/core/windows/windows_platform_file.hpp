@@ -8,7 +8,7 @@ namespace Engine
     {
     public:
         WindowsPlatformFile() = default;
-        ~WindowsPlatformFile() = default;
+        virtual ~WindowsPlatformFile() = default;
 
         bool MakeDir(const char_t* path) override;
 
@@ -24,7 +24,7 @@ namespace Engine
 
         FileTime GetFileTime(const char_t* path) override;
 
-        Vector<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion = false) override;
+        DynamicArray<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion) override;
     private:
         uint32 GetLastError();
 

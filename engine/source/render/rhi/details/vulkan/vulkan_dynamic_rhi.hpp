@@ -4,6 +4,7 @@
 #include "foundation/functional.hpp"
 #include "foundation/stl_misc.hpp"
 #include "definitions_render.hpp"
+#include "rhi/details/vulkan/vulkan_type.hpp"
 
 #ifdef DEBUG
 #define VULKAN_DEBUG_MODE 1
@@ -22,11 +23,15 @@ namespace Engine
         }
     };
 
+    struct SwapChainSupportDetails
+    {
+        VkSurfaceCapabilitiesKHR Capabilities;
+        VkArray<VkSurfaceFormatKHR> Formats;
+        VkArray<VkPresentModeKHR> PresentModes;
+    };
+
     class RENDER_API VulkanDynamicRHI
     {
-        /*template<typename Type>
-        using VKUniquePtr = UniquePtr<Type, TFunction<void(Type*)>>;*/
-
     public:
         void Init();
 
@@ -35,7 +40,7 @@ namespace Engine
     private:
         void InitInstance();
 
-        Vector<const ansi*> GetExtraExtensions();
+        VkArray<const ansi*> GetExtraExtensions();
 
         bool CheckValidationLayerSupport();
 
@@ -56,11 +61,18 @@ namespace Engine
         bool CreateLogicalDevice();
 
         bool CreateSurface();
-    private:
-        VkInstance Instance;
 
-        VkDebugUtilsMessengerEXT DebugMessenger;
-        Vector<const ansi*> ValidationLayers{{"VK_LAYER_KHRONOS_validation"} };
+        bool CheckDeviceSuitable(VkPhysicalDevice device);
+
+        bool CheckDeviceExtensionSupport(VkPhysicalDevice device) const;
+
+        SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+    private:
+        VkInstance Instance{ nullptr };
+
+        VkDebugUtilsMessengerEXT DebugMessenger{ nullptr };
+        VkArray<const ansi*> ValidationLayers{ "VK_LAYER_KHRONOS_validation" };
+        VkArray<const ansi*> DeviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
         VkPhysicalDevice PhysicalDevice{ nullptr };
         VkDevice Device{ nullptr };
