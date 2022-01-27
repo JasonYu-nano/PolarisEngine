@@ -25,6 +25,8 @@ namespace Engine
         FileTime GetFileTime(const char_t* path) override;
 
         DynamicArray<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion) override;
+
+        UniquePtr<IFileHandle> OpenFile(const char_t* fileName, EFileAccess access, EFileShareMode mode) final;
     private:
         uint32 GetLastError();
 

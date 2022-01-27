@@ -9,6 +9,17 @@
 
 namespace Engine
 {
+    enum ELogLevel
+    {
+        Trace = SPDLOG_LEVEL_TRACE,
+        Debug = SPDLOG_LEVEL_DEBUG,
+        Info = SPDLOG_LEVEL_INFO,
+        Warn = SPDLOG_LEVEL_WARN,
+        Error = SPDLOG_LEVEL_ERROR,
+        Critical = SPDLOG_LEVEL_CRITICAL,
+        OFF = SPDLOG_LEVEL_OFF,
+    };
+
     class CORE_API LogSystem
     {
     public:
@@ -40,6 +51,12 @@ namespace Engine
         static void Log(spdlog::source_loc src, spdlog::level::level_enum level, const ansi* category, const TChar* fmt, Args&&... args)
         {
             GetLogger()->log(src, level, fmt, std::forward<Args>(args)...);
+        }
+
+        template<typename TChar, typename... Args>
+        static void Log(spdlog::source_loc src, ELogLevel level, const ansi* category, const TChar* fmt, Args&&... args)
+        {
+            GetLogger()->log(src, (spdlog::level::level_enum)level, fmt, std::forward<Args>(args)...);
         }
 
         template<typename TChar, typename... Args>
@@ -84,7 +101,12 @@ namespace Engine
     #define PL_WARN(category, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
     #define PL_ERROR(category, fmt, ...) PL_LOG_IMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
     #define PL_FATAL(category, fmt, ...) PL_LOG_IMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
-
+    // #define LOG(category, level, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
+    #define CLOG(expr, category, level, fmt, ...) \
+        if (expr)                                          \
+        {                                                  \
+            PL_LOG_IMPL(level, category, fmt, ## __VA_ARGS__) \
+        }
 #ifdef DEBUG
     #define PL_ASSERT(expr) ((expr) ? (void)0 : LogSystem::AssertFail(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, #expr))
 #else

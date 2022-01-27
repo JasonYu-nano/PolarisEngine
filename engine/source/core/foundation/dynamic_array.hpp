@@ -590,4 +590,7 @@ namespace Engine
         SizeType Count{ 0 };
         SizeType Capacity{ 0 };
     };
+
+    template <typename ElementType>
+    using DynamicArrayU64 = DynamicArray<ElementType, HeapAllocator<uint64>>;
 }

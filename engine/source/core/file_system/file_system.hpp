@@ -48,6 +48,8 @@ namespace Engine
 
         String GetEngineRootPath() const;
 
+        void ReadFileToBinary(const String& fileName, DynamicArrayU64<uint8>& outBinary);
+
     private:
         FileSystem();
 

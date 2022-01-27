@@ -121,4 +121,12 @@ namespace Engine
         PlatformFile = MakeUniquePtr<WindowsPlatformFile>();
 #endif
     }
+
+    void FileSystem::ReadFileToBinary(const String& fileName, DynamicArrayU64<uint8>& outBinary)
+    {
+        UniquePtr<IFileHandle> handle = PlatformFile->OpenFile(*fileName, EFileAccess::Read, EFileShareMode::Read);
+        uint64 fileSize = handle->GetSize();
+        outBinary.Reserve(fileSize);
+        handle->Read(outBinary.GetData(), fileSize);
+    }
 }

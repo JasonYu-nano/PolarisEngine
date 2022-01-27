@@ -5,6 +5,7 @@
 #include "file_system/path.hpp"
 #include "foundation/queue.hpp"
 #include "foundation/char_utils.hpp"
+#include "windows/windows_file_handle.hpp"
 
 using namespace Engine;
 
@@ -125,5 +126,58 @@ namespace Engine
         li.HighPart = fileTime.dwHighDateTime;
 
         return (li.QuadPart - k_UnixTimeStart) / k_TicksPerSecond;
+    }
+
+    UniquePtr<IFileHandle> WindowsPlatformFile::OpenFile(const char_t* fileName, EFileAccess access, EFileShareMode mode)
+    {
+        int32 desiredAccess = 0;
+        int32 shareMode = 0;
+        switch (access)
+        {
+            case EFileAccess::Read:
+            {
+                desiredAccess = GENERIC_READ;
+                break;
+            }
+            case EFileAccess::Write:
+            {
+                desiredAccess = GENERIC_WRITE;
+                break;
+            }
+            case EFileAccess::ReadWrite:
+            {
+                desiredAccess = GENERIC_READ | GENERIC_WRITE;
+                break;
+            }
+            default:
+            {
+                //
+            }
+        }
+
+        switch (mode)
+        {
+            case EFileShareMode::Read:
+            {
+                shareMode = FILE_SHARE_READ;
+                break;
+            }
+            case EFileShareMode::Write:
+            {
+                shareMode = FILE_SHARE_WRITE;
+                break;
+            }
+            case EFileShareMode::Delete:
+            {
+                shareMode = FILE_SHARE_DELETE;
+                break;
+            }
+            default:
+            {
+                shareMode = 0;
+            }
+        }
+        HANDLE handle = ::CreateFileW(fileName, desiredAccess, shareMode, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        return MakeUniquePtr<WindowsFileHandle>(handle);
     }
 }
