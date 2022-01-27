@@ -61,14 +61,14 @@ namespace Engine
 
     void WindowsApplication::Init()
     {
-        RegisteClass();
+        RegisterWinClass();
         Window = MakeSharedPtr<WindowsWindow>();
         Window->Init(HInstance);
     }
 
-    void WindowsApplication::RegisteClass()
+    void WindowsApplication::RegisterWinClass()
     {
-        HInstance = GetModuleHandle(NULL);
+        HInstance = GetModuleHandle(nullptr);
 
         // this struct holds information for the window class
         WNDCLASSEX wc;
@@ -81,7 +81,7 @@ namespace Engine
         wc.style = CS_HREDRAW | CS_VREDRAW;
         wc.lpfnWndProc = HandleWinMsg;
         wc.hInstance = HInstance;
-        wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
         wc.lpszClassName = WindowsWindow::WinClassName;
 
@@ -101,7 +101,6 @@ namespace Engine
         {
         case WM_DESTROY:
         {
-
             WindowsApplication::RequestExitApp();
             PostQuitMessage(0);
         } break;
@@ -111,5 +110,11 @@ namespace Engine
 
         return result;
     }
-    
+
+    void WindowsApplication::GetFrameBufferSize(int& width, int& height)
+    {
+        PL_ASSERT(AppInstance);
+        AppInstance->Window->GetWindowSize(width, height);
+    }
+
 }

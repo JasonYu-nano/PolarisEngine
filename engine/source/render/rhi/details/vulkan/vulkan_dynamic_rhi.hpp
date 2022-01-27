@@ -54,8 +54,6 @@ namespace Engine
 
         bool FindPhysicalDevice();
 
-        bool IsPhysicalDeviceSuitable(VkPhysicalDevice device);
-
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
         bool CreateLogicalDevice();
@@ -67,6 +65,18 @@ namespace Engine
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device) const;
 
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const VkArray<VkSurfaceFormatKHR>& availableFormats);
+
+        VkPresentModeKHR ChooseSwapPresentMode(const VkArray<VkPresentModeKHR>& availablePresentModes);
+
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+        void CreateSwapChain();
+
+        void CreateImageViews();
+
+        void CreateGraphicsPipeline();
     private:
         VkInstance Instance{ nullptr };
 
@@ -79,5 +89,12 @@ namespace Engine
         VkQueue GraphicsQueue{ nullptr };
         VkQueue PresentQueue{ nullptr };
         VkSurfaceKHR Surface{ nullptr };
+        VkSwapchainKHR SwapChain{ nullptr };
+
+        VkArray<VkImage> SwapChainImages;
+        VkFormat SwapChainImageFormat;
+        VkExtent2D SwapChainExtent;
+
+        VkArray<VkImageView> SwapChainImageViews;
     };
 }

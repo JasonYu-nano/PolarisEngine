@@ -318,7 +318,7 @@ namespace Engine
 
         bool IsEmpty() const
         {
-            return Elements.IsEmpty();
+            return GetCount() == 0;
         }
 
         /**

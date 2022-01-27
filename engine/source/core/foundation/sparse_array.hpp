@@ -294,7 +294,7 @@ namespace Engine
 
         bool IsEmpty() const
         {
-            return ElementNodes.IsEmpty();
+            return GetCount() == 0;
         }
 
         int32 GetCount() const

@@ -38,4 +38,12 @@ namespace Engine
         // display the window on the screen
         ::ShowWindow(HWnd, SW_SHOW);
     }
+
+    void WindowsWindow::GetWindowSize(int32& width, int32& height) const
+    {
+        RECT area;
+        GetClientRect(HWnd, &area);
+        width = area.right;
+        height = area.bottom;
+    }
 }

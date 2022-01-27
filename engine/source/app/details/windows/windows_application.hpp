@@ -22,6 +22,8 @@ namespace Engine
         static HINSTANCE GetHInstance();
 
         static HWND GetHWnd();
+
+        static void GetFrameBufferSize(int& width, int& height);
     private:
         static LRESULT CALLBACK HandleWinMsg(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -31,7 +33,7 @@ namespace Engine
 
         void Init();
 
-        void RegisteClass();
+        void RegisterWinClass();
 
     private:
         SharedPtr<WindowsWindow> Window{ nullptr };
