@@ -2,12 +2,28 @@
 #include "core_minimal_public.hpp"
 #include "reflection/variant.hpp"
 #include "reflection/field.hpp"
+#include "reflection/method.hpp"
 
 namespace Engine
 {
     class TestClass
     {
     public:
+        static String GetName()
+        {
+            return _T("TestClass");
+        }
+
+        int32 GetA() const
+        {
+            return A;
+        }
+
+        int32& GetARef()
+        {
+            return A;
+        }
+
         int32 A{ 1 };
     };
 
@@ -51,5 +67,23 @@ namespace Engine
 
         prop.SetValue(inst, 2);
         EXPECT_TRUE(inst.A == 2);
+    }
+
+    TEST(RelflectionTest, Method)
+    {
+        TestClass inst;
+
+        Method method(new MethodInst(&TestClass::GetA));
+        Variant ret = method.Invoke(inst);
+        EXPECT_TRUE(ret.GetValue<int>() == 1);
+
+        Method method2(new MethodInst(&TestClass::GetARef));
+        Variant ret2 = method2.Invoke(inst);
+        EXPECT_TRUE(ret2.GetValue<int>() == 1);
+
+        int& val = ret2.GetValue<int>();
+        val = 2;
+        EXPECT_TRUE(inst.A == 2);
+        EXPECT_TRUE(ret.GetValue<int>() == 1);
     }
 }

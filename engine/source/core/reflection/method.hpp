@@ -10,7 +10,7 @@ namespace Engine
     public:
         virtual Variant Invoke(Variant obj) = 0;
 
-        virtual Variant Invoke(const DynamicArray<Variant>& params) = 0;
+        virtual Variant Invoke(Variant obj, const DynamicArray<Variant>& params) = 0;
 
         virtual int32 GetParamCount() const = 0;
     };
@@ -28,12 +28,18 @@ namespace Engine
 
         Variant Invoke(Variant obj) final
         {
-            auto val = (obj.GetValue<ClassType>().*Instance)();
-            auto ret = Variant(val);
-            return ret;
+            auto&& val = (obj.GetValue<ClassType>().*Instance)();
+            if constexpr(std::is_reference_v<RetType>)
+            {
+                return Variant(val);
+            }
+            else
+            {
+                return Variant(val, VARIANT_COPY);
+            }
         }
 
-        Variant Invoke(const DynamicArray<Variant>& params) final
+        Variant Invoke(Variant obj, const DynamicArray<Variant>& params) final
         {
             if (params.GetCount() != sizeof...(Args))
             {
