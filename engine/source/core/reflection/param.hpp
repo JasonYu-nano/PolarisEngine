@@ -2,7 +2,7 @@
 
 #include "reflection/meta_property.hpp"
 
-class CORE_API Param
+class Param
 {
 public:
     bool HasDefault() const

@@ -19,6 +19,12 @@ namespace Engine
             return A;
         }
 
+        int32 SetA(int32 newA)
+        {
+            A = newA;
+            return A;
+        }
+
         int32& GetARef()
         {
             return A;
@@ -30,31 +36,34 @@ namespace Engine
 
     TEST(RelflectionTest, Variant)
     {
-        int numeric = 1;
+        int32 numeric = 1;
         Variant var(numeric);
-        int& val = var.GetValue<int>();
+        int32& val = var.GetValue<int32>();
         EXPECT_TRUE(val == numeric);
         val = 2;
 
         EXPECT_TRUE(val == numeric);
-        int* ptr = var.GetPtr<int>();
+        int32* ptr = var.GetPtr<int32>();
         *ptr = 3;
         EXPECT_TRUE(numeric == 3);
 
         Variant var2(numeric, VARIANT_COPY);
-        int& val2 = var2.GetValue<int>();
+        int32& val2 = var2.GetValue<int32>();
         val2 = 4;
         EXPECT_TRUE(numeric == 3);
 
         Variant var3(0);
-        var3.GetValue<int>() = 1;
-        EXPECT_TRUE(var3.GetValue<int>() == 1);
+        var3.GetValue<int32>() = 1;
+        EXPECT_TRUE(var3.GetValue<int32>() == 1);
 
         Variant var4(var);
-        EXPECT_TRUE(var4.GetPtr<int>() == var.GetPtr<int>());
+        EXPECT_TRUE(var4.GetPtr<int32>() == var.GetPtr<int32>());
 
         Variant var5(MoveTemp(var4));
         EXPECT_FALSE(var4.IsValid());
+
+        Variant var6(nullptr);
+        EXPECT_TRUE(var6.GetValue<int32*>() == nullptr);
     }
 
     TEST(RelflectionTest, MetaProperty)
@@ -63,7 +72,7 @@ namespace Engine
 
         MetaProperty prop(new PropertyInst(&TestClass::A));
         Variant var = prop.GetValue(inst);
-        EXPECT_TRUE(var.GetValue<int>() == inst.A);
+        EXPECT_TRUE(var.GetValue<int32>() == inst.A);
 
         prop.SetValue(inst, 2);
         EXPECT_TRUE(inst.A == 2);
@@ -75,15 +84,24 @@ namespace Engine
 
         Method method(new MethodInst(&TestClass::GetA));
         Variant ret = method.Invoke(inst);
-        EXPECT_TRUE(ret.GetValue<int>() == 1);
+        EXPECT_TRUE(ret.GetValue<int32>() == 1);
 
         Method method2(new MethodInst(&TestClass::GetARef));
         Variant ret2 = method2.Invoke(inst);
-        EXPECT_TRUE(ret2.GetValue<int>() == 1);
+        EXPECT_TRUE(ret2.GetValue<int32>() == 1);
 
-        int& val = ret2.GetValue<int>();
+        int32& val = ret2.GetValue<int32>();
         val = 2;
         EXPECT_TRUE(inst.A == 2);
-        EXPECT_TRUE(ret.GetValue<int>() == 1);
+        EXPECT_TRUE(ret.GetValue<int32>() == 1);
+
+        String str = _T("abc");
+        ParamPack args{2, str};
+
+        EXPECT_TRUE(args[0].GetValue<int32>() == 2 && args[1].GetValue<String>() == _T("abc"));
+
+        Method method3(new MethodInst(&TestClass::SetA));
+        Variant ret3 = method3.Invoke(inst, {2});
+        EXPECT_TRUE(ret3.GetValue<int32>() == 2);
     }
 }
