@@ -19,10 +19,9 @@ namespace Engine
             return A;
         }
 
-        int32 SetA(int32 newA)
+        void SetA(int32 newA)
         {
             A = newA;
-            return A;
         }
 
         int32& GetARef()
@@ -82,11 +81,11 @@ namespace Engine
     {
         TestClass inst;
 
-        Method method(new MethodInst(&TestClass::GetA));
+        Method method(new MethodInvoker(&TestClass::GetA));
         Variant ret = method.Invoke(inst);
         EXPECT_TRUE(ret.GetValue<int32>() == 1);
 
-        Method method2(new MethodInst(&TestClass::GetARef));
+        Method method2(new MethodInvoker(&TestClass::GetARef));
         Variant ret2 = method2.Invoke(inst);
         EXPECT_TRUE(ret2.GetValue<int32>() == 1);
 
@@ -100,8 +99,8 @@ namespace Engine
 
         EXPECT_TRUE(args[0].GetValue<int32>() == 2 && args[1].GetValue<String>() == _T("abc"));
 
-        Method method3(new MethodInst(&TestClass::SetA));
+        Method method3(new MethodInvoker(&TestClass::SetA));
         Variant ret3 = method3.Invoke(inst, {2});
-        EXPECT_TRUE(ret3.GetValue<int32>() == 2);
+        EXPECT_TRUE(inst.A == 2);
     }
 }
