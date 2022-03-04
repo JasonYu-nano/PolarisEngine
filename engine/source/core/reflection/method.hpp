@@ -9,7 +9,9 @@ namespace Engine
     class Method : public MetaObject
     {
     public:
-        Method(IMethodInvoker* inst) : Invoker(inst) {}
+        explicit Method(IMethodInvoker* inst) : Invoker(inst) {}
+
+        Method(IMethodInvoker* inst, std::initializer_list<Param> params) : Invoker(inst), Params(params) {}
 
         Variant Invoke(const Variant& obj)
         {

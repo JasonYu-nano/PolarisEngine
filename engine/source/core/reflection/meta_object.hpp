@@ -2,6 +2,7 @@
 
 #include "definitions_core.hpp"
 #include "predefine/platform.hpp"
+#include "foundation/fixed_string.hpp"
 
 namespace Engine
 {
@@ -9,5 +10,8 @@ namespace Engine
     {
     public:
         virtual ~MetaObject() = default;
+
+    protected:
+        FixedString Name{ FixedString::None() };
     };
 }

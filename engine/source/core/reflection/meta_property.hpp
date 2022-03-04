@@ -61,7 +61,7 @@ namespace Engine
     public:
         MetaProperty(IPropertyInst* inst) : Instance(inst) {}
 
-        virtual ~MetaProperty() override
+        ~MetaProperty() override
         {
             delete Instance;
         }

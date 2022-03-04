@@ -49,6 +49,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin)
 
 #add sub dir
 
+set(solution_dir "${CMAKE_CURRENT_LIST_DIR}")
+
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 
 add_subdirectory(source)

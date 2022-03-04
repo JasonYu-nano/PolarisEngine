@@ -1,7 +1,7 @@
 #pragma once
 
 #include "predefine/platform.hpp"
-#include "predefine/common_marco.hpp"
+#include "predefine/core_macro.hpp"
 #include "foundation/string.hpp"
 #include "log/logger.hpp"
 #include "foundation/dynamic_array.hpp"

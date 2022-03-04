@@ -2,9 +2,11 @@
 
 #include "reflection/meta_property.hpp"
 
-class Param
+class Param : public MetaObject
 {
 public:
+    explicit Param(Variant&& defaultValue) : Default(defaultValue) {}
+
     bool HasDefault() const
     {
         return Default.IsValid();
@@ -16,5 +18,5 @@ public:
     }
 
 private:
-    Variant Default;
+    Variant Default{ Variant() };
 };

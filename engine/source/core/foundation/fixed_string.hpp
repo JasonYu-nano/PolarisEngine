@@ -9,6 +9,8 @@ namespace Engine
     class CORE_API FixedString
     {
     public:
+        static FixedString None();
+
         FixedString() = default;
 
         FixedString(const char_t* str);

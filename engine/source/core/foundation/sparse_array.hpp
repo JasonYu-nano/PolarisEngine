@@ -3,7 +3,7 @@
 #include "foundation/bit_array.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/type_traits.hpp"
-#include "predefine/common_marco.hpp"
+#include "predefine/core_macro.hpp"
 
 namespace Engine
 {
