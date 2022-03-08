@@ -6,4 +6,9 @@ namespace Engine
     {
         return Numeric;
     }
+
+    void ReflectClass::SetNumeric(int32 value)
+    {
+        Numeric = value;
+    }
 }

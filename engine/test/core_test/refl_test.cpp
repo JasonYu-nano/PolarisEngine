@@ -82,11 +82,11 @@ namespace Engine
         TestClass inst;
 
         Method method(new MethodInvoker(&TestClass::GetA));
-        Variant ret = method.Invoke(inst);
+        Variant ret = method.Invoke({inst});
         EXPECT_TRUE(ret.GetValue<int32>() == 1);
 
         Method method2(new MethodInvoker(&TestClass::GetARef));
-        Variant ret2 = method2.Invoke(inst);
+        Variant ret2 = method2.Invoke({inst});
         EXPECT_TRUE(ret2.GetValue<int32>() == 1);
 
         int32& val = ret2.GetValue<int32>();
@@ -100,7 +100,16 @@ namespace Engine
         EXPECT_TRUE(args[0].GetValue<int32>() == 2 && args[1].GetValue<String>() == _T("abc"));
 
         Method method3(new MethodInvoker(&TestClass::SetA));
-        Variant ret3 = method3.Invoke(inst, {2});
+        Variant ret3 = method3.Invoke({inst, 2});
         EXPECT_TRUE(inst.A == 2);
+    }
+
+    TEST(RelflectionTest, StaticMethod)
+    {
+        TestClass inst;
+
+        Method method(new StaticMethodInvoker(&TestClass::GetName));
+        Variant ret = method.Invoke({});
+        EXPECT_TRUE(ret.GetValue<String>() == _T("TestClass"));
     }
 }

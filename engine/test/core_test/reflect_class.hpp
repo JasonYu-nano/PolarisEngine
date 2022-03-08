@@ -14,8 +14,10 @@ namespace Engine
             ReflectClassBackend::RegisterReflection();
         }
 
-    private:
         int32 GetNumeric() const;
+
+    private:
+        void SetNumeric(int32 value);
 
         int32 Numeric{ 0 };
     };

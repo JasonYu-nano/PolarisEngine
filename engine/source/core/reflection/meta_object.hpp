@@ -11,6 +11,11 @@ namespace Engine
     public:
         virtual ~MetaObject() = default;
 
+        FixedString GetName() const
+        {
+            return Name;
+        }
+
     protected:
         FixedString Name{ FixedString::None() };
     };

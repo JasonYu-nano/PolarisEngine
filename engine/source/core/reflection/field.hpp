@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-    class CORE_API Field : public MetaProperty
+    class Field : public MetaProperty
     {
 
     };

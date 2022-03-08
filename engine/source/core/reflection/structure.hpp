@@ -9,6 +9,12 @@ namespace Engine
 {
     class Structure
     {
+    public:
+        Method& AddMethod(Method&& method)
+        {
+            return Methods.Add(method.GetName(), method);
+        }
+
     private:
         Map<FixedString, Method> Methods;
 
