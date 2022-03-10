@@ -65,15 +65,15 @@ namespace Engine
         EXPECT_TRUE(var6.GetValue<int32*>() == nullptr);
     }
 
-    TEST(RelflectionTest, MetaProperty)
+    TEST(RelflectionTest, Field)
     {
         TestClass inst;
 
-        MetaProperty prop(new PropertyInst(&TestClass::A));
-        Variant var = prop.GetValue(inst);
+        Field field(new FieldEntity(&TestClass::A));
+        Variant var = field.GetValue(inst);
         EXPECT_TRUE(var.GetValue<int32>() == inst.A);
 
-        prop.SetValue(inst, 2);
+        field.SetValue(inst, 2);
         EXPECT_TRUE(inst.A == 2);
     }
 

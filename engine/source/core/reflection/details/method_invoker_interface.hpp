@@ -52,6 +52,8 @@ namespace Engine
     class IMethodInvoker
     {
     public:
+        virtual ~IMethodInvoker() = default;
+
         virtual Variant Invoke(const ParamPack& params) = 0;
 
         virtual int32 GetParamCount() const = 0;

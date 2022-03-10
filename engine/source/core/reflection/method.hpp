@@ -56,7 +56,7 @@ namespace Engine
         }
 
     private:
-        IMethodInvoker* Invoker;
+        IMethodInvoker* Invoker{ nullptr };
         DynamicArray<Param> Params;
     };
 }

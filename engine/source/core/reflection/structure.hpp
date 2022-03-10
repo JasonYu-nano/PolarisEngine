@@ -15,6 +15,11 @@ namespace Engine
             return Methods.Add(method.GetName(), method);
         }
 
+        Field& AddField(Field&& field)
+        {
+            return Fields.Add(field.GetName(), field);
+        }
+
     private:
         Map<FixedString, Method> Methods;
 

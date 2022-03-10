@@ -15,5 +15,8 @@ namespace Engine
     #define ADD_PARAM(value) \
         method.AddParam(Param(value));
 
+    #define ADD_FIELD(className, methodName) \
+        obj->AddField(Field(new FieldEntity(&className::methodName)));
+
     #define DECLARE_FIELD(class, field)
 }
