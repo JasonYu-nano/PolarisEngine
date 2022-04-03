@@ -39,6 +39,11 @@ conan_cmake_configure(REQUIRES spdlog/1.8.2
         IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
         OPTIONS spdlog:shared=True spdlog:wchar_support=True)
 
+conan_cmake_configure(REQUIRES gflags/2.2.2
+        GENERATORS cmake_find_package
+        IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
+        OPTIONS gflags:shared=True)
+
 conan_cmake_autodetect(settings)
 message(${settings})
 conan_cmake_install(PATH_OR_REFERENCE .
@@ -48,6 +53,7 @@ conan_cmake_install(PATH_OR_REFERENCE .
 
 find_package(fmt)
 find_package(spdlog)
+find_package(gflags)
 
 if(fmt_FOUND)
     target_include_directories(${target} PRIVATE ${fmt_INCLUDE_DIR})
@@ -59,6 +65,14 @@ if(spdlog_FOUND)
     target_link_libraries(${target} ${spdlog_LIBRARIES})
     target_compile_definitions(${target} PUBLIC ${spdlog_DEFINITIONS})
 endif()
+
+if(gflags_FOUND)
+    target_include_directories(${target} PUBLIC ${gflags_INCLUDE_DIR})
+    target_link_libraries(${target} ${gflags_LIBRARIES})
+    target_compile_definitions(${target} PUBLIC ${gflags_DEFINITIONS})
+endif()
+
+target_include_directories(${target} PUBLIC ${third_parties_dir}/nlohmann_json/include)
 
 # ide
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})

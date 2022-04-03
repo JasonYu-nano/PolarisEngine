@@ -56,7 +56,7 @@ namespace Engine
         }
         else
         {
-            return Format("{0}_{1}", entry->Data, SUFFIX_TO_ACTUAL(Number));
+            return Format(_T("{0}_{1}"), entry->Data, SUFFIX_TO_ACTUAL(Number));
         }
 
         return String::Empty();

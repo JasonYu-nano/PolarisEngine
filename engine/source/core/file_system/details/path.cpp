@@ -7,23 +7,31 @@ namespace Engine
     {
         String ret = dest;
         if (ret.IsEmpty())
+        {
             ret.Append(part);
+        }
         else if (ret.EndWith(_T("/")) || ret.EndWith(_T("\\")))
         {
             if (part.StartWith(_T("/")) && part.Length() > 1)
+            {
                 ret.Append(part.Substr(1, part.Length() - 1));
+            }
             else if (part.StartWith(_T("\\")) && part.Length() > 2)
+            {
                 ret.Append(part.Substr(2, part.Length() - 2));
+            }
             else
+            {
                 ret.Append(part);
+            }
 
         }
         else
         {
-            if (part.StartWith(_T("/")) && part.Length() > 1)
-                ret.Append(part.Substr(1, part.Length() - 1));
-            else if (part.StartWith(_T("\\")) && part.Length() > 2)
-                ret.Append(part.Substr(2, part.Length() - 2));
+            if (part.StartWith(_T("/")) || part.StartWith(_T("\\")))
+            {
+                ret.Append(part);
+            }
             else
             {
                 ret.Append(_T("/"));

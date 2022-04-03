@@ -3,6 +3,7 @@
 #include <ostream>
 #include "fmt/core.h"
 #include "spdlog/fmt/fmt.h"
+#include "nlohmann/json.hpp"
 #include "definitions_core.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/string_view.hpp"
@@ -13,7 +14,7 @@ namespace Engine
 #ifdef Format
     #undefine Format
 #endif
-    #define Format(context, ...) fmt::format(_T(context), __VA_ARGS__)
+    #define Format(context, ...) fmt::format(context, __VA_ARGS__)
 
     class CORE_API String
     {
@@ -71,6 +72,10 @@ namespace Engine
 
     public:
         operator TStringView() const;
+
+        explicit operator const ansi*() const;
+
+        explicit operator const wchar*() const;
 
 #ifdef UNICODE
         operator std::wstring() const { return Internal; }
@@ -145,3 +150,37 @@ struct CORE_API fmt::formatter<String> : fmt::formatter<int>
         return fmt::format_to(ctx.out(), "{0}", *str);
     }
 };
+
+namespace nlohmann
+{
+    template <>
+    struct CORE_API adl_serializer<Engine::String>
+    {
+        static void to_json(json& j, const Engine::String& str)
+        {
+#ifdef UNICODE
+            std::wstring temp = (std::wstring)str;
+            j = temp;
+#else
+            j = (std::string)str;
+#endif
+        }
+
+        static void from_json(const json& j, Engine::String& str)
+        {
+            if (j.is_null())
+            {
+                str = Engine::String::Empty();
+            }
+            else
+            {
+#ifdef UNICODE
+                str = j.get<std::wstring>();
+#else
+                str = j.get<std::string>();
+#endif
+            }
+        }
+    };
+
+}

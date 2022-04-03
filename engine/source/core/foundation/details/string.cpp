@@ -6,6 +6,7 @@
 #ifdef UNICODE
 #include <wchar.h>
 #endif
+#include "foundation/string_cast.hpp"
 
 namespace Engine
 {
@@ -64,8 +65,7 @@ namespace Engine
 
     const char_t& String::At(size_t index) const
     {
-        //PL_ASSERT(index < Length());
-        PL_FATAL("Engine", _T("index is invalid"));
+        PL_ASSERT(index < Length());
         return Internal.at(index);
     }
 
@@ -197,5 +197,23 @@ namespace Engine
     bool String::operator!=(const char_t *other)
     {
         return Internal != other;
+    }
+
+    String::operator const ansi*() const
+    {
+#ifdef UNICODE
+        return W2A(Data());
+#else
+        return Data();
+#endif
+    }
+
+    String::operator const wchar*() const
+    {
+#ifdef UNICODE
+        return Data();
+#else
+        return A2W(Data());
+#endif
     }
 }

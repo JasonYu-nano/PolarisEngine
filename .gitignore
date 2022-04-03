@@ -42,3 +42,5 @@ generated/
 !**/third_parties/**/*.lib
 cmake-build-debug/
 build_clion/
+
+engine/intermediate/

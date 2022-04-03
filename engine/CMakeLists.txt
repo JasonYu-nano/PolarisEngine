@@ -38,6 +38,7 @@ endif()
 
 # add cmake find path
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
@@ -50,10 +51,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin)
 #add sub dir
 
 set(solution_dir "${CMAKE_CURRENT_LIST_DIR}")
+set(third_parties_dir "${CMAKE_CURRENT_LIST_DIR}/third_parties")
 
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 
 add_subdirectory(source)
+
+add_subdirectory(tools)
 
 if(with_test)
     add_subdirectory(test)

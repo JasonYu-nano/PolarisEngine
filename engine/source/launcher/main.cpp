@@ -2,7 +2,7 @@
 #include "memory/override_new_delete.hpp"
 
 
-int main(void* args, int argv)
+int main(int argv, char** args)
 {
     Engine::EngineLoop::Init();
 
