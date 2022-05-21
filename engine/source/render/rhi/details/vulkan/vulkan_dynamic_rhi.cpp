@@ -113,8 +113,8 @@ namespace Engine
         createInfo.pApplicationInfo = &appInfo;
         createInfo.enabledLayerCount = 0;
         createInfo.ppEnabledLayerNames = nullptr;
-        createInfo.enabledExtensionCount = extensions.GetCount();
-        createInfo.ppEnabledExtensionNames = extensions.GetData();
+        createInfo.enabledExtensionCount = extensions.Size();
+        createInfo.ppEnabledExtensionNames = extensions.Data();
         createInfo.pNext = nullptr;
 #if VULKAN_DEBUG_MODE
         FillUpValidationSetting(createInfo);
@@ -151,7 +151,7 @@ namespace Engine
 
         VkArray<VkLayerProperties> availableLayers;
         availableLayers.Resize(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.GetData());
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.Data());
 
         for (const char* layerName : ValidationLayers) 
         {
@@ -179,8 +179,8 @@ namespace Engine
 #if VULKAN_DEBUG_MODE
         if (CheckValidationLayerSupport())
         {
-            createInfo.enabledLayerCount = ValidationLayers.GetCount();
-            createInfo.ppEnabledLayerNames = ValidationLayers.GetData();
+            createInfo.enabledLayerCount = ValidationLayers.Size();
+            createInfo.ppEnabledLayerNames = ValidationLayers.Data();
         }
         else
         {
@@ -242,7 +242,7 @@ namespace Engine
 
         VkArray<VkPhysicalDevice> devices;
         devices.Resize(deviceNum);
-        vkEnumeratePhysicalDevices(Instance, &deviceNum, devices.GetData());
+        vkEnumeratePhysicalDevices(Instance, &deviceNum, devices.Data());
 
         for (const auto& device : devices) 
         {
@@ -263,7 +263,7 @@ namespace Engine
 
         VkArray<VkQueueFamilyProperties> queueFamilies;
         queueFamilies.Resize(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.GetData());
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.Data());
 
         QueueFamilyIndices indices;
         int i = 0;
@@ -314,17 +314,17 @@ namespace Engine
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.pQueueCreateInfos = queueCreationInfos.GetData();
-        createInfo.queueCreateInfoCount = queueCreationInfos.GetCount();
+        createInfo.pQueueCreateInfos = queueCreationInfos.Data();
+        createInfo.queueCreateInfoCount = queueCreationInfos.Size();
         createInfo.pEnabledFeatures = &deviceFeatures;
 
-        createInfo.enabledExtensionCount = DeviceExtensions.GetCount();
-        createInfo.ppEnabledExtensionNames = DeviceExtensions.GetData();
+        createInfo.enabledExtensionCount = DeviceExtensions.Size();
+        createInfo.ppEnabledExtensionNames = DeviceExtensions.Data();
         createInfo.enabledLayerCount = 0;
 
 #if VULKAN_DEBUG_MODE
-        createInfo.enabledLayerCount = ValidationLayers.GetCount();
-        createInfo.ppEnabledLayerNames = ValidationLayers.GetData();
+        createInfo.enabledLayerCount = ValidationLayers.Size();
+        createInfo.ppEnabledLayerNames = ValidationLayers.Data();
 #endif
 
         if (vkCreateDevice(PhysicalDevice, &createInfo, nullptr, &Device) != VK_SUCCESS) 
@@ -389,7 +389,7 @@ namespace Engine
         if (formatCount != 0)
         {
             details.Formats.Resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, Surface, &formatCount, details.Formats.GetData());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, Surface, &formatCount, details.Formats.Data());
         }
 
         uint32 presentModeCount;
@@ -398,7 +398,7 @@ namespace Engine
         if (presentModeCount != 0)
         {
             details.PresentModes.Resize(formatCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, Surface, &presentModeCount, details.PresentModes.GetData());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, Surface, &presentModeCount, details.PresentModes.Data());
         }
 
         return details;
@@ -503,7 +503,7 @@ namespace Engine
 
         vkGetSwapchainImagesKHR(Device, SwapChain, &imageCount, nullptr);
         SwapChainImages.Resize(imageCount);
-        vkGetSwapchainImagesKHR(Device, SwapChain, &imageCount, SwapChainImages.GetData());
+        vkGetSwapchainImagesKHR(Device, SwapChain, &imageCount, SwapChainImages.Data());
 
         SwapChainImageFormat = surfaceFormat.format;
         SwapChainExtent = extent;
@@ -511,7 +511,7 @@ namespace Engine
 
     void VulkanDynamicRHI::CreateImageViews()
     {
-        SwapChainImageViews.Resize(SwapChainImages.GetCount());
+        SwapChainImageViews.Resize(SwapChainImages.Size());
         uint32 idx = 0;
         for (const auto& image : SwapChainImages)
         {

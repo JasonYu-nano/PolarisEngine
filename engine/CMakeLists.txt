@@ -29,11 +29,21 @@ elseif(${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo")
 elseif(${CMAKE_BUILD_TYPE} MATCHES "Release")
     add_compile_definitions("SHIPPING")
 endif()
-#add_compile_definitions(SPDLOG_SHARED_LIB)
 
 if(WIN32)
     add_compile_definitions(WIN32)
     add_compile_definitions(_WIN32)
+endif()
+
+cmake_host_system_information(RESULT support_sse QUERY HAS_SSE)
+cmake_host_system_information(RESULT support_sse2 QUERY HAS_SSE2)
+
+if (support_sse)
+    add_compile_definitions(SSE)
+endif()
+
+if (support_sse2)
+    add_compile_definitions(SSE2)
 endif()
 
 # add cmake find path
@@ -50,6 +60,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin)
 #add sub dir
 
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/detect_cpu_architectures.cmake)
 
 add_subdirectory(source)
 

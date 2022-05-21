@@ -29,14 +29,14 @@ namespace Engine
 
         void Pop()
         {
-            PL_ASSERT(Super::Count > 0);
-            RemoveAt(Super::Count - 1);
+            PL_ASSERT(Super::ArraySize > 0);
+            RemoveAt(Super::ArraySize - 1);
         }
 
         ElementType& Top()
         {
-            PL_ASSERT(Super::Count > 0);
-            return At(Super::Count - 1);
+            PL_ASSERT(Super::ArraySize > 0);
+            return At(Super::ArraySize - 1);
         }
     private:
         using Super::Add;

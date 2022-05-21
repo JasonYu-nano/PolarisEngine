@@ -1,5 +1,6 @@
 #pragma once
 #include "foundation/string.hpp"
+#include "foundation/ustring.hpp"
 
 namespace Engine
 {
@@ -10,6 +11,8 @@ namespace Engine
     {
     public:
         static String MakePath(const String& dest, const String& part);
+
+        static UString MakePath(const UString& dest, const UString& part);
 
         static String GetExtension(const String& path);
 

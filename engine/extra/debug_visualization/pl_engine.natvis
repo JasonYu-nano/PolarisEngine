@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <!-- Array visualizer -->
+    <Type Name="Engine::DynamicArray&lt;*,Engine::InlineAllocator&lt;*,*,*,*&gt; &gt;">
+        <DisplayString Condition="ArraySize == 0">Empty</DisplayString>
+        <DisplayString Condition="ArraySize &lt; 0">Invalid</DisplayString>
+        <DisplayString Condition="ArrayCapacity &lt; ArraySize">Invalid</DisplayString>
+        <DisplayString Condition="ArrayCapacity &gt;= ArraySize">Size={ArraySize} Capacity={ArrayCapacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="ArraySize &lt;= ArrayCapacity">
+                <Size>ArraySize</Size>
+                <ValuePointer Condition="AllocatorInstance.Allocator.Data == 0">($T1*)AllocatorInstance.Data</ValuePointer>
+                <ValuePointer Condition="AllocatorInstance.Allocator.Data != 0">($T1*)AllocatorInstance.Allocator.Data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="Engine::DynamicArray&lt;*,*&gt;">
+        <DisplayString Condition="ArraySize == 0">Empty</DisplayString>
+        <DisplayString Condition="ArraySize &lt; 0">Invalid</DisplayString>
+        <DisplayString Condition="ArrayCapacity &lt; ArraySize">Invalid</DisplayString>
+        <DisplayString Condition="ArrayCapacity &gt;= ArraySize">Size={ArraySize} Capacity={ArrayCapacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="ArraySize &lt;= ArrayCapacity">
+                <Size>ArraySize</Size>
+                <ValuePointer>($T1*)AllocatorInstance.Data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- String visualizer -->
+    <Type Name="Engine::BasicStringView&lt;*,*&gt;">
+        <DisplayString Condition="Str &lt;= 0">Null</DisplayString>
+        <DisplayString Condition="Len == 0">Empty</DisplayString>
+        <DisplayString Condition="Str &gt;= 0">Data={Str} Length={Len}</DisplayString>
+    </Type>
+
+    <Type Name="Engine::UString">
+        <DisplayString Condition="Source.ArraySize == 0">Empty</DisplayString>
+        <DisplayString Condition="Source.ArraySize &lt; 0">Invalid</DisplayString>
+        <DisplayString Condition="Source.ArrayCapacity &lt; Source.ArraySize">Invalid</DisplayString>
+        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data == 0">{(const char16_t*)Source.AllocatorInstance.Data,su}</DisplayString>
+        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data != 0">{(const char16_t*)Source.AllocatorInstance.Allocator.Data,su}</DisplayString>
+        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data == 0">(const char16_t*)Source.AllocatorInstance.Data,su</StringView>
+        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data != 0">(const char16_t*)Source.AllocatorInstance.Allocator.Data,su</StringView>
+    </Type>
+</AutoVisualizer>

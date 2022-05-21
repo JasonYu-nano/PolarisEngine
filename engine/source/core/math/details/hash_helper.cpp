@@ -17,6 +17,6 @@ namespace Engine
 
     uint64 HashHelper::FnvHash(TStringView str) noexcept
     {
-        return FnvHash(str.Data, str.Length);
+        return FnvHash(str.Data(), str.Length());
     }
 }

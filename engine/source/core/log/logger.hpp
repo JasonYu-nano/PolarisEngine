@@ -30,6 +30,12 @@ namespace Engine
         }
 
         template<typename TChar, typename... Args>
+        static void Info(const char* category, const char16_t* fmt, Args&&... args)
+        {
+            GetLogger()->info(fmt, std::forward<Args>(args)...);
+        }
+
+        template<typename TChar, typename... Args>
         static void Warn(const ansi* category, const TChar* fmt, Args&&... args)
         {
             GetLogger()->warn(fmt, std::forward<Args>(args)...);
@@ -101,6 +107,8 @@ namespace Engine
     #define PL_WARN(category, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
     #define PL_ERROR(category, fmt, ...) PL_LOG_IMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
     #define PL_FATAL(category, fmt, ...) PL_LOG_IMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
+
+    #define LOG_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::info, category, u##fmt, ## __VA_ARGS__)
     // #define LOG(category, level, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
     #define CLOG(expr, category, level, fmt, ...) \
         if (expr)                                          \

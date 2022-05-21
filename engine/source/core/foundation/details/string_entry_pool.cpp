@@ -31,7 +31,7 @@ namespace Engine
     FixedEntryId StringEntryPool::AllocEntryId(const FixedStringView& entry)
     {
         FixedEntryId entryId = 0;
-        entryId = GetLowerCaseHash(entry.Data, entry.Length);
+        entryId = GetLowerCaseHash(entry.Data(), entry.Length());
         return entryId;
     }
 }

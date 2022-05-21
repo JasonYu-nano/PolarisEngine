@@ -33,6 +33,34 @@ namespace Engine
         return ret;
     }
 
+    UString Path::MakePath(const UString& dest, const UString& part)
+    {
+        UString path = dest;
+        UString normalizedPart = part;
+
+        if (dest.EndsWith("/") || dest.EndsWith("\\"))
+        {
+            if (part.StartsWith("/"))
+            {
+                normalizedPart.Remove(0, 1);
+            }
+            else if (part.StartsWith("\\"))
+            {
+                normalizedPart.Remove(0, 2);
+            }
+        }
+        else
+        {
+            if (!part.StartsWith("/") && !part.StartsWith("\\"))
+            {
+                normalizedPart.Prepend("/");
+            }
+        }
+
+        path.Append(normalizedPart);
+        return path;
+    }
+
     String Path::GetExtension(const String& path)
     {
         size_t pos = path.FindLast(_T("."));

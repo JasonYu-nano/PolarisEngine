@@ -126,7 +126,7 @@ struct CORE_API std::less<String>
 {
     bool operator()(const String& lhs, const String& rhs) const
     {
-        return CharUtils::StrCmp(*lhs, *rhs);
+        return CharUtils::Compare(*lhs, lhs.Length(), *rhs, rhs.Length());
     }
 };
 
