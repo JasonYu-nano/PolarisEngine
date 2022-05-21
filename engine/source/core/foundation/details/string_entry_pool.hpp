@@ -17,7 +17,7 @@ namespace Engine
 
     constexpr int32 InitialBucketCount = 1 << 9;
 
-    using FixedStringView = StringView<char_t, int32>;
+    using FixedStringView = BasicStringView<char_t>;
 
     class FixedStringHelper
     {

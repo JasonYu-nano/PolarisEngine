@@ -294,41 +294,41 @@ namespace Engine
 
         bool IsEmpty() const
         {
-            return GetCount() == 0;
+            return Size() == 0;
         }
 
-        int32 GetCount() const
+        int32 Size() const
         {
-            return ElementNodes.GetCount() - FreeElementCount;
+            return ElementNodes.Size() - FreeElementCount;
         }
 
         int32 GetMaxIndex() const
         {
-            return ElementNodes.GetCount();
+            return ElementNodes.Size();
         }
 
-        int32 GetCapacity() const
+        int32 Capacity() const
         {
-            return ElementNodes.GetCapacity();
+            return ElementNodes.Capacity();
         }
 
         const ElementLinkNode* GetData() const
         {
-            return ElementNodes.GetData();
+            return ElementNodes.Data();
         }
 
         ElementLinkNode* GetData()
         {
-            return ElementNodes.GetData();
+            return ElementNodes.Data();
         }
 
         Iterator begin() { return Iterator(*this, AllocateFlags.CreateValidIterator()); }
 
         ConstIterator begin() const { return ConstIterator(*this, AllocateFlags.CreateValidIterator()); }
 
-        Iterator end() { return Iterator(*this, AllocateFlags.CreateValidIterator(AllocateFlags.GetCount())); }
+        Iterator end() { return Iterator(*this, AllocateFlags.CreateValidIterator(AllocateFlags.Size())); }
 
-        ConstIterator end() const { return ConstIterator(*this, AllocateFlags.CreateValidIterator(AllocateFlags.GetCount())); }
+        ConstIterator end() const { return ConstIterator(*this, AllocateFlags.CreateValidIterator(AllocateFlags.Size())); }
 
     private:
         template <typename... Args>
@@ -374,7 +374,7 @@ namespace Engine
 
         void InsertUnconstructElement(int32 index)
         {
-            if (index >= ElementNodes.GetCount())
+            if (index >= ElementNodes.Size())
             {
                 Reserve(index + 1);
             }

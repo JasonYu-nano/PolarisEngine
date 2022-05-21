@@ -5,7 +5,7 @@ namespace Engine
 {
     FixedString::FixedString(const char_t* str)
     {
-        MakeFixedString(FixedStringView{str, static_cast<int32>(CharUtils::StrLen(str))});
+        MakeFixedString(FixedStringView{str, static_cast<int32>(CharUtils::Length(str))});
     }
 
     FixedString::FixedString(const FixedString& other)
@@ -33,7 +33,7 @@ namespace Engine
     void FixedString::MakeFixedString(FixedStringView view)
     {
         int32 numberCount = 0;
-        Number = FixedStringHelper::SplitNumber(view.Data, view.Length);
+        Number = FixedStringHelper::SplitNumber(const_cast<char_t*>(view.Data()), view.Length());
         EntryId = StringEntryPool::Get().FindOrStore(view);
     }
 
@@ -47,11 +47,11 @@ namespace Engine
 
         if (Number == SUFFIX_NUMBER_NONE)
         {
-            return String(entry->Data);
+            return String(entry->Data());
         }
         else
         {
-            return Format("{0}_{1}", entry->Data, SUFFIX_TO_ACTUAL(Number));
+            return Format("{0}_{1}", entry->Data(), SUFFIX_TO_ACTUAL(Number));
         }
 
         return String::Empty();

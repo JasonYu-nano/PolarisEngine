@@ -1,6 +1,7 @@
 #pragma once
 #include <type_traits>
 #include "predefine/platform.hpp"
+//#include "foundation/uchar.hpp"
 
 using namespace Engine;
 
@@ -46,9 +47,6 @@ template <typename Type>
 struct IsIntegral : std::bool_constant<IsIntegralV<Type>> {};
 
 template <typename Type>
-constexpr bool IsCharV = std::_Is_any_of_v<std::remove_cv_t<Type>, char, wchar_t, char8_t, char16_t, char32_t>;
-
-template <typename Type>
 constexpr bool HasTrivialDestructorV = __has_trivial_destructor(Type);
 
 template <typename Type>
@@ -69,9 +67,6 @@ struct SwitchType<false, TrueType, FalseType>
 {
     typedef FalseType Value;
 };
-
-template <typename T>
-concept CharType = IsCharV<T>;
 
 template <typename T>
 concept IntegralType = IsIntegralV<T>;

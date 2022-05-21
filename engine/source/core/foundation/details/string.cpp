@@ -64,7 +64,7 @@ namespace Engine
 
     const char_t& String::At(size_t index) const
     {
-        //PL_ASSERT(index < Length());
+        //PL_ASSERT(index < Len());
         PL_FATAL("Engine", _T("index is invalid"));
         return Internal.at(index);
     }
@@ -77,7 +77,7 @@ namespace Engine
     bool String::EndWith(const char_t* value) const
     {
         size_t length = Length();
-        size_t valueLength = CharUtils::StrLen(value);
+        size_t valueLength = CharUtils::Length(value);
         if (valueLength <= 0 || length < valueLength)
             return false;
 
@@ -96,7 +96,7 @@ namespace Engine
     bool String::StartWith(const char_t* value) const
     {
         size_t length = Length();
-        size_t valueLength = CharUtils::StrLen(value);
+        size_t valueLength = CharUtils::Length(value);
 
         if (valueLength <= 0 || length < valueLength)
             return false;

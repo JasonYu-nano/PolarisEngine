@@ -228,7 +228,7 @@ namespace Engine
 
         void Append(std::initializer_list<ElementType> initializer)
         {
-            Reserve(Elements.GetCount() + (int32)initializer.size());
+            Reserve(Elements.Size() + (int32)initializer.size());
             for (auto&& element : initializer)
             {
                 Add(element);
@@ -251,7 +251,7 @@ namespace Engine
         ElementType* Find(const KeyType& key) const
         {
             ElementType* ret = nullptr;
-            if (GetCount() > 0)
+            if (Size() > 0)
             {
                 SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
                 while (elementIndex->IsValid())
@@ -281,7 +281,7 @@ namespace Engine
         bool Remove(const KeyType& key)
         {
             bool ret = false;
-            if (GetCount() > 0)
+            if (Size() > 0)
             {
                 SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
                 while (elementIndex->IsValid())
@@ -311,14 +311,14 @@ namespace Engine
             Elements.Clear(slack);
         }
 
-        int32 GetCount() const
+        int32 Size() const
         {
-            return Elements.GetCount();
+            return Elements.Size();
         }
 
         bool IsEmpty() const
         {
-            return GetCount() == 0;
+            return Size() == 0;
         }
 
         /**
@@ -328,7 +328,7 @@ namespace Engine
          */
         void Reserve(int32 count)
         {
-            if (count > static_cast<int32>(Elements.GetCount()))
+            if (count > static_cast<int32>(Elements.Size()))
             {
                 Elements.Reserve(count);
 
@@ -371,7 +371,7 @@ namespace Engine
             }
 
 
-            CheckRehash(Elements.GetCount() + 1);
+            CheckRehash(Elements.Size() + 1);
             int32 indexInSparseArray = Elements.AddUnconstructElement();
             SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(element);
             LinkElement(SetElementIndex{ indexInSparseArray }, *item, hashCode);
@@ -389,7 +389,7 @@ namespace Engine
         template <typename KeyType>
         SetElementIndex FindIndex(const KeyType& key, uint32 hashCode) const
         {
-            if (Elements.GetCount() > 0)
+            if (Elements.Size() > 0)
             {
                 for (SetElementIndex index = GetFirstIndex(hashCode); index.IsValid(); index = Elements[index].HashNextId)
                 {
@@ -406,7 +406,7 @@ namespace Engine
         /** Contains the head of SetElement list */
         SetElementIndex& GetFirstIndex(uint32 hashCode) const
         {
-            PL_ASSERT(GetCount() > 0);
+            PL_ASSERT(Size() > 0);
             return ((SetElementIndex*)HashBucket.GetAllocation())[GetHashIndex(hashCode)];
         }
 

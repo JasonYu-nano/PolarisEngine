@@ -32,7 +32,7 @@ namespace Engine
             if (Source)
             {
                 Ptr = (const ToType*)Source;
-                StringLength = -1; // Length calculated on-demand
+                StringLength = -1; // Len calculated on-demand
             }
             else
             {
@@ -78,7 +78,7 @@ namespace Engine
         }
 
         /**
-         * Length of the string.
+         * Len of the string.
          *
          * @return The number of characters in the string, excluding any null terminator.
          */
@@ -113,7 +113,7 @@ namespace Locale
 
         /*if (invalidChars)
         {
-            for (int I = 0; I < Size; ++I)
+            for (int I = 0; I < Length; ++I)
             {
                 if (!CanConvertChar<Dest>(Src[I]))
                 {

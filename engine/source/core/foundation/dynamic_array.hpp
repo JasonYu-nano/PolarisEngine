@@ -33,7 +33,7 @@ namespace Engine
 
         explicit operator bool () const
         {
-            return Index >= 0 && Index < Container.GetCount();
+            return Index >= 0 && Index < Container.Size();
         }
 
         ConstIndexIterator& operator++ ()
@@ -129,21 +129,27 @@ namespace Engine
     public:
         using ConstIterator = ConstIndexIterator<DynamicArray, ElementType, SizeType>;
         using Iterator = IndexIterator<DynamicArray, ElementType, SizeType>;
+        using TElement = ElementType;
 
     public:
         DynamicArray()
-            : Capacity(AllocatorInstance.GetDefaultCapacity())
+            : ArrayCapacity(AllocatorInstance.GetDefaultCapacity())
         {}
 
         explicit DynamicArray(SizeType capacity)
-            : Capacity(Math::Max(capacity, AllocatorInstance.GetDefaultCapacity()))
+            : ArrayCapacity(Math::Max(capacity, AllocatorInstance.GetDefaultCapacity()))
         {
-            AllocatorInstance.Resize(Capacity, sizeof(ElementType));
+            AllocatorInstance.Resize(ArrayCapacity, sizeof(ElementType));
         }
 
-        DynamicArray(ElementType* rawPtr, SizeType count)
+        DynamicArray(const ElementType* rawPtr, SizeType count)
         {
             CopyElement(rawPtr, count);
+        }
+
+        DynamicArray(const ElementType& initVal, SizeType count)
+        {
+            Resize(count, initVal);
         }
 
         DynamicArray(std::initializer_list<ElementType> initializer) 
@@ -153,7 +159,7 @@ namespace Engine
 
         DynamicArray(const DynamicArray& other)
         {
-            CopyElement(other.GetData(), other.Count);
+            CopyElement(other.Data(), other.ArraySize);
         }
 
         DynamicArray(DynamicArray&& other) noexcept
@@ -164,7 +170,7 @@ namespace Engine
         template <typename OtherAllocator>
         explicit DynamicArray(const DynamicArray<ElementType, OtherAllocator>& other)
         {
-            CopyElement(other.GetData(), other.GetCount());
+            CopyElement(other.Data(), other.Size());
         }
 
         virtual ~DynamicArray()
@@ -174,7 +180,7 @@ namespace Engine
 
         DynamicArray& operator=(std::initializer_list<ElementType> initializer)
         {
-            DestructElements(GetData(), Count);
+            DestructElements(Data(), ArraySize);
             CopyElement(initializer.begin(), (SizeType)initializer.size());
             return *this;
         }
@@ -182,15 +188,15 @@ namespace Engine
         DynamicArray& operator=(const DynamicArray& other)
         {
             PL_ASSERT(this != &other);
-            DestructElements(GetData(), Count);
-            CopyElement(other.GetData(), other.Count);
+            DestructElements(Data(), ArraySize);
+            CopyElement(other.Data(), other.ArraySize);
             return *this;
         }
 
         DynamicArray& operator=(DynamicArray&& other) noexcept
         {
             PL_ASSERT(this != &other);
-            DestructElements(GetData(), Count);
+            DestructElements(Data(), ArraySize);
             MoveElement(Forward<DynamicArray&&>(other));
             return *this;
         }
@@ -198,21 +204,21 @@ namespace Engine
         template <typename OtherAllocator>
         DynamicArray& operator=(const DynamicArray<ElementType, OtherAllocator>& other)
         {
-            DestructElements(GetData(), Count);
-            CopyElement(other.GetData(), (SizeType)other.GetCount());
+            DestructElements(Data(), ArraySize);
+            CopyElement(other.Data(), (SizeType) other.Size());
             return *this;
         }
 
         bool operator== (DynamicArray other) const
         {
-            if (Count != other.Count)
+            if (ArraySize != other.ArraySize)
             {
                 return false;
             }
 
-            const ElementType* selfPtr = GetData();
-            const ElementType* otherPtr = other.GetData();
-            for (SizeType i = 0; i < Count; ++i)
+            const ElementType* selfPtr = Data();
+            const ElementType* otherPtr = other.Data();
+            for (SizeType i = 0; i < ArraySize; ++i)
             {
                 if (selfPtr[i] != otherPtr[i])
                 {
@@ -231,15 +237,15 @@ namespace Engine
         ElementType& operator[] (SizeType index)
         {
             BoundCheck();
-            PL_ASSERT(index < Count);
-            return *(GetData() + index);
+            PL_ASSERT(index < ArraySize);
+            return *(Data() + index);
         }
 
         const ElementType& operator[] (SizeType index) const
         {
             BoundCheck();
-            PL_ASSERT(index < Count);
-            return *(GetData() + index);
+            PL_ASSERT(index < ArraySize);
+            return *(Data() + index);
         }
 
         /**
@@ -262,6 +268,12 @@ namespace Engine
             EmplaceBack(Forward<ElementType&&>(element));
         }
 
+        void Add(const ElementType* elements, SizeType count)
+        {
+            SizeType index = AddUnconstructElement(count);
+            ConstructElements(Data() + index, elements, count);
+        }
+
         /**
          * Add an element use default constuctor, return the reference of element.
          * @return Reference of element
@@ -269,7 +281,7 @@ namespace Engine
         ElementType& AddDefault()
         {
             EmplaceBack();
-            return GetData()[Count - 1];
+            return Data()[ArraySize - 1];
         }
 
         /**
@@ -279,6 +291,7 @@ namespace Engine
          */
         void Insert(SizeType index, const ElementType& element)
         {
+            PL_ASSERT(0 <=index && index <= ArraySize);
             AddressCheck(&element);
             EmplaceAt(index, element);
         };
@@ -290,8 +303,17 @@ namespace Engine
          */
         void Insert(SizeType index, ElementType&& element)
         {
+            PL_ASSERT(0 <=index && index <= ArraySize);
             AddressCheck(&element);
             EmplaceAt(index, element);
+        };
+
+        void Insert(SizeType index, const ElementType* elements, SizeType size)
+        {
+            PL_ASSERT(0 <=index && index <= ArraySize && size > 0);
+            AddressCheck(elements);
+            InsertUnconstructElement(index, size);
+            ConstructElements(Data() + index, elements, size);
         };
 
         /**
@@ -301,14 +323,14 @@ namespace Engine
         void RemoveAt(SizeType index)
         {
             PL_ASSERT(IsValidIndex(index));
-            DestructElements(GetData() + index, 1);
+            DestructElements(Data() + index, 1);
 
-            SizeType countToMove = Count - index - 1;
+            SizeType countToMove = ArraySize - index - 1;
             if (countToMove)
             {
-                Memory::Memmove(GetData() + index, GetData() + index + 1, countToMove * sizeof(ElementType));
+                Memory::Memmove(Data() + index, Data() + index + 1, countToMove * sizeof(ElementType));
             }
-            Count -= 1;
+            ArraySize -= 1;
             //TODO: check need shink
         }
 
@@ -324,6 +346,22 @@ namespace Engine
             }) > 0;
         }
 
+        void Remove(SizeType first, SizeType last)
+        {
+            PL_ASSERT(IsValidIndex(first) && IsValidIndex(last));
+            if (first <= last)
+            {
+                SizeType removeCount = last - first + 1;
+                DestructElements(Data() + first, removeCount);
+                SizeType countToMove = ArraySize - last - 1;
+                if (countToMove)
+                {
+                    Memory::Memmove(Data() + first, Data() + last + 1, countToMove * sizeof(ElementType));
+                }
+                ArraySize -= removeCount;
+            }
+        }
+
         /**
          * Remove all elements match the predicate
          * @param predicate
@@ -331,16 +369,16 @@ namespace Engine
          */
         SizeType RemoveMatch(TFunction<bool(const ElementType& element)> predicate)
         {
-            if (Count <= 0)
+            if (ArraySize <= 0)
             {
                 return 0;
             }
 
-            SizeType searchCount = Count;
+            SizeType searchCount = ArraySize;
             SizeType matchCount = 0;
             while (searchCount > 0)
             {
-                ElementType* element = GetData() + searchCount -1;
+                ElementType* element = Data() + searchCount - 1;
                 if (predicate(*element))
                 {
                     RemoveAt(searchCount - 1);
@@ -358,9 +396,9 @@ namespace Engine
          */
         void Clear(SizeType slack = 0)
         {
-            DestructElements(GetData(), Count);
-            Count = 0;
-            if (Capacity != slack)
+            DestructElements(Data(), ArraySize);
+            ArraySize = 0;
+            if (ArrayCapacity != slack)
             {
                 Reserve(slack);
             }
@@ -371,12 +409,12 @@ namespace Engine
             BoundCheck();
             if (IsValidIndex(index))
             {
-                return GetData() + index;
+                return Data() + index;
             }
             throw std::out_of_range{"Index an element out of range"};
         }
 
-        ElementType* GetData()
+        ElementType* Data()
         {
             if (byte* raw = AllocatorInstance.GetAllocation())
             {
@@ -385,7 +423,7 @@ namespace Engine
             return nullptr;
         }
 
-        const ElementType* GetData() const
+        const ElementType* Data() const
         { 
             if (byte* raw = AllocatorInstance.GetAllocation())
             {
@@ -394,52 +432,52 @@ namespace Engine
             return nullptr;
         }
 
-        SizeType GetCount() const
+        SizeType Size() const
         {
-            return Count;
+            return ArraySize;
         }
 
-        SizeType GetCapacity() const
+        SizeType Capacity() const
         {
-            return Capacity;
+            return ArrayCapacity;
         }
 
         bool IsEmpty() const
         {
-            return Count == 0;
+            return ArraySize == 0;
         }
 
         template <typename... Args>
         void Resize(SizeType count, Args&&... args)
         {
             PL_ASSERT(count >= 0);
-            if (count < Count)
+            if (count < ArraySize)
             {
-                DestructElements(GetData() + count, Count - count);
+                DestructElements(Data() + count, ArraySize - count);
             }
-            else if (count > Count)
+            else if (count > ArraySize)
             {
                 Reserve(count);
-                for (SizeType idx = Count; idx < count; ++idx)
+                for (SizeType idx = ArraySize; idx < count; ++idx)
                 {
-                    new(GetData() + idx) ElementType(Forward<Args>(args)...);
+                    new(Data() + idx) ElementType(Forward<Args>(args)...);
                 }
             }
-            Count = count;
+            ArraySize = count;
         }
 
         void Reserve(SizeType newCapacity)
         {
-            if (newCapacity > Count && newCapacity != Capacity)
+            if (newCapacity > ArraySize && newCapacity != ArrayCapacity)
             {
-                Capacity = newCapacity;
+                ArrayCapacity = newCapacity;
                 AllocatorInstance.Resize(newCapacity, sizeof(ElementType));
             }
         }
 
         bool IsValidIndex(SizeType index) const
         {
-            return index < Count;
+            return index < ArraySize;
         }
 
 
@@ -455,22 +493,22 @@ namespace Engine
 
         Iterator end()
         {
-            return Iterator(*this, Count);
+            return Iterator(*this, ArraySize);
         }
 
         ConstIterator end() const
         {
-            return ConstIterator(*this, Count);
+            return ConstIterator(*this, ArraySize);
         }
 
         Iterator rbegin()
         {
-            return Iterator(*this, Count - 1);
+            return Iterator(*this, ArraySize - 1);
         }
 
         ConstIterator rbegin() const
         {
-            return ConstIterator(*this, Count - 1);
+            return ConstIterator(*this, ArraySize - 1);
         }
 
         Iterator rend()
@@ -482,19 +520,39 @@ namespace Engine
         {
             return ConstIterator(*this, (SizeType)-1);
         }
+
+        ConstIterator cbegin()
+        {
+            return ConstIterator(*this, 0);
+        }
+
+        ConstIterator cend()
+        {
+            return ConstIterator(*this, ArraySize - 1);
+        }
+
+        ConstIterator crbegin()
+        {
+            return ConstIterator(*this, 0);
+        }
+
+        ConstIterator crend()
+        {
+            return ConstIterator(*this, (SizeType)-1);
+        }
     private:
         template <typename... Args>
         void EmplaceBack(Args&&... args)
         {
             SizeType index = AddUnconstructElement(1);
-            new(GetData() + index) ElementType(Forward<Args>(args)...);
+            new(Data() + index) ElementType(Forward<Args>(args)...);
         }
 
         template <typename... Args>
         void EmplaceAt(SizeType index, Args&&... args)
         {
             InsertUnconstructElement(index, 1);
-            new(GetData() + index) ElementType(Forward<Args>(args)...);
+            new(Data() + index) ElementType(Forward<Args>(args)...);
         }
 
         /**
@@ -506,9 +564,9 @@ namespace Engine
         SizeType AddUnconstructElement(SizeType count)
         {
             PL_ASSERT(count > 0);
-            SizeType oldCount = Count;
-            Count += count;
-            if (Count > Capacity)
+            SizeType oldCount = ArraySize;
+            ArraySize += count;
+            if (ArraySize > ArrayCapacity)
             {
                 Expansion();
             }
@@ -517,33 +575,33 @@ namespace Engine
 
         void InsertUnconstructElement(SizeType index, SizeType count)
         {
-            PL_ASSERT(index >= 0 && count > 0 && index <= Count);
-            SizeType oldCount = Count;
-            Count += count;
-            if (Count > Capacity)
+            PL_ASSERT(index >= 0 && count > 0 && index <= ArraySize);
+            SizeType oldCount = ArraySize;
+            ArraySize += count;
+            if (ArraySize > ArrayCapacity)
             {
                 Expansion();
             }
 
-            ElementType* src = GetData() + index;
+            ElementType* src = Data() + index;
             Memory::Memmove(src + count, src, (oldCount - index) * sizeof(ElementType));
         }
 
         void Expansion()
         {
-            Capacity = AllocatorInstance.CalculateValidCapacity(Count, Capacity, sizeof(ElementType));
-            PL_ASSERT(Count <= Capacity);
-            AllocatorInstance.Resize(Capacity, sizeof(ElementType));
+            ArrayCapacity = AllocatorInstance.CalculateValidCapacity(ArraySize, ArrayCapacity, sizeof(ElementType));
+            PL_ASSERT(ArraySize <= ArrayCapacity);
+            AllocatorInstance.Resize(ArrayCapacity, sizeof(ElementType));
         }
 
         void BoundCheck() const
         {
-            PL_ASSERT(Count >= 0 && Count <= Capacity);
+            PL_ASSERT(ArraySize >= 0 && ArraySize <= ArrayCapacity);
         }
 
         void AddressCheck(const ElementType* address)
         {
-            PL_ASSERT(address < GetData() || address >= GetData() + Capacity);
+            PL_ASSERT(address < Data() || address >= Data() + ArrayCapacity);
         }
 
         void ConstructElements(ElementType* dest, const ElementType* src, SizeType count)
@@ -569,26 +627,29 @@ namespace Engine
         void CopyElement(const ElementType* data, SizeType count)
         {
             PL_ASSERT(data && count > 0);
-            Count = count;
-            Expansion();
-            ConstructElements(GetData(), data, count);
+            ArraySize = count;
+            if (ArraySize > ArrayCapacity)
+            {
+                Expansion();
+            }
+            ConstructElements(Data(), data, count);
         }
 
         void MoveElement(DynamicArray&& other)
         {
             AllocatorInstance = MoveTemp(other.AllocatorInstance);
-            Count = other.Count;
-            Capacity = other.Capacity;
-            other.Count = 0;
-            other.Capacity = 0;
+            ArraySize = other.ArraySize;
+            ArrayCapacity = other.ArrayCapacity;
+            other.ArraySize = 0;
+            other.ArrayCapacity = 0;
         }
 
     protected:
 
         /** Make sure AllocatorInstance init first */
         Allocator AllocatorInstance;
-        SizeType Count{ 0 };
-        SizeType Capacity{ 0 };
+        SizeType ArraySize{ 0 };
+        SizeType ArrayCapacity{ 0 };
     };
 
     template <typename ElementType>

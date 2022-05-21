@@ -57,13 +57,13 @@ namespace Engine
     bool FileSystem::MakeDirTree(const String& path)
     {
         DynamicArray<String> dirs = Path::SplitPath(path);
-        if (dirs.GetCount() <= 0)
+        if (dirs.Size() <= 0)
         {
             return false;
         }
         
         String destPath = String::Empty();
-        for (int32 index = 0; index < dirs.GetCount(); index++)
+        for (int32 index = 0; index < dirs.Size(); index++)
         {
             destPath = Path::MakePath(destPath, dirs[index]);
             if (DirExists(destPath))
@@ -127,6 +127,6 @@ namespace Engine
         UniquePtr<IFileHandle> handle = PlatformFile->OpenFile(*fileName, EFileAccess::Read, EFileShareMode::Read);
         uint64 fileSize = handle->GetSize();
         outBinary.Reserve(fileSize);
-        handle->Read(outBinary.GetData(), fileSize);
+        handle->Read(outBinary.Data(), fileSize);
     }
 }

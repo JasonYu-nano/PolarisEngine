@@ -2,7 +2,7 @@ set(target core_test)
 
 set(project_dir "${CMAKE_CURRENT_LIST_DIR}")
 
-file(GLOB_RECURSE project_files *.hpp *.cpp)
+file(GLOB_RECURSE project_files *.hpp *.cpp *.natvis)
 
 add_executable(${target} ${project_files})
 

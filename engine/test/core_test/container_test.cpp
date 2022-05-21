@@ -23,25 +23,21 @@ namespace Engine
         int32* Z{ nullptr };
     };
 
-    TEST(VectorTest, Base)
-    {
-        std::vector<int> a = {1, 2, 3};
-        PL_INFO("", _T("capacity before: {}"), a.capacity());
-
-        a.resize(5);
-        PL_INFO("", _T("capacity after: {}"), a.capacity());
-
-        a.resize(0);
-        PL_INFO("", _T("capacity after: {}"), a.capacity());
-    }
-
-    TEST(DynamicArrayTest, Base)
+    TEST(ContainerTest, DynamicArray_Base)
     {
         DynamicArray<int> array(10);
-        EXPECT_TRUE(array.GetCapacity() == 10);
+        EXPECT_TRUE(array.Capacity() == 10);
 
         array.Add(1);
         EXPECT_TRUE(array[0] == 1);
+
+        int part[3] = {2, 3, 4};
+        array.Add(part, 3);
+
+        EXPECT_TRUE(array.Size() == 4);
+        EXPECT_TRUE(array[1] == 2 && array[2] == 3 && array[3] == 4);
+
+        array = {1};
 
         array[0] = 10;
         EXPECT_TRUE(array[0] == 10);
@@ -57,7 +53,7 @@ namespace Engine
 
         array.Remove(10);
         EXPECT_TRUE(array[0] == 9 && array[1] == 11);
-        EXPECT_TRUE(array.GetCount() == 2);
+        EXPECT_TRUE(array.Size() == 2);
 
         array.RemoveMatch([](const int& item){
            return item > 0;
@@ -65,7 +61,7 @@ namespace Engine
         EXPECT_TRUE(array.IsEmpty());
 
         array.Clear(1);
-        EXPECT_TRUE(array.IsEmpty() && array.GetCapacity() == 1);
+        EXPECT_TRUE(array.IsEmpty() && array.Capacity() == 1);
 
 
         DynamicArray<ListTestStruct> listOfStruct(8);
@@ -81,24 +77,24 @@ namespace Engine
 
         DynamicArray<int> array2 = {1, 2, 3};
         array2.Resize(5);
-        EXPECT_TRUE(array2[4] == 0 && array2.GetCount() == 5);
+        EXPECT_TRUE(array2[4] == 0 && array2.Size() == 5);
 
         array2.Resize(3);
         array2.Resize(5, 4);
         EXPECT_TRUE(array2[4] == 4);
 
-        int32 oldCapacity = array2.GetCapacity();
+        int32 oldCapacity = array2.Capacity();
         array2.Resize(0);
-        EXPECT_TRUE(array2.GetCapacity() == oldCapacity);
+        EXPECT_TRUE(array2.Capacity() == oldCapacity);
     }
 
-    TEST(DynamicArrayTest, OtherConstruct)
+    TEST(ContainerTest, DynamicArray_Ctor)
     {
         int rawData[] =  {1, 2, 3, 4};
         DynamicArray<int> array(rawData, 4);
 
         DynamicArray<int, FixedAllocator<int, 5>> fixedArray;
-        EXPECT_TRUE(fixedArray.GetCapacity() == 5);
+        EXPECT_TRUE(fixedArray.Capacity() == 5);
         fixedArray = {5, 4, 3, 2, 1};
 
         array = fixedArray;
@@ -107,9 +103,25 @@ namespace Engine
 
         DynamicArray<int> array2 = {5, 4, 3, 2, 1};
         EXPECT_TRUE(array == array2);
+
+        DynamicArray<int, InlineAllocator<int, 5, HeapAllocator<int>, int>> inlineArray = {5, 4, 3, 2, 1};
+        EXPECT_TRUE(inlineArray.Capacity() == 5);
     }
 
-    TEST(DynamicArrayTest, Iterator)
+    TEST(ContainerTest, DynamicArray_Remove)
+    {
+        DynamicArray<int32> array = {1, 2, 3, 4, 5};
+        array.Remove(4, 4);
+        EXPECT_TRUE(array.Size() == 4 && *(--array.end()) == 4);
+
+        array.Add(5);
+        array.Remove(1, 3);
+        EXPECT_TRUE(array.Size() == 2 && *(--array.end()) == 5 && *array.begin() == 1);
+        array.Remove(0, 1);
+        EXPECT_TRUE(array.Size() == 0);
+    }
+
+    TEST(ContainerTest, DynamicArray_Iterator)
     {
         DynamicArray<int> array = {1, 2, 3, 4, 0 };
 
@@ -132,17 +144,17 @@ namespace Engine
         }
     }
 
-    TEST(BitArrayTest, Base)
+    TEST(ContainerTest, BitArray_Base)
     {
         BitArray array(10);
-        EXPECT_TRUE(array.GetCapacity() == 32);
+        EXPECT_TRUE(array.Capacity() == 32);
         array.Add(true);
         EXPECT_TRUE(array[0]);
         array[0] = false;
         EXPECT_TRUE(!array[0]);
 
         BitArray array2(true, 10);
-        EXPECT_TRUE(array2.GetCount() == 10);
+        EXPECT_TRUE(array2.Size() == 10);
         EXPECT_TRUE(array2[0] == true);
         EXPECT_TRUE(array2[9] == true);
 
@@ -157,7 +169,7 @@ namespace Engine
         EXPECT_TRUE(array3 == array4);
     }
 
-    TEST(BitArrayTest, Iterator)
+    TEST(ContainerTest, BitArray_Iterator)
     {
         BitArray array = {true, false, true, false, true, false};
         BitArray<>::Iterator iter = array.begin();
@@ -174,7 +186,7 @@ namespace Engine
         }
     }
 
-    TEST(SparseArrayTest, Base)
+    TEST(ContainerTest, SparseArray_Base)
     {
         SparseArray<int32> array(8);
         uint32 index1 = array.Add(-20);
@@ -196,7 +208,7 @@ namespace Engine
         EXPECT_TRUE(array == array2);
     }
 
-    TEST(SparseArrayTest, Iterator)
+    TEST(ContainerTest, SparseArray_Iterator)
     {
         SparseArray<int32> array(8);
         uint32 index1 = array.Add(-20);
@@ -214,7 +226,7 @@ namespace Engine
         }
     }
 
-    TEST(SetTest, Base)
+    TEST(ContainerTest, Set_Base)
     {
         Set<int32> set;
         set.Add(1);
@@ -223,7 +235,7 @@ namespace Engine
         set.Add(2);
 
         Set<int32> set2 = MoveTemp(set);
-        EXPECT_TRUE(set.GetCount() == 0);
+        EXPECT_TRUE(set.Size() == 0);
         EXPECT_TRUE(set2.Contains(1));
         EXPECT_TRUE(set2.Contains(2));
         EXPECT_TRUE(set2.Contains(-3));
@@ -256,7 +268,7 @@ namespace Engine
         }
     };
 
-    TEST(SetTest, Ptr)
+    TEST(ContainerTest, Set_Ptr)
     {
         Set<TestA*> set;
         TestA* item = new TestA();
@@ -265,7 +277,7 @@ namespace Engine
         EXPECT_TRUE(set.Contains(item));
     }
 
-    TEST(SetTest, Iterator)
+    TEST(ContainerTest, Set_Iterator)
     {
         Set<int32> kSet{ 4, 6, 9, 3 };
 
@@ -275,7 +287,7 @@ namespace Engine
         }
     }
 
-    TEST(MapTest, Base)
+    TEST(ContainerTest, Map_Base)
     {
         Map<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {1, 1.6f}};
         EXPECT_TRUE(*(map.Find(1)) == 1.6f);
@@ -290,12 +302,12 @@ namespace Engine
 
         Map<int32, float> map2 = MoveTemp(map);
         EXPECT_TRUE(*map2.Find(2) == 2.5f);
-        EXPECT_TRUE(map.GetCount() == 0 && map2.GetCount() == 1);
+        EXPECT_TRUE(map.Size() == 0 && map2.Size() == 1);
         map2.Clear(2);
-        EXPECT_TRUE(map2.GetCount() == 0);
+        EXPECT_TRUE(map2.Size() == 0);
     }
 
-    TEST(MapTest, Iterator)
+    TEST(ContainerTest, Map_Iterator)
     {
         Map<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {3, 1.6f}};
         for (const auto& pair : map)

@@ -1,61 +1,146 @@
 #pragma once
 
+#include "predefine/prerequisite.hpp"
 #include "predefine/platform.hpp"
 #include "foundation/type_traits.hpp"
+#include "foundation/encoding.hpp"
+#include "math/generic_math.hpp"
 
 namespace Engine
 {
     class CharUtils
     {
     public:
-        template <CharType TChar>
-        static TChar ToUpper(TChar character)
+        template <typename TChar>
+        static constexpr TChar ToUpper(TChar character)
         {
             return (TChar)(uint32(character) - ((uint32(character) - 'a' < 26u) << 5));
         }
 
-        template <CharType TChar>
-        static TChar ToLower(TChar character)
+        template <typename TChar>
+        static constexpr TChar ToLower(TChar character)
         {
             return (TChar)(uint32(character) + ((uint32(character) - 'A' < 26u) << 5));
         }
 
-        template <CharType TChar>
-        static size_t StrLen(const TChar* str)
+        template <typename T1, typename T2>
+        static constexpr int32 Compare(const T1* lhs, const T2* rhs, size_t len) noexcept
         {
-            static_assert(false, "Un support type");
+            if constexpr (std::is_same_v<T1, T2>)
+            {
+                if (lhs == rhs)
+                {
+                    return 0;
+                }
+            }
+
+            auto left = reinterpret_cast<const typename std::make_unsigned<T1>::type*>(lhs);
+            auto right = reinterpret_cast<const typename std::make_unsigned<T2>::type*>(rhs);
+            for (; 0 < len; --len, ++left, ++right)
+            {
+                if (*left != *right)
+                {
+                    return *left < *right ? -1 : +1;
+                }
+            }
+
             return 0;
         }
 
-        template <>
-        static size_t StrLen(const ansi* str)
+        template <typename T1, typename T2>
+        static constexpr int32 Compare(const T1* lhs, size_t lLen, const T2* rhs, size_t rLen) noexcept
         {
-            return strlen(str);
-        }
+            int32 result = Compare(lhs, rhs, Math::Min(lLen, rLen));
 
-        template <>
-        static size_t StrLen(const wchar* str)
-        {
-            return wcslen(str);
-        }
+            if (result != 0)
+            {
+                return result;
+            }
 
-        template <CharType TChar>
-        static int32 StrCmp(const TChar* str1, const TChar* str2)
-        {
-            static_assert(false, "Un support type");
+            if (lLen > rLen)
+            {
+                return 1;
+            }
+
+            if (lLen < rLen)
+            {
+                return -1;
+            }
+
             return 0;
         }
 
-        template <>
-        static int32 StrCmp(const ansi* str1, const ansi* str2)
+        template <typename T1, typename T2>
+        static constexpr int32 Compare(const T1* lhs, const T2* rhs) noexcept
         {
-            return strcmp(str1, str2);
+            return Compare(lhs, Length(lhs), rhs, Length(rhs));
         }
 
-        template <>
-        static int32 StrCmp(const wchar* str1, const wchar* str2)
+        template <typename TChar>
+        static constexpr strsize Length(const TChar* c) noexcept
         {
-            return wcscmp(str1, str2);
+            // find length of null-terminated sequence
+            strsize count = 0;
+            while (*c != TChar())
+            {
+                ++count;
+                ++c;
+            }
+
+            return count;
+        }
+
+        template <typename T1, typename T2>
+        static constexpr int32 UCompareInsensitive(const T1* lhs, const T2* rhs, size_t len)
+        {
+            if constexpr (std::is_same_v<T1, T2>)
+            {
+                if (lhs == rhs)
+                {
+                    return 0;
+                }
+            }
+
+            for (size_t idx = 0; idx < len; ++idx)
+            {
+                int32 diff = Encoding::FoldCase((int32)lhs[idx]) - Encoding::FoldCase((int32)rhs[idx]);
+                if (diff)
+                {
+                    return diff;
+                }
+            }
+
+            return 0;
+        }
+
+        template <typename T1, typename T2>
+        static constexpr int32 UCompareInsensitive(const T1* lhs, size_t lLen, const T2* rhs, size_t rLen)
+        {
+            if constexpr (std::is_same_v<T1, T2>)
+            {
+                if (lhs == rhs)
+                {
+                    return 0;
+                }
+            }
+
+            int32 result = UCompareInsensitive(lhs, rhs, Math::Min(lLen, rLen));
+            if (result)
+            {
+                return result;
+            }
+
+            if (lLen > rLen)
+            {
+                return 1;
+            }
+
+            if (lLen < rLen)
+            {
+                return -1;
+            }
+
+            return 0;
         }
     };
 }

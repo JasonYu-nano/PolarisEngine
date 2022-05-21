@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bit>
 #include "definitions_core.hpp"
 
 namespace Engine
@@ -87,6 +88,15 @@ namespace Engine
             }
 
             return value;
+        }
+
+        constexpr static inline uint32 CountTrailingZeroBits(uint32 v) noexcept
+        {
+#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+            return std::countr_zero(v);
+#else
+    return QtPrivate::qConstexprCountTrailingZeroBits(v);
+#endif
         }
     };
 

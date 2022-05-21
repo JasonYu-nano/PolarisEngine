@@ -7,9 +7,14 @@ namespace Engine
     {
         #ifdef _WIN64
             typedef uint64          size_t;
+            typedef int64           ptrdiff;
+            typedef int64           intptr;
         #else
-            typedef unsigned int    size_t;
+            typedef uint32          size_t;
+            typedef int32           ptrdiff;
+            typedef int32           intptr;
         #endif
+            typedef uint16          wcharsize;
     };
 
     typedef WinPlatformType CorePlatformType;

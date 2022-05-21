@@ -89,7 +89,7 @@ namespace Engine
                 {
                     if (recursion && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
                     {
-                        if (CharUtils::StrCmp(data.cFileName, _T(".")) != 0 && CharUtils::StrCmp(data.cFileName, _T("..")) != 0)
+                        if (CharUtils::Compare(data.cFileName, _T(".")) != 0 && CharUtils::Compare(data.cFileName, _T("..")) != 0)
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {

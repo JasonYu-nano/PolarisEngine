@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <tuple>
 #include "definitions_core.hpp"
@@ -205,9 +205,9 @@ namespace Engine
             Pairs.Clear(slack);
         }
 
-        int32 GetCount() const
+        int32 Size() const
         {
-            return Pairs.GetCount();
+            return Pairs.Size();
         }
 
         Iterator begin()
