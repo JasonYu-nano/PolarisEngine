@@ -5,7 +5,7 @@
 using namespace Engine;
 
 template <typename Type>
-NODISCARD constexpr Type&& Forward(std::remove_reference_t<Type>& arg) noexcept 
+NODISCARD constexpr Type&& Forward(std::remove_reference_t<Type>& arg) noexcept
 {
     return static_cast<Type&&>(arg);
 }
@@ -35,6 +35,9 @@ using IsPointer = std::is_pointer<Type>;
 
 template <typename Type>
 constexpr bool IsUnsignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, uint8, uint16, uint32, uint64>;
+
+template <typename Type>
+constexpr bool IsSignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, int8, int16, int32, int64>;
 
 template <typename Type>
 constexpr bool IsIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, int8, uint8, int16, uint16, int32, uint32, int64, uint64>;
@@ -72,6 +75,9 @@ struct SwitchType<false, TrueType, FalseType>
 
 template <typename T>
 concept CharType = IsCharV<T>;
+
+template <typename T>
+concept SignedIntegralType = IsSignedIntegralV<T>;
 
 template <typename T>
 concept IntegralType = IsIntegralV<T>;

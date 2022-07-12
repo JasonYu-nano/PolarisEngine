@@ -8,6 +8,172 @@
 
 namespace Engine
 {
+    template <SignedIntegralType IntType>
+    class HeapSizeAllocator
+    {
+    public:
+
+        template <typename ElementType>
+        class ElementAllocator
+        {
+        public:
+            using SizeType = IntType;
+
+            ElementAllocator() = default;
+
+            ElementAllocator(const ElementAllocator& other) = delete;
+
+            ElementAllocator(ElementAllocator&& other) noexcept
+            {
+                Data = other.Data;
+                other.Data = nullptr;
+            }
+
+            bool Empty() const
+            {
+                return Data == nullptr;
+            }
+
+            SizeType GetDefaultSize() const
+            {
+                return 0;
+            }
+
+            byte* GetAllocation() const
+            {
+                return Data;
+            }
+
+            void Resize(SizeType size)
+            {
+                if (Data != nullptr || size > 0)
+                {
+                    if (Data == nullptr)
+                    {
+                        Data = (byte*)Memory::Malloc(size * sizeof(ElementType));
+                    }
+                    else
+                    {
+                        Data = (byte*)Memory::Realloc(Data, size * sizeof(ElementType));
+                    }
+                }
+            }
+
+        private:
+            byte* Data{ nullptr };
+        };
+    };
+
+    using DefaultAllocator = HeapSizeAllocator<int32>;
+
+    template<typename T>
+    concept AvailableSecondaryAllocator = requires(T a)
+    {
+        T::ElementAllocator::Empty();
+    };
+
+    template <uint8 InlineSize, AvailableSecondaryAllocator SecondaryAllocator = DefaultAllocator>
+    class InlineAllocator
+    {
+    public:
+
+        template <typename ElementType>
+        class ElementAllocator
+        {
+            using SecondaryAllocatorType = typename SecondaryAllocator::template ElementAllocator<ElementType>;
+        public:
+            using SizeType = int32;
+
+            ElementAllocator() = default;
+
+            ElementAllocator(const ElementAllocator& other) = delete;
+
+            ElementAllocator(ElementAllocator&& other) noexcept
+            {
+                if (other.SecondaryData.Empty())
+                {
+                    Memory::Memmove(InlineData, other.InlineData, sizeof(ElementType) * InlineSize);
+                }
+
+                SecondaryData = MoveTemp(other.SecondaryData);
+            }
+
+            byte* GetAllocation() const
+            {
+                if (SecondaryData.Empty())
+                {
+                    return (byte*)InlineData;
+                }
+                else
+                {
+                    return SecondaryData.GetAllocation();
+                }
+            }
+
+            SizeType GetDefaultSize() const
+            {
+                return InlineSize;
+            }
+
+            void Resize(int32 size)
+            {
+                if (!SecondaryData.Empty())
+                {
+                    SecondaryData.Resize(size);
+                    return;
+                }
+
+                if (size <= InlineSize)
+                {
+                    return;
+                }
+
+                SecondaryData.Resize(size);
+                Memory::Memmove(SecondaryData.GetAllocation(), InlineData, sizeof(ElementType) * InlineSize);
+            }
+
+        private:
+            ElementType InlineData[InlineSize];
+
+            SecondaryAllocatorType SecondaryData;
+        };
+    };
+
+    template <uint8 Size>
+    class FixedAllocatorV2
+    {
+    public:
+
+        template <typename ElementType>
+        class ElementAllocator
+        {
+            using SizeType = uint8;
+
+            SizeType GetDefaultCapacity() const
+            {
+                return Size;
+            }
+
+            byte* GetAllocation() const
+            {
+                return (byte*)Data;
+            }
+
+            SizeType GetDefaultSize() const
+            {
+                return Size;
+            }
+
+            void Resize(SizeType size)
+            {
+                PL_ASSERT(size <= Size);
+            }
+
+        private:
+            ElementType Data[Size];
+        };
+    };
+
     template<IntegralType IntType>
     class HeapAllocator
     {
