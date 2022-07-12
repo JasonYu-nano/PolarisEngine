@@ -65,5 +65,5 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
 set_target_properties(${target} PROPERTIES FOLDER "Engine")
 
 if(MSVC)
-    target_compile_options(${target} PUBLIC /wd4251)
+    target_compile_options(${target} PUBLIC /wd4251 /wd4624)
 endif()

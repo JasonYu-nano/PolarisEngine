@@ -2,10 +2,9 @@
 #include "foundation/dynamic_array.hpp"
 #include "memory/memory.hpp"
 #include "foundation/sparse_array.hpp"
-#include "foundation/stack.hpp"
-#include "foundation/array.hpp"
 #include "foundation/set.hpp"
 #include "foundation/map.hpp"
+#include <vector>
 
 namespace Engine
 {
@@ -23,6 +22,18 @@ namespace Engine
         int32 Y{ 0 };
         int32* Z{ nullptr };
     };
+
+    TEST(VectorTest, Base)
+    {
+        std::vector<int> a = {1, 2, 3};
+        PL_INFO("", _T("capacity before: {}"), a.capacity());
+
+        a.resize(5);
+        PL_INFO("", _T("capacity after: {}"), a.capacity());
+
+        a.resize(0);
+        PL_INFO("", _T("capacity after: {}"), a.capacity());
+    }
 
     TEST(DynamicArrayTest, Base)
     {
@@ -67,6 +78,18 @@ namespace Engine
         DynamicArray<int> listOfCopy2(4);
         listOfCopy2 = MoveTemp(listOfCopy);
         EXPECT_TRUE(listOfCopy2[0] == 1 && listOfCopy2[4] == 0);
+
+        DynamicArray<int> array2 = {1, 2, 3};
+        array2.Resize(5);
+        EXPECT_TRUE(array2[4] == 0 && array2.GetCount() == 5);
+
+        array2.Resize(3);
+        array2.Resize(5, 4);
+        EXPECT_TRUE(array2[4] == 4);
+
+        int32 oldCapacity = array2.GetCapacity();
+        array2.Resize(0);
+        EXPECT_TRUE(array2.GetCapacity() == oldCapacity);
     }
 
     TEST(DynamicArrayTest, OtherConstruct)
@@ -92,7 +115,7 @@ namespace Engine
 
         for (auto&& value : array)
         {
-            PL_INFO("", TC("item of array is: {0}"), value);
+            PL_INFO("", _T("item of array is: {0}"), value);
         }
 
         for (DynamicArray<int>::Iterator iter = array.begin(); iter != array.end(); ++iter)
@@ -105,7 +128,7 @@ namespace Engine
 
         for (DynamicArray<int>::ConstIterator iter = array.begin(); iter != array.end(); ++iter)
         {
-            PL_INFO("", TC("item of array is: {0}"), *iter);
+            PL_INFO("", _T("item of array is: {0}"), *iter);
         }
     }
 
@@ -142,12 +165,12 @@ namespace Engine
         EXPECT_TRUE(array[0] == false);
         for (BitRef value : array)
         {
-            PL_INFO("", TC("item of bit array is {0}"), value);
+            PL_INFO("", _T("item of bit array is {0}"), value);
         }
 
         for (auto iter = array.CreateValidIterator(); (bool)iter; ++iter)
         {
-            PL_INFO("", TC("item of bit array is {0}"), *iter);
+            PL_INFO("", _T("item of bit array is {0}"), *iter);
         }
     }
 
@@ -220,7 +243,7 @@ namespace Engine
 
         ~TestA()
         {
-            PL_INFO("", TC("destruct TestA"));
+            PL_INFO("", _T("destruct TestA"));
             Memory::Free(Ptr);
             Ptr = nullptr;
         }
@@ -277,12 +300,12 @@ namespace Engine
         Map<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {3, 1.6f}};
         for (const auto& pair : map)
         {
-            PL_INFO("", TC("key:{0} value:{1}"), pair.Key, pair.Value);
+            PL_INFO("", _T("key:{0} value:{1}"), pair.Key, pair.Value);
         }
 
         for (Map<int32, float>::ConstIterator iter = map.begin(); iter != map.end(); ++iter)
         {
-            PL_INFO("", TC("key:{0} value:{1}"), iter->Key, iter->Value);
+            PL_INFO("", _T("key:{0} value:{1}"), iter->Key, iter->Value);
         }
     }
 }

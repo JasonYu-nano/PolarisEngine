@@ -2,13 +2,14 @@
 #include "platform_application.hpp"
 #include "memory/memory.hpp"
 #include "render_module.hpp"
+#include "module/module_manager.hpp"
 
 namespace Engine
 {
     void EngineLoop::Init()
     {
         auto* app = PlatformApplication::CreateApplication();
-        RenderModule::Get().Init();
+        ModuleManager::Load<RenderModule>(_T("Render"));
     }
 
     void EngineLoop::Tick()
@@ -22,7 +23,7 @@ namespace Engine
 
     void EngineLoop::Shutdown()
     {
-        RenderModule::Get().Shutdown();
+        ModuleManager::ShutdownModule();
         PlatformApplication::DestroyApplication();
         Memory::Shutdown();
     }

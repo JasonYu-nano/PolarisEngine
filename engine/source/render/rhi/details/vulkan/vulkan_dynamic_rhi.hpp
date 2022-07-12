@@ -4,6 +4,7 @@
 #include "foundation/functional.hpp"
 #include "foundation/stl_misc.hpp"
 #include "definitions_render.hpp"
+#include "rhi/details/vulkan/vulkan_type.hpp"
 
 #ifdef DEBUG
 #define VULKAN_DEBUG_MODE 1
@@ -22,11 +23,15 @@ namespace Engine
         }
     };
 
+    struct SwapChainSupportDetails
+    {
+        VkSurfaceCapabilitiesKHR Capabilities;
+        VkArray<VkSurfaceFormatKHR> Formats;
+        VkArray<VkPresentModeKHR> PresentModes;
+    };
+
     class RENDER_API VulkanDynamicRHI
     {
-        /*template<typename Type>
-        using VKUniquePtr = UniquePtr<Type, TFunction<void(Type*)>>;*/
-
     public:
         void Init();
 
@@ -35,7 +40,7 @@ namespace Engine
     private:
         void InitInstance();
 
-        Vector<const schar*> GetExtraExtensions();
+        VkArray<const ansi*> GetExtraExtensions();
 
         bool CheckValidationLayerSupport();
 
@@ -49,23 +54,47 @@ namespace Engine
 
         bool FindPhysicalDevice();
 
-        bool IsPhysicalDeviceSuitable(VkPhysicalDevice device);
-
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
         bool CreateLogicalDevice();
 
         bool CreateSurface();
-    private:
-        VkInstance Instance;
 
-        VkDebugUtilsMessengerEXT DebugMessenger;
-        Vector<const schar*> ValidationLayers{ {"VK_LAYER_KHRONOS_validation"} };
+        bool CheckDeviceSuitable(VkPhysicalDevice device);
+
+        bool CheckDeviceExtensionSupport(VkPhysicalDevice device) const;
+
+        SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const VkArray<VkSurfaceFormatKHR>& availableFormats);
+
+        VkPresentModeKHR ChooseSwapPresentMode(const VkArray<VkPresentModeKHR>& availablePresentModes);
+
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+        void CreateSwapChain();
+
+        void CreateImageViews();
+
+        void CreateGraphicsPipeline();
+    private:
+        VkInstance Instance{ nullptr };
+
+        VkDebugUtilsMessengerEXT DebugMessenger{ nullptr };
+        VkArray<const ansi*> ValidationLayers{ "VK_LAYER_KHRONOS_validation" };
+        VkArray<const ansi*> DeviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
         VkPhysicalDevice PhysicalDevice{ nullptr };
         VkDevice Device{ nullptr };
         VkQueue GraphicsQueue{ nullptr };
         VkQueue PresentQueue{ nullptr };
         VkSurfaceKHR Surface{ nullptr };
+        VkSwapchainKHR SwapChain{ nullptr };
+
+        VkArray<VkImage> SwapChainImages;
+        VkFormat SwapChainImageFormat;
+        VkExtent2D SwapChainExtent;
+
+        VkArray<VkImageView> SwapChainImageViews;
     };
 }

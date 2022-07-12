@@ -16,7 +16,7 @@ namespace Engine
     class ConstIndexIterator
     {
     public:
-        ConstIndexIterator(ContainerType& container, SizeType index)
+        ConstIndexIterator(const ContainerType& container, SizeType index)
             : Container(container)
             , Index(index)
         {}
@@ -29,6 +29,11 @@ namespace Engine
         const ElementType* operator-> () const
         {
             return &Container[Index];
+        }
+
+        explicit operator bool () const
+        {
+            return Index >= 0 && Index < Container.GetCount();
         }
 
         ConstIndexIterator& operator++ ()
@@ -59,7 +64,7 @@ namespace Engine
         }
 
     protected:
-        ContainerType& Container;
+        const ContainerType& Container;
         SizeType Index;
     };
 
@@ -69,7 +74,7 @@ namespace Engine
         using Super = ConstIndexIterator<ContainerType, ElementType, SizeType>;
 
     public:
-        IndexIterator(ContainerType& container, SizeType index)
+        IndexIterator(const ContainerType& container, SizeType index)
             : Super(container, index)
         {}
 
@@ -97,7 +102,7 @@ namespace Engine
 
         void RemoveSelf()
         {
-            this->Container.RemoveAt(this->Index);
+            const_cast<ContainerType&>(this->Container).RemoveAt(this->Index);
             this->Index--;
         }
 
@@ -113,7 +118,7 @@ namespace Engine
     };
 #pragma endregion iterator
 
-    template <typename ElementType, typename Allocator = HeapAllocator<uint32>>
+    template <typename ElementType, typename Allocator = HeapAllocator<int32>>
     class DynamicArray
     {
         template <typename T, typename U> friend class SparseArray;
@@ -357,7 +362,7 @@ namespace Engine
             Count = 0;
             if (Capacity != slack)
             {
-                Resize(slack);
+                Reserve(slack);
             }
         }
 
@@ -404,7 +409,26 @@ namespace Engine
             return Count == 0;
         }
 
-        void Resize(SizeType newCapacity)
+        template <typename... Args>
+        void Resize(SizeType count, Args&&... args)
+        {
+            PL_ASSERT(count >= 0);
+            if (count < Count)
+            {
+                DestructElements(GetData() + count, Count - count);
+            }
+            else if (count > Count)
+            {
+                Reserve(count);
+                for (SizeType idx = Count; idx < count; ++idx)
+                {
+                    new(GetData() + idx) ElementType(Forward<Args>(args)...);
+                }
+            }
+            Count = count;
+        }
+
+        void Reserve(SizeType newCapacity)
         {
             if (newCapacity > Count && newCapacity != Capacity)
             {
@@ -437,6 +461,26 @@ namespace Engine
         ConstIterator end() const
         {
             return ConstIterator(*this, Count);
+        }
+
+        Iterator rbegin()
+        {
+            return Iterator(*this, Count - 1);
+        }
+
+        ConstIterator rbegin() const
+        {
+            return ConstIterator(*this, Count - 1);
+        }
+
+        Iterator rend()
+        {
+            return Iterator(*this, (SizeType)-1);
+        }
+
+        ConstIterator rend() const
+        {
+            return ConstIterator(*this, (SizeType)-1);
         }
     private:
         template <typename... Args>
@@ -546,4 +590,7 @@ namespace Engine
         SizeType Count{ 0 };
         SizeType Capacity{ 0 };
     };
+
+    template <typename ElementType>
+    using DynamicArrayU64 = DynamicArray<ElementType, HeapAllocator<uint64>>;
 }

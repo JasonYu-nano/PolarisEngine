@@ -14,7 +14,7 @@ namespace Engine
 #define ARCH_64 2
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Plateform
+// Platform
 /////////////////////////////////////////////////////////////////////////////////////////
 #if defined( __WIN32__ ) || defined( _WIN32 )
 #   define PLATFORM_WINDOWS 1
@@ -47,5 +47,15 @@ namespace Engine
 #   define COMPILER_VER _MSC_VER
 #else
 #   error "No known compiler. Abort! Abort!"
+#endif
+
+#if PLATFORM_WINDOWS
+#if _WIN64 || WIN64
+    #define ENV64BIT 1
+    #define ENV32BIT 0
+#else
+    #define ENV64BIT 0
+    #define ENV32BIT 1
+#endif
 #endif
 }

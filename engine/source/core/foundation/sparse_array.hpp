@@ -240,7 +240,7 @@ namespace Engine
         {
             PL_ASSERT(0 <= index && index < GetMaxIndex());
             ElementLinkNode& node = ElementNodes[index];
-            node.~ElementLinkNode();
+            node.Element.~ElementType();
             RemoveWithoutDestruct(index, &node);
         }
 
@@ -290,6 +290,11 @@ namespace Engine
         {
             PL_ASSERT(index >= 0 && index < GetMaxIndex());
             return AllocateFlags[index];
+        }
+
+        bool IsEmpty() const
+        {
+            return GetCount() == 0;
         }
 
         int32 GetCount() const

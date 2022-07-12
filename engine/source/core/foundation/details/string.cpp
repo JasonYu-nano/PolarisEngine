@@ -7,22 +7,13 @@
 #include <wchar.h>
 #endif
 
-size_t TStrLen(const tchar* str)
-{
-#ifdef UNICODE
-    return wcslen(str);
-#else
-    return strlen(str);
-#endif
-}
-
 namespace Engine
 {
-    String::String(tchar val) : Internal(&val)
+    String::String(char_t val) : Internal(&val)
     {
     }
 
-    String::String(const tchar* val) : Internal(val)
+    String::String(const char_t* val) : Internal(val)
     {
     }
 
@@ -35,14 +26,14 @@ namespace Engine
         return lhs.Internal + rhs.Internal;
     }
 
-    String String::Concat(const String& lhs, const tchar* rhs)
+    String String::Concat(const String& lhs, const char_t* rhs)
     {
         return lhs.Internal + rhs;
     }
 
     String String::Empty()
     {
-        static String empty = String(TC("\0"));
+        static String empty = String(_T("\0"));
         return empty;
     }
 
@@ -71,26 +62,26 @@ namespace Engine
         return Length() > index;
     }
 
-    const tchar& String::At(size_t index) const
+    const char_t& String::At(size_t index) const
     {
         //PL_ASSERT(index < Length());
-        PL_FATAL("Engine", TC("index is invalid"));
+        PL_FATAL("Engine", _T("index is invalid"));
         return Internal.at(index);
     }
 
-    const tchar* String::Data() const
+    const char_t* String::Data() const
     {
         return &At(0);
     }
 
-    bool String::EndWith(const tchar* value) const
+    bool String::EndWith(const char_t* value) const
     {
         size_t length = Length();
-        size_t valueLength = TStrLen(value);
+        size_t valueLength = CharUtils::StrLen(value);
         if (valueLength <= 0 || length < valueLength)
             return false;
 
-        const tchar* start = (Data() + length - valueLength);
+        const char_t* start = (Data() + length - valueLength);
         while (valueLength > 0)
         {
             --valueLength;
@@ -102,15 +93,15 @@ namespace Engine
         return true;
     }
 
-    bool String::StartWith(const tchar* value) const
+    bool String::StartWith(const char_t* value) const
     {
         size_t length = Length();
-        size_t valueLength = TStrLen(value);
+        size_t valueLength = CharUtils::StrLen(value);
 
         if (valueLength <= 0 || length < valueLength)
             return false;
 
-        const tchar* start = Data();
+        const char_t* start = Data();
         while (valueLength > 0)
         {
             --valueLength;
@@ -122,7 +113,7 @@ namespace Engine
         return true;
     }
 
-    String& String::Append(const tchar* str)
+    String& String::Append(const char_t* str)
     {
         Internal.append(str);
         return *this;
@@ -148,9 +139,9 @@ namespace Engine
         return Internal.find_last_of(delims.Internal, pos);
     }
 
-    Vector<String> String::Split(const tchar* delims) const
+    DynamicArray<String> String::Split(const char_t* delims) const
     {
-        std::vector<String> ret;
+        DynamicArray<String> ret;
         size_t first = 0;
 
         while (first < Length())
@@ -158,10 +149,14 @@ namespace Engine
             const auto second = FindFirst(delims, first);
 
             if (first != second)
-                ret.emplace_back(Substr(first, second - first));
+            {
+                ret.Add(Substr(first, second - first));
+            }
 
             if (second == InvalidIndex)
+            {
                 break;
+            }
 
             first = second + 1;
         }
@@ -169,14 +164,14 @@ namespace Engine
         return ret;
     }
 
-    String::operator StringView() const
+    String::operator TStringView() const
     {
-        return StringView(this->Data(), this->Length());
+        return TStringView(this->Data(), this->Length());
     }
 
-    const tchar* String::operator*() const
+    const char_t* String::operator*() const
     {
-        return Length() > 0 ? Data() : TC("");
+        return Length() > 0 ? Data() : _T("");
     }
 
     String operator+(const String& lhs, const String& rhs)
@@ -192,5 +187,15 @@ namespace Engine
     bool operator!=(const String& lhs, const String& rhs)
     {
         return lhs.Internal != rhs.Internal;
+    }
+
+    bool String::operator==(const char_t *other)
+    {
+        return Internal == other;
+    }
+
+    bool String::operator!=(const char_t *other)
+    {
+        return Internal != other;
     }
 }

@@ -125,7 +125,7 @@ namespace Locale
         return destSize < srcSize ? nullptr : dest + size;
     }
 
-    const wchar* TempSCharToWChar(const schar* str)
+    const wchar* TempSCharToWChar(const ansi* str)
     {
         uint64 newSize = static_cast<uint64>(strlen(str)) + 1;
         wchar_t* wcstring = new wchar_t[newSize];
@@ -149,7 +149,7 @@ namespace Locale
         return nullptr;
     }
 
-    const wchar* StringCast(const schar* str)
+    const wchar* StringCast(const ansi* str)
     {
         uint64 newSize = static_cast<uint64>(strlen(str)) + 1;
         wchar_t* wcstring = new wchar_t[newSize];

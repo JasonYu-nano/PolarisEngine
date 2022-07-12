@@ -104,11 +104,11 @@ namespace Engine
         }
     };
 
-    template <typename KeyType, typename ValueType>
+    template <typename KeyType, typename ValueType, typename KeyFunc = MapDefaultHashFunc<KeyType, ValueType>, typename MapAllocator = DefaultSetAllocator>
     class Map
     {
         using TPairType = Pair<KeyType, ValueType>;
-        using TPairContainer = Set<TPairType, MapDefaultHashFunc<KeyType, ValueType>>;
+        using TPairContainer = Set<TPairType, KeyFunc, MapAllocator>;
     public:
         using ConstIterator = ConstMapIterator<typename TPairContainer::ConstIterator, TPairType>;
         using Iterator = MapIterator<typename TPairContainer::ConstIterator, TPairType>;
@@ -200,7 +200,7 @@ namespace Engine
             return Pairs.Remove(key);
         }
 
-        void Clear(int32 slack)
+        void Clear(int32 slack = 0)
         {
             Pairs.Clear(slack);
         }

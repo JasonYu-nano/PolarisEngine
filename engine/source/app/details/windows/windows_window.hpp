@@ -10,12 +10,14 @@ namespace Engine
     public:
         void Init(HINSTANCE instance);
 
-        void Shudown() {}
+        void Shutdown() {}
 
         HWND GetHWnd() const { return HWnd; }
 
+        void GetWindowSize(int32& width, int32& height) const;
+
     public:
-        static const tchar WinClassName[];
+        static const char_t WinClassName[];
     private:
         HWND HWnd{ nullptr };
         HDC HDc{ nullptr };

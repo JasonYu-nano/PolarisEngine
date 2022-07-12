@@ -2,13 +2,7 @@
 
 namespace Engine
 {
-    RenderModule& RenderModule::Get()
-    {
-        static RenderModule render;
-        return render;
-    }
-
-    void RenderModule::Init()
+    void RenderModule::Startup()
     {
         RHI = MakeUniquePtr<VulkanDynamicRHI>();
         RHI->Init();

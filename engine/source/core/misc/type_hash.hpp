@@ -55,10 +55,20 @@ namespace Engine
         return GetHashCode(*(uint64*)&value);
     }
 
-    inline uint32 GetHashCode(const void* value)
+    inline uint32 GetPtrHashCode(const void* value)
     {
         std::uintptr_t ptrInt = reinterpret_cast<std::uintptr_t>(value);
-
         return GetHashCode(ptrInt);
+    }
+
+    inline uint32 GetHashCode(const void* value)
+    {
+        return GetPtrHashCode(value);
+    }
+
+    template <typename T>
+    inline uint32 GetHashCode(const T& value)
+    {
+        return GetPtrHashCode(&value);
     }
 }

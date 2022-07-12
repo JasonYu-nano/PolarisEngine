@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    const tchar WindowsWindow::WinClassName[] = TC("PLWindow");
+    const char_t WindowsWindow::WinClassName[] = _T("PLWindow");
 
     void WindowsWindow::Init(HINSTANCE instance)
     {
@@ -15,7 +15,7 @@ namespace Engine
         HWnd = CreateWindowEx(
             0,
             WinClassName,                               // name of the window class
-            TC("Title"),                                // title of the window
+            _T("Title"),                                // title of the window
             WS_OVERLAPPEDWINDOW,                        // window style
             CW_USEDEFAULT,                              // x-position of the window
             CW_USEDEFAULT,                              // y-position of the window
@@ -29,7 +29,7 @@ namespace Engine
         if (HWnd == nullptr)
         {
             uint32 errorCode = (uint32)::GetLastError();
-            PL_ERROR("Application", TC("CreateWindowEx failed, error code: {0}"), errorCode);
+            PL_ERROR("Application", _T("CreateWindowEx failed, error code: {0}"), errorCode);
             return;
         }
 
@@ -37,5 +37,13 @@ namespace Engine
 
         // display the window on the screen
         ::ShowWindow(HWnd, SW_SHOW);
+    }
+
+    void WindowsWindow::GetWindowSize(int32& width, int32& height) const
+    {
+        RECT area;
+        GetClientRect(HWnd, &area);
+        width = area.right;
+        height = area.bottom;
     }
 }

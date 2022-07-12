@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-    template<typename IntType, EnableIfT<IsIntegral<typename IntType>::value, bool> = true>
+    template<IntegralType IntType>
     class HeapAllocator
     {
     public:
