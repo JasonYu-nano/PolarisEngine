@@ -39,6 +39,6 @@
 .idea/
 vsxmake2019/
 generated/
-!**/third_parties/**/*.lib
+!**/third_parties/**
 cmake-build-debug/
 build_clion/
