@@ -107,7 +107,7 @@ namespace Engine
             return UString();
         }
 
-        DynamicArray<char16_t, InlineAllocator<char16_t, STR_INLINE_BUFFER_SIZE, HeapAllocator<strsize>, strsize>> buffer;
+        DynamicArray<char16_t, InlineAllocator<STR_INLINE_BUFFER_SIZE>> buffer;
 
         int32 destLength = 0;
         if (Utf32::ToUnicode(nullptr, 0, &destLength, ucs4, len))

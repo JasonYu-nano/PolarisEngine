@@ -130,7 +130,7 @@ namespace Engine
         int32 Index{ INDEX_NONE };
     };
 
-    using DefaultSetAllocator = SetAllocator<HeapAllocator<uint32>, HeapAllocator<uint32>>;
+    using DefaultSetAllocator = SetAllocator<DefaultAllocator, DefaultAllocator>;
 
     template <typename ElementType, typename KeyFunc = DefaultSetKeyFunc<ElementType>, typename SetAllocator = DefaultSetAllocator>
     class Set
@@ -152,15 +152,16 @@ namespace Engine
             ElementType Element;
         };
 
-        using TSparseArray = SparseArray<SetElement>;
+        using HashBucketType = typename SetAllocator::HashAllocator::template ElementAllocator<SetElementIndex>;
+        using SparseArrayType = SparseArray<SetElement, typename SetAllocator::SparseArrayAllocator>;
 
         friend class ConstSetIterator<Set, ElementType>;
         friend class SetIterator<Set, ElementType>;
         template <typename K, typename V, typename T, typename U> friend class Map;
 
     public:
-        using Iterator = SetIterator<typename TSparseArray::ConstIterator, ElementType>;
-        using ConstIterator = ConstSetIterator<typename TSparseArray::ConstIterator, ElementType>;
+        using Iterator = SetIterator<typename SparseArrayType::ConstIterator, ElementType>;
+        using ConstIterator = ConstSetIterator<typename SparseArrayType::ConstIterator, ElementType>;
 
     public:
         Set() = default;
@@ -307,7 +308,7 @@ namespace Engine
         void Clear(int32 slack = 0)
         {
             PL_ASSERT(slack >= 0);
-            HashBucket.Resize(slack, sizeof(SetElementIndex));
+            HashBucket.Resize(slack);
             Elements.Clear(slack);
         }
 
@@ -349,11 +350,11 @@ namespace Engine
 
         Iterator begin() { return Iterator(Elements.begin()); }
 
-        ConstIterator begin() const { return ConstIterator(const_cast<const TSparseArray>(Elements).begin()); }
+        ConstIterator begin() const { return ConstIterator(const_cast<const SparseArrayType>(Elements).begin()); }
 
         Iterator end() { return Iterator(Elements.end()); }
 
-        ConstIterator end() const { return ConstIterator(const_cast<const TSparseArray>(Elements).end()); }
+        ConstIterator end() const { return ConstIterator(const_cast<const SparseArrayType>(Elements).end()); }
 
     private:
         template <typename InElementType>
@@ -431,11 +432,11 @@ namespace Engine
         void Rehash()
         {
             // Free the old hash.
-            HashBucket.Resize(0, sizeof(SetElementIndex));
+            HashBucket.Resize(0);
 
             if (BucketCount)
             {
-                HashBucket.Resize(BucketCount, sizeof(SetElementIndex));
+                HashBucket.Resize(BucketCount);
                 // Init HashBucket
                 for (uint32 hashIndex = 0; hashIndex < BucketCount; ++hashIndex)
                 {
@@ -443,7 +444,7 @@ namespace Engine
                 }
 
                 // Add the existing elements to the new hash.
-                for (typename TSparseArray::Iterator iter = Elements.begin(); iter != Elements.end(); ++iter)
+                for (typename SparseArrayType::Iterator iter = Elements.begin(); iter != Elements.end(); ++iter)
                 {
                     LinkElement(SetElementIndex(iter.GetIndex()), *iter, KeyFunc::GetHashCode(KeyFunc::GetKey((*iter).Element)));
                 }
@@ -463,7 +464,7 @@ namespace Engine
         void CopyElement(const Set& other)
         {
             BucketCount = other.BucketCount;
-            HashBucket.Resize(BucketCount, sizeof(SetElementIndex));
+            HashBucket.Resize(BucketCount);
             Memory::Memcpy(HashBucket.GetAllocation(), const_cast<byte*>(other.HashBucket.GetAllocation()), sizeof(SetElementIndex) * BucketCount);
             Elements = other.Elements;
         }
@@ -479,8 +480,8 @@ namespace Engine
     private:
         /** count of hash bucket */
         uint32 BucketCount{ 0 };
-        DefaultSetAllocator::HashAllocator HashBucket;
-        TSparseArray Elements;
+        HashBucketType HashBucket;
+        SparseArrayType Elements;
     };
 }
 

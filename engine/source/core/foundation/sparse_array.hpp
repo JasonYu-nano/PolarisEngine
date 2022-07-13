@@ -77,7 +77,7 @@ namespace Engine
     };
 #pragma endregion iterator
 
-    template <typename ElementType, typename Allocator = HeapAllocator<int32>>
+    template <typename ElementType, typename Allocator = DefaultAllocator>
     class SparseArray
     {
         union ElementLinkNode
@@ -91,7 +91,7 @@ namespace Engine
         };
 
         using TDynamicArray = DynamicArray<ElementLinkNode, Allocator>;
-        using TBitArray = BitArray<HeapAllocator<uint32>>;
+        using TBitArray = BitArray<DefaultAllocator>;
 
         template <typename T, typename U, typename V> friend class Set;
 

@@ -15,7 +15,7 @@ namespace Engine
 
         ~WindowsFileHandle() final;
 
-        uint64 GetSize() const final;
+        int64 GetSize() const final;
 
         bool Read(uint8* dest, uint64 size) final;
     private:
@@ -25,7 +25,7 @@ namespace Engine
 
     private:
         HANDLE Handle{ nullptr };
-        uint64 Size{ 0 };
+        int64 Size{ 0 };
         uint64 PosInFile{ 0 };
         OVERLAPPED Overlapped;
     };

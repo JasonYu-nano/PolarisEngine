@@ -25,7 +25,7 @@ namespace Engine
     public:
         virtual ~IFileHandle() = default;
 
-        virtual uint64 GetSize() const = 0;
+        virtual int64 GetSize() const = 0;
 
         virtual bool Read(uint8* dest, uint64 size) = 0;
     };

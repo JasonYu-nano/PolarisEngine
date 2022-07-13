@@ -122,10 +122,10 @@ namespace Engine
 #endif
     }
 
-    void FileSystem::ReadFileToBinary(const String& fileName, DynamicArrayU64<uint8>& outBinary)
+    void FileSystem::ReadFileToBinary(const String& fileName, DynamicArray64<uint8>& outBinary)
     {
         UniquePtr<IFileHandle> handle = PlatformFile->OpenFile(*fileName, EFileAccess::Read, EFileShareMode::Read);
-        uint64 fileSize = handle->GetSize();
+        int64 fileSize = handle->GetSize();
         outBinary.Reserve(fileSize);
         handle->Read(outBinary.Data(), fileSize);
     }

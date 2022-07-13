@@ -53,7 +53,7 @@ template <typename Type>
 constexpr bool HasTrivialDestructorV = __has_trivial_destructor(Type);
 
 template <typename Type>
-constexpr bool HasUserDestructorV = __has_user_destructor(Type) || __has_virtual_destructor(Type);
+constexpr bool HasUserDestructorV = __has_virtual_destructor(Type) || __has_user_destructor(Type);
 
 /** return type depend predicate */
 template <bool Predicate, typename TrueType, typename FalseType>
@@ -70,9 +70,6 @@ struct SwitchType<false, TrueType, FalseType>
 {
     typedef FalseType Value;
 };
-
-template <typename T>
-concept CharType = IsCharV<T>;
 
 template <typename T>
 concept SignedIntegralType = IsSignedIntegralV<T>;

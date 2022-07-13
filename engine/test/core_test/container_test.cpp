@@ -10,6 +10,7 @@ namespace Engine
 {
     struct ListTestStruct
     {
+        ListTestStruct() = default;
         ~ListTestStruct()
         {
             if (nullptr != Z)
@@ -93,7 +94,7 @@ namespace Engine
         int rawData[] =  {1, 2, 3, 4};
         DynamicArray<int> array(rawData, 4);
 
-        DynamicArray<int, FixedAllocator<int, 5>> fixedArray;
+        DynamicArray<int, FixedAllocator<5>> fixedArray;
         EXPECT_TRUE(fixedArray.Capacity() == 5);
         fixedArray = {5, 4, 3, 2, 1};
 
@@ -104,7 +105,7 @@ namespace Engine
         DynamicArray<int> array2 = {5, 4, 3, 2, 1};
         EXPECT_TRUE(array == array2);
 
-        DynamicArray<int, InlineAllocator<int, 5, HeapAllocator<int>, int>> inlineArray = {5, 4, 3, 2, 1};
+        DynamicArray<int, InlineAllocator<5>> inlineArray = {5, 4, 3, 2, 1};
         EXPECT_TRUE(inlineArray.Capacity() == 5);
     }
 

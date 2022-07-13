@@ -62,7 +62,7 @@ namespace Engine
         }
     };
 
-    using StringEntryPoolAllocator = SetAllocator<HeapAllocator<uint32>, HeapAllocator<uint32>, 2, InitialBucketCount, 4>;
+    using StringEntryPoolAllocator = SetAllocator<DefaultAllocator , DefaultAllocator, 2, InitialBucketCount, 4>;
 
 #ifdef SMALLER_FIXED_STRING
     using FixedEntryId = uint32;

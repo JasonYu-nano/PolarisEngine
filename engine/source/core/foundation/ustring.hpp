@@ -20,7 +20,7 @@ namespace Engine
     {
         static_assert(std::is_signed_v<strsize>, "UString don't support unsigned type");
     public:
-        using SourceType = DynamicArray<UChar, InlineAllocator<UChar, 8, HeapAllocator<strsize>, strsize>>;
+        using SourceType = DynamicArray<UChar, InlineAllocator<8>>;
         using Iterator = SourceType::Iterator;
         using ConstIterator = SourceType::ConstIterator;
 

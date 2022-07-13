@@ -118,13 +118,14 @@ namespace Engine
     };
 #pragma endregion iterator
 
-    template <typename ElementType, typename Allocator = HeapAllocator<int32>>
+    template <typename ElementType, typename Allocator = DefaultAllocator>
     class DynamicArray
     {
         template <typename T, typename U> friend class SparseArray;
 
     protected:
-        typedef typename Allocator::SizeType SizeType;
+        using AllocatorType = typename Allocator::template ElementAllocator<ElementType>;
+        using SizeType = typename AllocatorType::SizeType;
 
     public:
         using ConstIterator = ConstIndexIterator<DynamicArray, ElementType, SizeType>;
@@ -133,13 +134,13 @@ namespace Engine
 
     public:
         DynamicArray()
-            : ArrayCapacity(AllocatorInstance.GetDefaultCapacity())
+            : ArrayCapacity(AllocatorInstance.GetDefaultSize())
         {}
 
         explicit DynamicArray(SizeType capacity)
-            : ArrayCapacity(Math::Max(capacity, AllocatorInstance.GetDefaultCapacity()))
+            : ArrayCapacity(Math::Max(capacity, AllocatorInstance.GetDefaultSize()))
         {
-            AllocatorInstance.Resize(ArrayCapacity, sizeof(ElementType));
+            AllocatorInstance.Resize(ArrayCapacity);
         }
 
         DynamicArray(const ElementType* rawPtr, SizeType count)
@@ -442,6 +443,11 @@ namespace Engine
             return ArrayCapacity;
         }
 
+        constexpr SizeType MaxSize() const
+        {
+            return NumericLimits<SizeType>::Max();
+        }
+
         bool IsEmpty() const
         {
             return ArraySize == 0;
@@ -471,7 +477,7 @@ namespace Engine
             if (newCapacity > ArraySize && newCapacity != ArrayCapacity)
             {
                 ArrayCapacity = newCapacity;
-                AllocatorInstance.Resize(newCapacity, sizeof(ElementType));
+                AllocatorInstance.Resize(newCapacity);
             }
         }
 
@@ -589,9 +595,29 @@ namespace Engine
 
         void Expansion()
         {
-            ArrayCapacity = AllocatorInstance.CalculateValidCapacity(ArraySize, ArrayCapacity, sizeof(ElementType));
+            ArrayCapacity = CalculateGrowth(ArraySize);
             PL_ASSERT(ArraySize <= ArrayCapacity);
-            AllocatorInstance.Resize(ArrayCapacity, sizeof(ElementType));
+            AllocatorInstance.Resize(ArrayCapacity);
+        }
+
+        SizeType CalculateGrowth(const SizeType newSize) const
+        {
+            SizeType oldCapacity = Capacity();
+            SizeType max = MaxSize();
+
+            if (oldCapacity > max - oldCapacity / 2)
+            {
+                return max;
+            }
+
+            const SizeType geometric = oldCapacity + oldCapacity / 2;
+
+            if (geometric < newSize)
+            {
+                return newSize;
+            }
+
+            return geometric;
         }
 
         void BoundCheck() const
@@ -611,16 +637,11 @@ namespace Engine
 
         void DestructElements(ElementType* element, SizeType count)
         {
-            if constexpr (HasUserDestructorV<ElementType>)
+            while (count)
             {
-                while (count)
-                {
-                    typedef ElementType DestructItemsElementTypeTypedef;
-
-                    element->DestructItemsElementTypeTypedef::~DestructItemsElementTypeTypedef();
-                    ++element;
-                    --count;
-                }
+                std::destroy_at(element);
+                ++element;
+                --count;
             }
         }
 
@@ -647,11 +668,11 @@ namespace Engine
     protected:
 
         /** Make sure AllocatorInstance init first */
-        Allocator AllocatorInstance;
+        AllocatorType AllocatorInstance;
         SizeType ArraySize{ 0 };
         SizeType ArrayCapacity{ 0 };
     };
 
     template <typename ElementType>
-    using DynamicArrayU64 = DynamicArray<ElementType, HeapAllocator<uint64>>;
+    using DynamicArray64 = DynamicArray<ElementType, HeapSizeAllocator<int64>>;
 }

@@ -296,7 +296,7 @@ namespace Engine
     };
 #pragma endregion iterator
 
-    template <typename Allocator = HeapAllocator<int32>>
+    template <typename Allocator = DefaultAllocator>
     class BitArray
     {
     public:
@@ -308,18 +308,20 @@ namespace Engine
         using ConstIterator = ConstBitIndexIterator<BitArray>;
         /** An iterator move to next index */
         using Iterator = BitIndexIterator<BitArray>;
+
+        using AllocatorType = DefaultAllocator::ElementAllocator<int32>;
     public:
         BitArray() 
-            : ArrayCapacity(static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits)
+            : ArrayCapacity(AllocatorInstance.GetDefaultSize() * kElementBits)
         {
-            AllocatorInstance.Resize(AllocatorInstance.GetDefaultCapacity(), sizeof(uint32));
+            AllocatorInstance.Resize(Math::DivideAndCeil(ArrayCapacity, kElementBits));
         };
 
         explicit BitArray(int32 capacity)
             : ArrayCapacity(Math::Max(Math::CeilToMultiple(capacity, kElementBits),
-                 static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits))
+                 AllocatorInstance.GetDefaultSize() * kElementBits))
         {
-            AllocatorInstance.Resize(Math::DivideAndCeil(ArrayCapacity, kElementBits), sizeof(uint32));
+            AllocatorInstance.Resize(Math::DivideAndCeil(ArrayCapacity, kElementBits));
         }
 
         BitArray(bool defaultValue, int32 count)
@@ -477,11 +479,11 @@ namespace Engine
         void Resize(int32 capacity)
         {
             PL_ASSERT(capacity >= 0);
-            const int32 defaultBitCount = static_cast<int32>(AllocatorInstance.GetDefaultCapacity()) * kElementBits;
+            const int32 defaultBitCount = AllocatorInstance.GetDefaultSize() * kElementBits;
             const int32 newCapacity = Math::Max(defaultBitCount, Math::CeilToMultiple(capacity, kElementBits));
             if (newCapacity != ArrayCapacity)
             {
-                AllocatorInstance.Resize(Math::DivideAndCeil(newCapacity, kElementBits), sizeof(uint32));
+                AllocatorInstance.Resize(Math::DivideAndCeil(newCapacity, kElementBits));
                 ArrayCapacity = newCapacity;
             }
         }
@@ -500,6 +502,11 @@ namespace Engine
         }
 
         int32 Capacity() const { return ArrayCapacity; }
+
+        constexpr int32 MaxSize() const
+        {
+            return MAX_INT32;
+        }
 
         uint32* Data()
         {
@@ -620,11 +627,31 @@ namespace Engine
 
         void Expansion()
         {
-            int32 elementCount = AllocatorInstance.CalculateValidCapacity(Math::DivideAndCeil(ArraySize, kElementBits),
-                                                                          ArrayCapacity / kElementBits, sizeof(uint32));
-            AllocatorInstance.Resize(elementCount, sizeof(uint32));
+            int32 capacity = CalculateGrowth(ArraySize);
+            int32 elementCount = Math::DivideAndCeil(ArraySize, kElementBits);
+            AllocatorInstance.Resize(elementCount);
             ArrayCapacity = elementCount * kElementBits;
             PL_ASSERT(ArraySize <= ArrayCapacity);
+        }
+
+        int32 CalculateGrowth(const int32 newSize) const
+        {
+            int32 oldCapacity = Capacity();
+            int32 max = MaxSize();
+
+            if (oldCapacity > max - oldCapacity / 2)
+            {
+                return max;
+            }
+
+            const int32 geometric = oldCapacity + oldCapacity / 2;
+
+            if (geometric < newSize)
+            {
+                return newSize;
+            }
+
+            return geometric;
         }
 
         void NormalizeOffset(uint32* data, int32& offset)
@@ -642,7 +669,7 @@ namespace Engine
         }
 
     private:
-        Allocator AllocatorInstance;
+        AllocatorType AllocatorInstance;
         int32 ArraySize{ 0 }; //as bit
         int32 ArrayCapacity{ 0 }; //as bit, always is a multiple of kElementBits
     };

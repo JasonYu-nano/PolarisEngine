@@ -12,7 +12,7 @@ namespace Engine
         CLOG(result, "FileSystem", Error, _T("Close windows file handle failed"));
     }
 
-    uint64 WindowsFileHandle::GetSize() const
+    int64 WindowsFileHandle::GetSize() const
     {
         return Size;
     }
