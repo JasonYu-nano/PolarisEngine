@@ -637,11 +637,14 @@ namespace Engine
 
         void DestructElements(ElementType* element, SizeType count)
         {
-            while (count)
+            if constexpr (!std::is_union<ElementType>::value)
             {
-                std::destroy_at(element);
-                ++element;
-                --count;
+                while (count)
+                {
+                    std::destroy_at(element);
+                    ++element;
+                    --count;
+                }
             }
         }
 

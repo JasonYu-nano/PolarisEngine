@@ -119,6 +119,11 @@ namespace Engine
     /** index of set in sparse array */
     struct SetElementIndex
     {
+        SetElementIndex() = default;
+
+        SetElementIndex(int32 index) : Index(index)
+        {}
+
         bool IsValid() const { return Index != INDEX_NONE; }
 
         operator int32() const
