@@ -49,6 +49,10 @@ conan_cmake_install(PATH_OR_REFERENCE .
 find_package(fmt)
 find_package(spdlog)
 
+if (install_icu)
+    find_package(icu)
+endif()
+
 if(fmt_FOUND)
     target_include_directories(${target} PRIVATE ${fmt_INCLUDE_DIR})
     target_link_libraries(${target} ${fmt_LIBRARY})

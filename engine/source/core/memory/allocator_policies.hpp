@@ -190,4 +190,73 @@ namespace Engine
             ElementType Data[Size];
         };
     };
+
+    template <typename ElementType, uint32 InlineSize, typename SecondaryAllocator, typename InSizeType>
+    class InlineAllocator
+    {
+    public:
+        using SizeType = InSizeType;
+
+        InlineAllocator& operator= (InlineAllocator&& other) noexcept
+        {
+            if (!other.HasAllocation())
+            {
+                Memory::Memcpy(Data, other.Data, sizeof(ElementType) * InlineSize);
+                Allocator.Resize(0, sizeof(ElementType));
+            }
+            else
+            {
+                Allocator = MoveTemp(other.Allocator);
+            }
+
+            return *this;
+        }
+
+        bool HasAllocation() const
+        {
+            return Allocator.HasAllocation();
+        }
+
+        SizeType GetDefaultCapacity() const
+        {
+            return InlineSize;
+        }
+
+        byte* GetAllocation() const
+        {
+            if (Allocator.HasAllocation())
+            {
+                return Allocator.GetAllocation();
+            }
+            else
+            {
+                return reinterpret_cast<byte*>(const_cast<ElementType*>(Data));
+            }
+        }
+
+        SizeType CalculateValidCapacity(SizeType elementNum, SizeType oldCapacity, size_t elementSize) const
+        {
+            return elementNum <= InlineSize ? InlineSize : Allocator.CalculateValidCapacity(elementNum, oldCapacity, elementSize);
+        }
+
+        void Resize(SizeType elementNum, size_t elementSize)
+        {
+            if (elementNum <= InlineSize)
+            {
+                if (Allocator.HasAllocation())
+                {
+                    Memory::Memcpy(Data, Allocator.GetAllocation(), elementNum * sizeof(ElementType));
+                }
+            }
+            else
+            {
+                Allocator.Resize(elementNum, elementSize);
+                Memory::Memcpy(Allocator.GetAllocation(), Data, InlineSize * sizeof(ElementType));
+            }
+        }
+
+    private:
+        ElementType Data[InlineSize];
+        SecondaryAllocator Allocator;
+    };
 }
