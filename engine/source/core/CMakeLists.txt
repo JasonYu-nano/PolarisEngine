@@ -39,17 +39,6 @@ conan_cmake_configure(REQUIRES spdlog/1.8.2
     IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
     OPTIONS spdlog:shared=True spdlog:wchar_support=True)
 
-if (NOT WIN32)
-    set(install_icu ON)
-endif ()
-
-if (install_icu)
-    conan_cmake_configure(REQUIRES icu/71.1
-        GENERATORS cmake_find_package
-        IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
-        OPTIONS icu:shared=True icu:with_icuio=False)
-endif()
-
 conan_cmake_autodetect(settings)
 message(${settings})
 conan_cmake_install(PATH_OR_REFERENCE .
@@ -59,10 +48,6 @@ conan_cmake_install(PATH_OR_REFERENCE .
 
 find_package(fmt)
 find_package(spdlog)
-
-if (install_icu)
-    find_package(icu)
-endif()
 
 if(fmt_FOUND)
     target_include_directories(${target} PRIVATE ${fmt_INCLUDE_DIR})
@@ -75,24 +60,7 @@ if(spdlog_FOUND)
     target_compile_definitions(${target} PUBLIC ${spdlog_DEFINITIONS})
 endif()
 
-if(install_icu AND icu_FOUND)
-    target_include_directories(${target} PUBLIC ${icu_INCLUDE_DIR})
-    target_link_libraries(${target} ${icu_LIBRARIES})
-    target_compile_definitions(${target} PUBLIC ${icu_DEFINITIONS})
-else()
-    target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/third_parties/icu/include)
-
-    if ("amd64" IN_LIST CMAKE_CPU_ARCHITECTURES)
-        if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-            target_link_libraries(${target} ${CMAKE_SOURCE_DIR}/third_parties/icu/win/x64/lib/icuucd.lib)
-            target_link_libraries(${target} ${CMAKE_SOURCE_DIR}/third_parties/icu/win/x64/lib/icuind.lib)
-        else()
-            target_link_libraries(${target} ${CMAKE_SOURCE_DIR}/third_parties/icu/win/x64/lib/icuuc.lib)
-            target_link_libraries(${target} ${CMAKE_SOURCE_DIR}/third_parties/icu/win/x64/lib/icuin.lib)
-        endif()
-    endif()
-    #TODO:
-endif()
+add_3rd_dependency(${target} "icu")
 
 # ide
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})

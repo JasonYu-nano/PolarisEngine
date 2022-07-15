@@ -61,6 +61,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin)
 
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_cpu_architectures.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/add_dependency.cmake)
 
 add_subdirectory(source)
 
