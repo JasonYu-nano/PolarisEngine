@@ -5,16 +5,11 @@
 #include "foundation/string_view.hpp"
 #include "foundation/char_utils.hpp"
 #include "foundation/dynamic_array.hpp"
+#include "foundation/string_type.hpp"
 
 namespace Engine
 {
     using UStringView = BasicStringView<UChar>;
-
-    enum class ECaseSensitivity : uint8
-    {
-        Sensitive,
-        Insensitive
-    };
 
     class CORE_API UString
     {
@@ -49,13 +44,13 @@ namespace Engine
 
         UString& operator= (int utf8) { return *this; }
 
-        UChar operator[] (strsize idx) const { PL_ASSERT(idx < Length()); return Source[idx]; }
+        UChar operator[] (strsize idx) const { ENSURE(idx < Length()); return Source[idx]; }
 
-        UChar& operator[] (strsize idx) { PL_ASSERT(idx < Length()); return Source[idx]; }
+        UChar& operator[] (strsize idx) { ENSURE(idx < Length()); return Source[idx]; }
 
         explicit operator UStringView() const { return UStringView(Data(), Length()); }
 
-        UChar At(strsize idx) const { PL_ASSERT(idx < Length()); return Source[idx]; }
+        UChar At(strsize idx) const { ENSURE(idx < Length()); return Source[idx]; }
 
         /**
          * Returns a UString initialized with the first size characters of the Latin-1 string str.
@@ -84,6 +79,24 @@ namespace Engine
 
         std::string ToStdString() const;
 
+        DynamicArray<wchar_t> ToWCharArray() const
+        {
+            DynamicArray<wchar_t> ret;
+            if constexpr (sizeof(wchar_t ) == sizeof(UChar))
+            {
+                ret.Add(reinterpret_cast<const wchar_t*>(Data()), Length() + 1);
+            }
+            else
+            {
+                DynamicArray<char32_t> ucs4 = ToUCS4();
+                ret.Add(reinterpret_cast<const wchar_t*>(ucs4.Data()), ucs4.Size());
+            }
+
+            return ret;
+        }
+
+        DynamicArray<char32_t> ToUCS4() const;
+
         strsize Length() const;
 
         strsize Capacity() const;
@@ -101,6 +114,8 @@ namespace Engine
         void Resize(strsize len);
 
         void Truncate(strsize pos);
+
+        UString Slices(strsize pos, strsize num) const;
 
         bool StartsWith(UStringView latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         bool StartsWith(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
@@ -129,6 +144,8 @@ namespace Engine
         UString& Remove(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
         UString& Remove(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
 
+        UString& Replace(const UString& before, const UString& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+
         bool IsUpper() const;
         bool IsLower() const;
         void ToUpper();
@@ -150,6 +167,12 @@ namespace Engine
         inline strsize IndexOf(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         inline strsize IndexOf(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
+        strsize LastIndexOf(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize LastIndexOf(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize LastIndexOf(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize LastIndexOf(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
+
         bool Contains(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         bool Contains(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         inline bool Contains(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
@@ -165,6 +188,8 @@ namespace Engine
         UString Trimmed() const;
 
         UString Simplified() const;
+
+        DynamicArray<UString> Split(const UString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
         int32 Compare(UStringView other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
@@ -210,10 +235,22 @@ namespace Engine
             fmt::basic_memory_buffer<char> buffer;
             const auto& vargs = fmt::make_args_checked<Args...>(fmt, args...);
             fmt::detail::vformat_to(buffer, fmt::to_string_view(fmt), vargs);
-            return UString::FromUtf8(StringView(buffer.data(), buffer.size()));
+            return UString::FromUtf8(StringView(buffer.data(), static_cast<strsize>(buffer.size())));
         }
 
-    private:
+    protected:
+        static strsize FindStringHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs);
+
+        static strsize FindStringHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs);
+
+        static strsize FindLastHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs);
+
+        static strsize FindLastHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs);
+
+        static void ReplaceHelper(UString& source, UStringView before, UStringView after, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+
+        static void ReplaceHelper(UString& source, strsize* indices, int32 nIndices, strsize blen, const UChar*after, strsize alen);
+
         SourceType Source;
     };
 
@@ -301,6 +338,21 @@ namespace Engine
     strsize UString::IndexOf(UChar ch, ECaseSensitivity cs) const
     {
         return IndexOf(UStringView(&ch, 1), cs);
+    }
+
+    strsize UString::LastIndexOf(const UString& str, ECaseSensitivity cs) const
+    {
+        return LastIndexOf((UStringView)str, cs);
+    }
+
+    strsize UString::LastIndexOf(const char* latin1, ECaseSensitivity cs) const
+    {
+        return FindLastHelper((UStringView)*this, -1, StringView(latin1), cs);
+    }
+
+    strsize UString::LastIndexOf(UChar ch, ECaseSensitivity cs) const
+    {
+        return LastIndexOf(UStringView(&ch, 1), cs);
     }
 
     bool UString::Contains(const UString& str, ECaseSensitivity cs) const

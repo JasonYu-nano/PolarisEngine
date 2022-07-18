@@ -4,7 +4,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/pattern_formatter.h"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "foundation/smart_ptr.hpp"
 
 namespace Engine
@@ -115,9 +115,4 @@ namespace Engine
         {                                                  \
             PL_LOG_IMPL(level, category, fmt, ## __VA_ARGS__) \
         }
-#ifdef DEBUG
-    #define PL_ASSERT(expr) ((expr) ? (void)0 : LogSystem::AssertFail(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, #expr))
-#else
-    #define PL_ASSERT(expr)
-#endif
 }

@@ -29,13 +29,13 @@ namespace Engine
 
         void Pop()
         {
-            PL_ASSERT(Super::ArraySize > 0);
+            ENSURE(Super::ArraySize > 0);
             RemoveAt(Super::ArraySize - 1);
         }
 
         ElementType& Top()
         {
-            PL_ASSERT(Super::ArraySize > 0);
+            ENSURE(Super::ArraySize > 0);
             return At(Super::ArraySize - 1);
         }
     private:

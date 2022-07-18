@@ -1,5 +1,6 @@
 #pragma once
-#include "predefine/details/platform_type.hpp"
+
+#include "global/details/platform_type.hpp"
 
 namespace Engine
 {

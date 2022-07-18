@@ -2,7 +2,7 @@
 
 #include <initializer_list>
 #include "definitions_core.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "math/generic_math.hpp"
 #include "memory/allocator_policies.hpp"
 #include "log/logger.hpp"
@@ -188,7 +188,7 @@ namespace Engine
 
         DynamicArray& operator=(const DynamicArray& other)
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             DestructElements(Data(), ArraySize);
             CopyElement(other.Data(), other.ArraySize);
             return *this;
@@ -196,7 +196,7 @@ namespace Engine
 
         DynamicArray& operator=(DynamicArray&& other) noexcept
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             DestructElements(Data(), ArraySize);
             MoveElement(Forward<DynamicArray&&>(other));
             return *this;
@@ -238,14 +238,14 @@ namespace Engine
         ElementType& operator[] (SizeType index)
         {
             BoundCheck();
-            PL_ASSERT(index < ArraySize);
+            ENSURE(index < ArraySize);
             return *(Data() + index);
         }
 
         const ElementType& operator[] (SizeType index) const
         {
             BoundCheck();
-            PL_ASSERT(index < ArraySize);
+            ENSURE(index < ArraySize);
             return *(Data() + index);
         }
 
@@ -292,7 +292,7 @@ namespace Engine
          */
         void Insert(SizeType index, const ElementType& element)
         {
-            PL_ASSERT(0 <=index && index <= ArraySize);
+            ENSURE(0 <=index && index <= ArraySize);
             AddressCheck(&element);
             EmplaceAt(index, element);
         };
@@ -304,14 +304,14 @@ namespace Engine
          */
         void Insert(SizeType index, ElementType&& element)
         {
-            PL_ASSERT(0 <=index && index <= ArraySize);
+            ENSURE(0 <=index && index <= ArraySize);
             AddressCheck(&element);
             EmplaceAt(index, element);
         };
 
         void Insert(SizeType index, const ElementType* elements, SizeType size)
         {
-            PL_ASSERT(0 <=index && index <= ArraySize && size > 0);
+            ENSURE(0 <=index && index <= ArraySize && size > 0);
             AddressCheck(elements);
             InsertUnconstructElement(index, size);
             ConstructElements(Data() + index, elements, size);
@@ -323,7 +323,7 @@ namespace Engine
          */
         void RemoveAt(SizeType index)
         {
-            PL_ASSERT(IsValidIndex(index));
+            ENSURE(IsValidIndex(index));
             DestructElements(Data() + index, 1);
 
             SizeType countToMove = ArraySize - index - 1;
@@ -349,7 +349,7 @@ namespace Engine
 
         void Remove(SizeType first, SizeType last)
         {
-            PL_ASSERT(IsValidIndex(first) && IsValidIndex(last));
+            ENSURE(IsValidIndex(first) && IsValidIndex(last));
             if (first <= last)
             {
                 SizeType removeCount = last - first + 1;
@@ -456,7 +456,7 @@ namespace Engine
         template <typename... Args>
         void Resize(SizeType count, Args&&... args)
         {
-            PL_ASSERT(count >= 0);
+            ENSURE(count >= 0);
             if (count < ArraySize)
             {
                 DestructElements(Data() + count, ArraySize - count);
@@ -569,7 +569,7 @@ namespace Engine
          */
         SizeType AddUnconstructElement(SizeType count)
         {
-            PL_ASSERT(count > 0);
+            ENSURE(count > 0);
             SizeType oldCount = ArraySize;
             ArraySize += count;
             if (ArraySize > ArrayCapacity)
@@ -581,7 +581,7 @@ namespace Engine
 
         void InsertUnconstructElement(SizeType index, SizeType count)
         {
-            PL_ASSERT(index >= 0 && count > 0 && index <= ArraySize);
+            ENSURE(index >= 0 && count > 0 && index <= ArraySize);
             SizeType oldCount = ArraySize;
             ArraySize += count;
             if (ArraySize > ArrayCapacity)
@@ -596,7 +596,7 @@ namespace Engine
         void Expansion()
         {
             ArrayCapacity = CalculateGrowth(ArraySize);
-            PL_ASSERT(ArraySize <= ArrayCapacity);
+            ENSURE(ArraySize <= ArrayCapacity);
             AllocatorInstance.Resize(ArrayCapacity);
         }
 
@@ -622,12 +622,12 @@ namespace Engine
 
         void BoundCheck() const
         {
-            PL_ASSERT(ArraySize >= 0 && ArraySize <= ArrayCapacity);
+            ENSURE(ArraySize >= 0 && ArraySize <= ArrayCapacity);
         }
 
         void AddressCheck(const ElementType* address)
         {
-            PL_ASSERT(address < Data() || address >= Data() + ArrayCapacity);
+            ENSURE(address < Data() || address >= Data() + ArrayCapacity);
         }
 
         void ConstructElements(ElementType* dest, const ElementType* src, SizeType count)
@@ -650,7 +650,7 @@ namespace Engine
 
         void CopyElement(const ElementType* data, SizeType count)
         {
-            PL_ASSERT(data && count > 0);
+            ENSURE(data && count > 0);
             ArraySize = count;
             if (ArraySize > ArrayCapacity)
             {

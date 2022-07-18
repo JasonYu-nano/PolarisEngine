@@ -28,6 +28,7 @@ endif()
 
 # include dir
 target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core)
+target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core/global)
 
 
 # add 3rd dependency

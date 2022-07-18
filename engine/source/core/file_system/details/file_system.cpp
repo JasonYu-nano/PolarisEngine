@@ -24,11 +24,6 @@ namespace Engine
         return PlatformFile->RemoveDir(*path);
     }
 
-    bool FileSystem::MakeFile(const String& path)
-    {
-        return PlatformFile->MakeFile(*path);
-    }
-
     inline bool FileSystem::RemoveFile(const String& path)
     {
         return PlatformFile->RemoveFile(*path);
@@ -100,11 +95,6 @@ namespace Engine
         return true;
     }
 
-    FileTime Engine::FileSystem::GetFileTime(const String& path)
-    {
-        return PlatformFile->GetFileTime(*path);
-    }
-
     DynamicArray<String> FileSystem::QueryFiles(const String& searchPath, const String& regex, bool recursion)
     {
         return PlatformFile->QueryFiles(*searchPath, *regex, recursion);
@@ -128,5 +118,40 @@ namespace Engine
         int64 fileSize = handle->GetSize();
         outBinary.Reserve(fileSize);
         handle->Read(outBinary.Data(), fileSize);
+    }
+
+    bool FileSystem::MakeDir(const char* path)
+    {
+        return PlatformFile->MakeDir(path);
+    }
+
+    bool FileSystem::RemoveDir(const char* path)
+    {
+        return PlatformFile->RemoveDir(path);
+    }
+
+    bool FileSystem::MakeFile(const char* path)
+    {
+        return PlatformFile->MakeFile(path);
+    }
+
+    bool FileSystem::RemoveFile(const char* path)
+    {
+        return PlatformFile->RemoveFile(path);
+    }
+
+    bool FileSystem::DirExists(const char* path)
+    {
+        return PlatformFile->DirExists(path);
+    }
+
+    bool FileSystem::FileExists(const char* path)
+    {
+        return PlatformFile->FileExists(path);
+    }
+
+    FileTime FileSystem::GetFileTime(const char* path)
+    {
+        return PlatformFile->GetFileTime(path);
     }
 }

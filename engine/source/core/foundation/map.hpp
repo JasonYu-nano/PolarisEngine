@@ -129,14 +129,14 @@ namespace Engine
 
         Map& operator= (const Map& other)
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             Pairs = other.Pairs;
             return *this;
         }
 
         Map& operator= (Map&& other) noexcept
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             Pairs = MoveTemp(other.Pairs);
             return *this;
         }

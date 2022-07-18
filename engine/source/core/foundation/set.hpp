@@ -199,7 +199,7 @@ namespace Engine
 
         Set& operator= (const Set& other)
         {
-            PL_ASSERT(*this != other);
+            ENSURE(*this != other);
             // SetElementIndex don't need destruct
             CopyElement(other);
             return *this;
@@ -207,7 +207,7 @@ namespace Engine
 
         Set& operator= (Set&& other) noexcept
         {
-            PL_ASSERT(*this != other);
+            ENSURE(*this != other);
             MoveElement(Forward<Set&&>(other));
             return *this;
         }
@@ -312,7 +312,7 @@ namespace Engine
 
         void Clear(int32 slack = 0)
         {
-            PL_ASSERT(slack >= 0);
+            ENSURE(slack >= 0);
             HashBucket.Resize(slack);
             Elements.Clear(slack);
         }
@@ -350,7 +350,7 @@ namespace Engine
         //TODO: impl
         void Resize(int32 capacity)
         {
-            PL_ASSERT(capacity >= 0);
+            ENSURE(capacity >= 0);
         }
 
         Iterator begin() { return Iterator(Elements.begin()); }
@@ -412,7 +412,7 @@ namespace Engine
         /** Contains the head of SetElement list */
         SetElementIndex& GetFirstIndex(uint32 hashCode) const
         {
-            PL_ASSERT(Size() > 0);
+            ENSURE(Size() > 0);
             return ((SetElementIndex*)HashBucket.GetAllocation())[GetHashIndex(hashCode)];
         }
 

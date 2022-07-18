@@ -1,6 +1,6 @@
 #pragma once
 
-#include "predefine/platform.hpp"
+#include "global.hpp"
 
 #ifdef PL_SHARED
 #ifdef RENDER_EXPORT

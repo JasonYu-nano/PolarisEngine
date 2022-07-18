@@ -1,6 +1,6 @@
 #pragma once
 
-#include "predefine/platform.hpp"
+#include "global.hpp"
 
 #if PLATFORM_WINDOWS
 #include "rhi/details/vulkan/vulkan_windows_platform.hpp"

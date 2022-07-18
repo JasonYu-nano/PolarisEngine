@@ -1,7 +1,6 @@
 #pragma once
 
-#include "predefine/prerequisite.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "foundation/type_traits.hpp"
 #include "foundation/encoding.hpp"
 #include "math/generic_math.hpp"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "predefine/prerequisite.hpp"
+#include "global/prerequisite.hpp"
 
 #define INDEX_NONE (int32) -1
 

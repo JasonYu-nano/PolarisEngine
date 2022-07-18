@@ -71,6 +71,15 @@ namespace Engine
         return String::Empty();
     }
 
+    UString Path::GetExtension(const UString& path)
+    {
+        if (int32 pos = path.LastIndexOf('.') >= 0)
+        {
+            return path.Slices(pos, path.Length() - pos);
+        }
+        return UString();
+    }
+
     String Path::RemoveExtension(const String& path)
     {
         size_t pos = path.FindLast(_T("."));
@@ -80,6 +89,15 @@ namespace Engine
             return path.Substr(0, pos);
         else
             return path;
+    }
+
+    UString Path::RemoveExtension(const UString& path)
+    {
+        if (int32 pos = path.LastIndexOf('.') > 0)
+        {
+            return path.Slices(0, pos);
+        }
+        return path;
     }
 
     String Path::GetShortName(const String& path, bool withExtension)
@@ -97,8 +115,24 @@ namespace Engine
         return ret;
     }
 
+    UString Path::GetShortName(const UString& path, bool withExtension)
+    {
+        UString ret;
+        if (int32 pos = path.LastIndexOf('.') > 0)
+        {
+            return path.Slices(0, pos);
+        }
+        //TODO:
+        return ret;
+    }
+
     DynamicArray<String> Path::SplitPath(const String& path)
     {
         return path.Split(_T("/\\"));
+    }
+
+    DynamicArray<UString> Path::SplitPath(const UString& path)
+    {
+        return DynamicArray<UString>();
     }
 }

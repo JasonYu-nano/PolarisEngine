@@ -10,18 +10,25 @@ namespace Engine
         WindowsPlatformFile() = default;
         virtual ~WindowsPlatformFile() = default;
 
+        virtual bool MakeDir(const char* path) final;
         bool MakeDir(const char_t* path) override;
 
+        virtual bool RemoveDir(const char* path) final;
         bool RemoveDir(const char_t* path) override;
 
+        virtual bool MakeFile(const char* path) final;
         bool MakeFile(const char_t* path) override;
 
+        virtual bool RemoveFile(const char* path) final;
         bool RemoveFile(const char_t* path) override;
 
+        virtual bool FileExists(const char* path) final;
         bool FileExists(const char_t* path) override;
 
+        virtual bool DirExists(const char* path) final;
         bool DirExists(const char_t* path) override;
 
+        virtual FileTime GetFileTime(const char* path) final;
         FileTime GetFileTime(const char_t* path) override;
 
         DynamicArray<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion) override;

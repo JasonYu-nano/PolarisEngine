@@ -41,15 +41,15 @@ namespace Engine
 
     HINSTANCE WindowsApplication::GetHInstance()
     {
-        PL_ASSERT(AppInstance != nullptr);
+        ENSURE(AppInstance != nullptr);
 
         return AppInstance->HInstance;
     }
 
     HWND WindowsApplication::GetHWnd()
     {
-        PL_ASSERT(AppInstance != nullptr);
-        PL_ASSERT(AppInstance->Window != nullptr);
+        ENSURE(AppInstance != nullptr);
+        ENSURE(AppInstance->Window != nullptr);
 
         return AppInstance->Window->GetHWnd();
     }
@@ -113,7 +113,7 @@ namespace Engine
 
     void WindowsApplication::GetFrameBufferSize(int& width, int& height)
     {
-        PL_ASSERT(AppInstance);
+        ENSURE(AppInstance);
         AppInstance->Window->GetWindowSize(width, height);
     }
 

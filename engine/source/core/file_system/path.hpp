@@ -16,7 +16,11 @@ namespace Engine
 
         static String GetExtension(const String& path);
 
+        static UString GetExtension(const UString& path);
+
         static String RemoveExtension(const String& path);
+
+        static UString RemoveExtension(const UString& path);
 
         /**
          * @brief get short name of file or directory
@@ -24,7 +28,10 @@ namespace Engine
          * eg: c:/app/nano_engine/engine.hpp return engine(.hpp)
          */
         static String GetShortName(const String& path, bool withExtension = true);
+        static UString GetShortName(const UString& path, bool withExtension = true);
 
         static DynamicArray<String> SplitPath(const String& path);
+
+        static DynamicArray<UString> SplitPath(const UString& path);
     };
 }

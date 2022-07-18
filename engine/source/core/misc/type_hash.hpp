@@ -1,6 +1,6 @@
 #pragma once
 
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "foundation/type_traits.hpp"
 
 namespace Engine

@@ -3,14 +3,15 @@
 #include "foundation/char_utils.hpp"
 #include "foundation/details/string_algorithm.hpp"
 
-#define STR_INLINE_BUFFER_SIZE 500
-
 #define COPY_CHAR_TO_UCHAR_ARRAY(dest, src, len) \
     UChar* _destPtr = dest.Data();\
     const char* _current = src;\
     strsize _len = len;\
     while (_len--)\
     {*_destPtr++ = (UChar)*_current++;}
+
+#define MAKE_U16StringView(ustring) \
+    U16StringView(K_UCHAR_TO_UTF16((ustring).Data()), (ustring).Length())
 
 namespace Engine
 {
@@ -22,7 +23,7 @@ namespace Engine
     }
 
     UString::UString(const char* utf8, strsize len)
-        : UString(FromUtf8(StringView(utf8, len < 0 ? CharUtils::Length(utf8) : len)))
+        : UString(FromUtf8(StringView(utf8, len < 0 ? CharTraits<char>::Length(utf8) : len)))
     {}
 
     UString::UString(const UChar* unicode, strsize len)
@@ -33,7 +34,7 @@ namespace Engine
         }
         else
         {
-            len = len >= 0 ? len : CharUtils::Length(unicode);
+            len = len >= 0 ? len : CharTraits<UChar>::Length(unicode);
             if (!len)
             {
 
@@ -62,7 +63,7 @@ namespace Engine
         strsize len = str.Length();
         UString ret;
         ret.Resize(len);
-        PL_ASSERT(ret.Capacity() >= len);
+        ENSURE(ret.Capacity() >= len);
 
         COPY_CHAR_TO_UCHAR_ARRAY(ret.Source, str.Data(), len);
 
@@ -95,7 +96,7 @@ namespace Engine
 
     UString UString::FromUtf16(const char16_t* unicode, strsize len)
     {
-        len = len >= 0 ? len : CharUtils::Length(unicode);
+        len = len >= 0 ? len : CharTraits<char16_t>::Length(unicode);
         //TODO:
         return UString(reinterpret_cast<const UChar*>(unicode), len);
     }
@@ -212,6 +213,21 @@ namespace Engine
         }
     }
 
+    UString UString::Slices(strsize pos, strsize num) const
+    {
+        if (pos < 0)
+        {
+            pos += Length();
+        }
+
+        if (pos >= 0 && num >= 0 && pos + num <= Length())
+        {
+            return UString(Data() + pos, num);
+        }
+
+        return UString();
+    }
+
     bool UString::StartsWith(UStringView latin1, ECaseSensitivity cs) const
     {
         strsize compareLen = latin1.Length();
@@ -222,17 +238,17 @@ namespace Engine
 
         if (cs == ECaseSensitivity::Sensitive)
         {
-            return CharUtils::Compare(Data(), latin1.Data(), compareLen) == 0;
+            return CharTraits<UChar>::Compare(Data(), latin1.Data(), compareLen) == 0;
         }
         else
         {
-            return CharUtils::UCompareInsensitive(Data(), latin1.Data(), compareLen) == 0;
+            return CharTraits<UChar>::CompareInsensitive(Data(), latin1.Data(), compareLen) == 0;
         }
     }
 
     bool UString::StartsWith(const char* latin1, ECaseSensitivity cs) const
     {
-        strsize compareLen = CharUtils::Length(latin1);
+        strsize compareLen = CharTraits<char>::Length(latin1);
         if (IsNull() || Length() < compareLen)
         {
             return false;
@@ -240,11 +256,11 @@ namespace Engine
 
         if (cs == ECaseSensitivity::Sensitive)
         {
-            return CharUtils::Compare(Data(), latin1, compareLen) == 0;
+            return CharTraits<UChar>::Compare(Data(), latin1, compareLen) == 0;
         }
         else
         {
-            return CharUtils::UCompareInsensitive(Data(), latin1, compareLen) == 0;
+            return CharTraits<UChar>::CompareInsensitive(Data(), latin1, compareLen) == 0;
         }
     }
 
@@ -258,17 +274,17 @@ namespace Engine
 
         if (cs == ECaseSensitivity::Sensitive)
         {
-            return CharUtils::Compare(Data() + Length() - compareLen, latin1.Data(), compareLen) == 0;
+            return CharTraits<UChar>::Compare(Data() + Length() - compareLen, latin1.Data(), compareLen) == 0;
         }
         else
         {
-            return CharUtils::UCompareInsensitive(Data() + Length() - compareLen, latin1.Data(), compareLen) == 0;
+            return CharTraits<UChar>::CompareInsensitive(Data() + Length() - compareLen, latin1.Data(), compareLen) == 0;
         }
     }
 
     bool UString::EndsWith(const char* latin1, ECaseSensitivity cs) const
     {
-        strsize compareLen = CharUtils::Length(latin1);
+        strsize compareLen = CharTraits<char>::Length(latin1);
         if (IsNull() || Length() < compareLen)
         {
             return false;
@@ -276,17 +292,17 @@ namespace Engine
 
         if (cs == ECaseSensitivity::Sensitive)
         {
-            return CharUtils::Compare(Data() + Length() - compareLen, latin1, compareLen) == 0;
+            return CharTraits<UChar>::Compare(Data() + Length() - compareLen, latin1, compareLen) == 0;
         }
         else
         {
-            return CharUtils::UCompareInsensitive(Data() + Length() - compareLen, latin1, compareLen) == 0;
+            return CharTraits<UChar>::CompareInsensitive(Data() + Length() - compareLen, latin1, compareLen) == 0;
         }
     }
 
     UString& UString::Append(const UChar* str, strsize len)
     {
-        len = len >= 0 ? len : CharUtils::Length(str);
+        len = len >= 0 ? len : CharTraits<UChar>::Length(str);
 
         if (str && len > 0)
         {
@@ -338,17 +354,17 @@ namespace Engine
 
     UString& UString::Remove(const char* latin1, ECaseSensitivity cs)
     {
-        strsize sl = CharUtils::Length(latin1);
+        strsize sl = CharTraits<char>::Length(latin1);
 
-        DynamicArray<UChar> unicode(sl + 1);
-        PL_ASSERT(unicode.Capacity() >= sl);
+        DynamicArray<UChar, InlineAllocator<STR_INLINE_BUFFER_SIZE>> unicode(sl + 1);
+        ENSURE(unicode.Capacity() >= sl);
         COPY_CHAR_TO_UCHAR_ARRAY(unicode, latin1, sl);
 
         UStringView view(unicode.Data(), sl);
         strsize from = 0;
         do
         {
-            strsize pos = Private::FindString((UStringView)*this, from, view, cs);
+            strsize pos = FindStringHelper((UStringView)*this, from, view, cs);
             if (pos >= 0)
             {
                 Source.Remove(pos, pos + sl - 1);
@@ -369,7 +385,7 @@ namespace Engine
         strsize from = 0;
         do
         {
-            strsize pos = Private::FindString((UStringView)*this, from, (UStringView)str, cs);
+            strsize pos = FindStringHelper((UStringView)*this, from, (UStringView)str, cs);
             if (pos >= 0)
             {
                 Source.Remove(pos, pos + str.Length() - 1);
@@ -390,7 +406,7 @@ namespace Engine
         strsize from = 0;
         do
         {
-            strsize pos = Private::FindChar((UStringView)*this, from, ch, cs);
+            strsize pos = Private::FindChar(Data(), Length(), from, ch, cs);
             if (pos >= 0)
             {
                 Source.Remove(pos, pos);
@@ -403,6 +419,12 @@ namespace Engine
         }
         while (true);
 
+        return *this;
+    }
+
+    UString& UString::Replace(const UString& before, const UString& after, ECaseSensitivity cs)
+    {
+        ReplaceHelper(*this, (UStringView)before, (UStringView)after, cs);
         return *this;
     }
 
@@ -470,18 +492,22 @@ namespace Engine
 
     strsize UString::IndexOf(UStringView str, ECaseSensitivity cs) const
     {
-        return Private::FindString((UStringView)*this, 0, str, cs);
+        return FindStringHelper((UStringView)*this, 0, str, cs);
     }
 
     strsize UString::IndexOf(const char* latin1, ECaseSensitivity cs) const
     {
-        return Private::FindString((UStringView)*this, 0 , StringView(latin1, CharUtils::Length(latin1)), cs);
+        return FindStringHelper((UStringView)*this, 0 , latin1, cs);
+    }
+
+    strsize UString::LastIndexOf(UStringView str, ECaseSensitivity cs) const
+    {
+        return FindLastHelper((UStringView)*this, -1 , str, cs);
     }
 
     bool UString::Contains(UStringView str, ECaseSensitivity cs) const
     {
-        strsize pos = 0;
-        return Private::FindString((UStringView)*this, 0, str, cs) >= 0;
+        return FindStringHelper((UStringView)*this, 0, str, cs) >= 0;
     }
 
     bool UString::Contains(const char* latin1, ECaseSensitivity cs) const
@@ -494,7 +520,7 @@ namespace Engine
         strsize num = 0;
         strsize i = -1;
         UStringView view = static_cast<UStringView>(str);
-        while ((i = Private::FindString((UStringView)*this, i + 1, view, cs)) != -1)
+        while ((i = FindStringHelper((UStringView)*this, i + 1, view, cs)) != -1)
         {
             ++num;
         }
@@ -503,16 +529,16 @@ namespace Engine
 
     int32 UString::Count(const char* latin1, ECaseSensitivity cs) const
     {
-        strsize len = CharUtils::Length(latin1);
+        strsize len = CharTraits<char>::Length(latin1);
 
         DynamicArray<UChar> unicode(len + 1);
-        PL_ASSERT(unicode.Capacity() >= len);
+        ENSURE(unicode.Capacity() >= len);
         COPY_CHAR_TO_UCHAR_ARRAY(unicode, latin1, len);
 
         strsize num = 0;
         strsize i = -1;
         UStringView view(unicode.Data(), len);
-        while ((i = Private::FindString((UStringView)*this, i + 1, view, cs)) != -1)
+        while ((i = FindStringHelper((UStringView)*this, i + 1, view, cs)) != -1)
         {
             ++num;
         }
@@ -585,15 +611,35 @@ namespace Engine
         return UString(start, static_cast<strsize>(end - start));
     }
 
+    DynamicArray<UString> UString::Split(const UString& sep, ESplitBehavior behavior, ECaseSensitivity cs) const
+    {
+        DynamicArray<UString> ret;
+        strsize start = 0;
+        strsize end;
+        while ((end = FindStringHelper((UStringView)*this, start, (UStringView)sep, cs)) != -1)
+        {
+            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            {
+                ret.Add(Slices(start, end - start));
+            }
+            start = end + sep.Length();
+        }
+        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        {
+            ret.Add(Slices(start, Length() - start));
+        }
+        return ret;
+    }
+
     int32 UString::Compare(UStringView other, ECaseSensitivity cs) const
     {
         if (cs == ECaseSensitivity::Sensitive)
         {
-            return CharUtils::Compare(Data(), Length(), other.Data(), other.Length());
+            return CharTraits<UChar>::Compare(Data(), Length(), other.Data(), other.Length());
         }
         else
         {
-            return CharUtils::UCompareInsensitive(Data(), Length(), other.Data(), other.Length()) == 0;
+            return CharTraits<UChar>::CompareInsensitive(Data(), Length(), other.Data(), other.Length()) == 0;
         }
     }
 
@@ -601,11 +647,11 @@ namespace Engine
     {
         if (cs == ECaseSensitivity::Sensitive)
         {
-            return CharUtils::Compare(Data(), Length(), other, CharUtils::Length(other));
+            return CharTraits<UChar>::Compare(Data(), Length(), other, CharTraits<char>::Length(other));
         }
         else
         {
-            return CharUtils::UCompareInsensitive(Data(), Length(), other, CharUtils::Length(other));
+            return CharTraits<UChar>::CompareInsensitive(Data(), Length(), other, CharTraits<char>::Length(other));
         }
     }
 
@@ -617,5 +663,89 @@ namespace Engine
     int32 UString::Compare(UChar other, ECaseSensitivity cs) const
     {
         return Compare(UStringView(&other, 1), cs);
+    }
+
+    strsize UString::FindStringHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
+    {
+        if (cs == ECaseSensitivity::Sensitive)
+        {
+            return Private::FindString<UChar>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length());
+        }
+        else
+        {
+            return Private::UFindStringInsensitive(K_UCHAR_TO_UTF16(haystack.Data()), haystack.Length(), from, K_UCHAR_TO_UTF16(needle.Data()), needle.Length());
+        }
+    }
+
+    strsize UString::FindStringHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs)
+    {
+        strsize len = needle.Length();
+        DynamicArray<UChar, InlineAllocator<STR_INLINE_BUFFER_SIZE>> unicode(len + 1);
+        ENSURE(unicode.Capacity() >= len);
+        COPY_CHAR_TO_UCHAR_ARRAY(unicode, needle.Data(), len);
+
+        UStringView view(unicode.Data(), len);
+        return FindStringHelper(haystack, from, view, cs);
+    }
+
+    strsize UString::FindLastHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
+    {
+        return Private::FindLastString<UChar>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length());
+    }
+
+    strsize UString::FindLastHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs)
+    {
+        strsize len = needle.Length();
+        DynamicArray<UChar, InlineAllocator<STR_INLINE_BUFFER_SIZE>> unicode(len + 1);
+        ENSURE(unicode.Capacity() >= len);
+        COPY_CHAR_TO_UCHAR_ARRAY(unicode, needle.Data(), len);
+
+        UStringView view(unicode.Data(), len);
+        return FindLastHelper(haystack, from, view, cs);
+    }
+
+    void UString::ReplaceHelper(UString& source, UStringView before, UStringView after, ECaseSensitivity cs)
+    {
+        if (before.IsEmpty() || after.IsEmpty())
+        {
+            return;
+        }
+        if (source.Length() < before.Length())
+        {
+            return;
+        }
+        if (before == after)
+        {
+            return;
+        }
+        //TODO:
+    }
+
+    void UString::ReplaceHelper(UString& source, strsize* indices, int32 nIndices, strsize blen, const UChar* after, strsize alen)
+    {
+        UChar* src = source.Data();
+        if (blen == alen)
+        {
+            for (int32 i = 0; i < nIndices; ++i)
+            {
+                Memory::Memcpy(src + indices[i], (void*)after, alen * sizeof(UChar));
+            }
+        }
+        else
+        {
+            strsize len = source.Length();
+            int32 deltaSize = (alen - blen);
+            if (deltaSize > 0)
+            {
+                source.Resize(deltaSize * nIndices + len);
+            }
+
+            for (int32 i = 0; i < nIndices; ++i)
+            {
+                strsize idx = indices[i];
+                Memory::Memcpy(src + idx + alen, src + idx + blen, (len - idx - blen) * sizeof(UChar));
+                Memory::Memcpy(src + idx, (void*)after, alen * sizeof(UChar));
+            }
+        }
     }
 }

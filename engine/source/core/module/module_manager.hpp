@@ -1,7 +1,7 @@
 #pragma once
 
 #include "definitions_core.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "module/module_interface.hpp"
 #include "foundation/fixed_string.hpp"
 

@@ -14,7 +14,14 @@ namespace Engine
 
     bool WindowsPlatformFile::MakeDir(const char_t* path)
     {
-        return CreateDirectory(path, reinterpret_cast<SECURITY_ATTRIBUTES*>(NULL)) || GetLastError() == ERROR_ALREADY_EXISTS;
+        return CreateDirectory(path, reinterpret_cast<SECURITY_ATTRIBUTES*>(NULL)) ||
+               GetLastError() == ERROR_ALREADY_EXISTS;
+    }
+
+    bool WindowsPlatformFile::MakeDir(const char* path)
+    {
+        return ::CreateDirectoryA(path, reinterpret_cast<SECURITY_ATTRIBUTES*>(NULL)) ||
+               GetLastError() == ERROR_ALREADY_EXISTS;
     }
 
     bool WindowsPlatformFile::RemoveDir(const char_t* path)
@@ -22,9 +29,24 @@ namespace Engine
         return ::RemoveDirectory(path);
     }
 
+    bool WindowsPlatformFile::RemoveDir(const char* path)
+    {
+        return ::RemoveDirectoryA(path);
+    }
+
     bool WindowsPlatformFile::MakeFile(const char_t* path)
     {
-        auto handle = ::CreateFile(path, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+        auto handle = ::CreateFile(path, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
+                                   NULL);
+        bool ret = handle != INVALID_HANDLE_VALUE || GetLastError() == ERROR_FILE_EXISTS;
+        CloseHandle(handle);
+        return ret;
+    }
+
+    bool WindowsPlatformFile::MakeFile(const char* path)
+    {
+        auto handle = ::CreateFileA(path, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
+                                    NULL);
         bool ret = handle != INVALID_HANDLE_VALUE || GetLastError() == ERROR_FILE_EXISTS;
         CloseHandle(handle);
         return ret;
@@ -35,15 +57,32 @@ namespace Engine
         return ::DeleteFile(path);
     }
 
+    bool WindowsPlatformFile::RemoveFile(const char* path)
+    {
+        return ::DeleteFileA(path);
+    }
+
     bool WindowsPlatformFile::FileExists(const char_t* path)
     {
         uint32 result = ::GetFileAttributes(path);
         return result != 0xFFFFFFFF && !(result & FILE_ATTRIBUTE_DIRECTORY);
     }
 
+    bool WindowsPlatformFile::FileExists(const char* path)
+    {
+        uint32 result = ::GetFileAttributesA(path);
+        return result != 0xFFFFFFFF && !(result & FILE_ATTRIBUTE_DIRECTORY);
+    }
+
     bool WindowsPlatformFile::DirExists(const char_t* path)
     {
         uint32 result = ::GetFileAttributes(path);
+        return result != 0xFFFFFFFF && (result & FILE_ATTRIBUTE_DIRECTORY);
+    }
+
+    bool WindowsPlatformFile::DirExists(const char* path)
+    {
+        uint32 result = ::GetFileAttributesA(path);
         return result != 0xFFFFFFFF && (result & FILE_ATTRIBUTE_DIRECTORY);
     }
 
@@ -67,7 +106,28 @@ namespace Engine
         return ret;
     }
 
-    DynamicArray<String> WindowsPlatformFile::QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion)
+    FileTime WindowsPlatformFile::GetFileTime(const char* path)
+    {
+        auto handle = ::CreateFileA(path, GENERIC_READ, NULL, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        FileTime ret;
+        if (handle != INVALID_HANDLE_VALUE)
+        {
+            FILETIME fCreationTime;
+            FILETIME fLastAccessTime;
+            FILETIME fLastWriteTime;
+            if (::GetFileTime(handle, &fCreationTime, &fLastAccessTime, &fLastWriteTime))
+            {
+                ret.CreationTime = GetTimeStamp(fCreationTime);
+                ret.LastAccessTime = GetTimeStamp(fLastAccessTime);
+                ret.LastModifyTime = GetTimeStamp(fLastWriteTime);
+            }
+        }
+
+        return ret;
+    }
+
+    DynamicArray<String>
+    WindowsPlatformFile::QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion)
     {
         DynamicArray<String> ret;
 
@@ -89,7 +149,8 @@ namespace Engine
                 {
                     if (recursion && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
                     {
-                        if (CharUtils::Compare(data.cFileName, _T(".")) != 0 && CharUtils::Compare(data.cFileName, _T("..")) != 0)
+                        if (CharUtils::Compare(data.cFileName, _T(".")) != 0 &&
+                            CharUtils::Compare(data.cFileName, _T("..")) != 0)
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {
@@ -98,7 +159,8 @@ namespace Engine
                             searchQueue.emplace(Path::MakePath(path, data.cFileName));
                         }
                     }
-                    else if (!(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && std::regex_match(data.cFileName, pattern))
+                    else if (!(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
+                             std::regex_match(data.cFileName, pattern))
                     {
                         ret.Add(Path::MakePath(path, data.cFileName));
                     }
@@ -113,7 +175,7 @@ namespace Engine
 
     uint32 WindowsPlatformFile::GetLastError()
     {
-        return (uint32)::GetLastError();
+        return (uint32) ::GetLastError();
     }
 
     uint64 WindowsPlatformFile::GetTimeStamp(const ::FILETIME& fileTime)
@@ -128,7 +190,8 @@ namespace Engine
         return (li.QuadPart - k_UnixTimeStart) / k_TicksPerSecond;
     }
 
-    UniquePtr<IFileHandle> WindowsPlatformFile::OpenFile(const char_t* fileName, EFileAccess access, EFileShareMode mode)
+    UniquePtr<IFileHandle>
+    WindowsPlatformFile::OpenFile(const char_t* fileName, EFileAccess access, EFileShareMode mode)
     {
         int32 desiredAccess = 0;
         int32 shareMode = 0;
@@ -177,7 +240,8 @@ namespace Engine
                 shareMode = 0;
             }
         }
-        HANDLE handle = ::CreateFileW(fileName, desiredAccess, shareMode, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        HANDLE handle = ::CreateFileW(fileName, desiredAccess, shareMode, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                                      nullptr);
         return MakeUniquePtr<WindowsFileHandle>(handle);
     }
 }

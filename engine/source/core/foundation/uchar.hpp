@@ -1,7 +1,7 @@
 #pragma once
 
 #include "definitions_core.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "log/logger.hpp"
 
 namespace Engine
@@ -78,7 +78,7 @@ namespace Engine
         constexpr UChar(int8 rc) noexcept : UCS(char16_t(rc)) {}
         constexpr UChar(uint32 rc) noexcept
         {
-            PL_ASSERT(rc <= 0xffff);
+            ENSURE(rc <= 0xffff);
             UCS = char16_t(rc);
         }
         constexpr UChar(int32 rc) noexcept : UCS(uint32(rc)) {}
@@ -162,6 +162,8 @@ namespace Engine
 
         static char32_t FoldCase(const char16_t* ch, const char16_t* start);
 
+        static char32_t FoldCase(const UChar* ch, const UChar* start);
+
         static constexpr inline bool IsSpace(char32_t ucs4) noexcept
         {
             // note that [0x09..0x0d] + 0x85 are exceptional Cc-s and must be handled explicitly
@@ -186,6 +188,16 @@ namespace Engine
         }
 
         inline explicit operator char16_t() const
+        {
+            return UCS;
+        }
+
+        inline explicit operator uint16() const
+        {
+            return UCS;
+        }
+
+        inline explicit operator char32_t() const
         {
             return UCS;
         }
@@ -228,11 +240,6 @@ namespace Engine
         static bool IsLetterHelper(char32_t ucs4) noexcept;
         static bool IsNumberHelper(char32_t ucs4) noexcept;
         static bool IsLetterOrNumberHelper(char32_t ucs4) noexcept;
-
-#ifdef QT_NO_CAST_FROM_ASCII
-        UChar(char c) = delete;
-    UChar(uchar c) = delete;
-#endif
 
         char16_t UCS;
     };

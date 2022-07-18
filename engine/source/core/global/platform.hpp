@@ -1,6 +1,6 @@
 #pragma once
-#include "predefine/prerequisite.hpp"
 
+#include "global/prerequisite.hpp"
 #if PLATFORM_WINDOWS
 #include "windows/windows_platform.hpp"
 #endif

@@ -315,7 +315,7 @@ namespace Engine
         {
             GMalloc = PlatformMemory::GetDefaultMalloc();
         }
-        PL_ASSERT(GMalloc);
+        ENSURE(GMalloc);
         return GMalloc;
     }
 }

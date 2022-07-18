@@ -26,6 +26,14 @@ namespace Engine
         //uch.ToLatin1();
     }
 
+    TEST(Codecvt, All)
+    {
+        const char* a = "你好";
+        EXPECT_TRUE(Utf8::ToUCS4(a + 0, a, a + 6) == 0x4F60);
+        EXPECT_TRUE(Utf8::ToUCS4(a + 1, a, a + 6) == 0x4F60);
+        EXPECT_TRUE(Utf8::ToUCS4(a + 2, a, a + 6) == 0x4F60);
+    }
+
     TEST(FixedString, Base)
     {
         FixedString name(_T("Hello_World"));
@@ -51,7 +59,15 @@ namespace Engine
 
     TEST(StringView, Ctor)
     {
-        StringView view = "abc";
+        StringView view = "abcd1234";
+        EXPECT_TRUE(view.StartsWith("ab"));
+        EXPECT_TRUE(view.EndsWith("234"));
+        EXPECT_TRUE(view.IndexOf("d1") == 3);
+        EXPECT_FALSE(view.Contains("d2"));
+
+        view = "am21nightamdayam";
+        auto ret = view.Split("am");
+        EXPECT_TRUE(ret.Size() == 4);
     }
 
     TEST(UString, Ctor)
@@ -156,11 +172,10 @@ namespace Engine
         EXPECT_TRUE(str.IndexOf(sub, ECaseSensitivity::Insensitive) == 2);
         EXPECT_TRUE(str.IndexOf("5P", ECaseSensitivity::Insensitive) == 5);
 
-        PL_INFO("", "hello {0}", str);
-        fmt::format(u"aaaa");
-
-        str = UString::Formats("name is {0}", str);
-        PL_INFO("", "hello {0}", str);
+        str = "abc456AB78bc9";
+        sub = "bc";
+        auto i = str.LastIndexOf(sub);
+        EXPECT_TRUE(str.LastIndexOf(sub) == 10);
     }
 
     TEST(UString, Modify)

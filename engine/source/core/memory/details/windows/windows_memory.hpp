@@ -1,7 +1,7 @@
 #pragma once
 
 #include "definitions_core.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "memory/malloc_interface.hpp"
 
 namespace Engine

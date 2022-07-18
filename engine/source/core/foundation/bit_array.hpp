@@ -1,6 +1,6 @@
 #pragma once
 #include "definitions_core.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "memory/allocator_policies.hpp"
 #include "math/generic_math.hpp"
 
@@ -332,7 +332,7 @@ namespace Engine
 
         BitArray(const bool* ptr, int32 count)
         {
-            PL_ASSERT(count >= 0);
+            ENSURE(count >= 0);
             Resize(Math::CeilToMultiple(count, kElementBits));
             InitBits(ptr, count);
         }
@@ -340,7 +340,7 @@ namespace Engine
         BitArray(std::initializer_list<bool> initializer)
         {
             int32 count = static_cast<int32>(initializer.size());
-            PL_ASSERT(count >= 0);
+            ENSURE(count >= 0);
             Resize(Math::CeilToMultiple(count, kElementBits));
             InitBits(initializer.begin(), count);
         }
@@ -368,13 +368,13 @@ namespace Engine
 
         BitRef operator[] (int32 index)
         {
-            PL_ASSERT(0 <= index && index < ArraySize);
+            ENSURE(0 <= index && index < ArraySize);
             return BitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
         }
 
         ConstBitRef operator[] (int32 index) const
         {
-            PL_ASSERT(0 <= index && index < ArraySize);
+            ENSURE(0 <= index && index < ArraySize);
             return ConstBitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
         }
 
@@ -387,14 +387,14 @@ namespace Engine
 
         BitArray& operator= (const BitArray& other)
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             CopyBits(const_cast<uint32*>(other.Data()), other.Size());
             return *this;
         }
 
         BitArray& operator= (BitArray&& other) noexcept
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             MoveArray(Forward<BitArray>(other));
             return *this;
         }
@@ -426,7 +426,7 @@ namespace Engine
 
         void Insert(int32 index, bool value)
         {
-            PL_ASSERT(0 <= index && index <= Size());
+            ENSURE(0 <= index && index <= Size());
             InsertUnconstructElement(index, 1);
 
             // Work out which uint32 index to set from, and how many
@@ -478,7 +478,7 @@ namespace Engine
 
         void Resize(int32 capacity)
         {
-            PL_ASSERT(capacity >= 0);
+            ENSURE(capacity >= 0);
             const int32 defaultBitCount = AllocatorInstance.GetDefaultSize() * kElementBits;
             const int32 newCapacity = Math::Max(defaultBitCount, Math::CeilToMultiple(capacity, kElementBits));
             if (newCapacity != ArrayCapacity)
@@ -520,13 +520,13 @@ namespace Engine
 
         ValidIterator CreateValidIterator(int32 startIndex = 0)
         {
-            PL_ASSERT(startIndex >= 0 && startIndex <= ArraySize);
+            ENSURE(startIndex >= 0 && startIndex <= ArraySize);
             return ValidIterator(*this, startIndex);
         }
 
         ConstValidIterator CreateValidIterator(int32 startIndex = 0) const
         {
-            PL_ASSERT(startIndex >= 0 && startIndex <= ArraySize);
+            ENSURE(startIndex >= 0 && startIndex <= ArraySize);
             return ConstValidIterator(*this, 0);
         }
 
@@ -552,7 +552,7 @@ namespace Engine
     private:
         void InitBits(const bool* ptr, int32 count)
         {
-            PL_ASSERT(count > 0);
+            ENSURE(count > 0);
             for (int idx = 0; idx < count; ++idx)
             {
                 Add(ptr[idx]);
@@ -561,7 +561,7 @@ namespace Engine
 
         int32 AddBits(int32 count)
         {
-            PL_ASSERT(count > 0);
+            ENSURE(count > 0);
             int32 oldCount = ArraySize;
             ArraySize += count;
             if (ArraySize > ArrayCapacity)
@@ -573,7 +573,7 @@ namespace Engine
 
         void InsertUnconstructElement(int32 index, int32 count)
         {
-            PL_ASSERT(index >= 0 && index <= ArraySize);
+            ENSURE(index >= 0 && index <= ArraySize);
             int32 oldCount = ArraySize;
             ArraySize += count;
             if (ArraySize > ArrayCapacity)
@@ -590,7 +590,7 @@ namespace Engine
 
         void CopyBits(uint32* data, int32 count)
         {
-            PL_ASSERT(count > 0);
+            ENSURE(count > 0);
             Clear(count);
             ArraySize = count;
             if (count > 0)
@@ -631,7 +631,7 @@ namespace Engine
             int32 elementCount = Math::DivideAndCeil(ArraySize, kElementBits);
             AllocatorInstance.Resize(elementCount);
             ArrayCapacity = elementCount * kElementBits;
-            PL_ASSERT(ArraySize <= ArrayCapacity);
+            ENSURE(ArraySize <= ArrayCapacity);
         }
 
         int32 CalculateGrowth(const int32 newSize) const

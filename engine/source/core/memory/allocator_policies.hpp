@@ -1,6 +1,6 @@
 #pragma once
 #include "definitions_core.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 #include "foundation/type_traits.hpp"
 #include "memory/memory.hpp"
 #include "log/logger.hpp"
@@ -183,7 +183,7 @@ namespace Engine
 
             void Resize(SizeType size)
             {
-                PL_ASSERT(size <= Size);
+                ENSURE(size <= Size);
             }
 
         private:

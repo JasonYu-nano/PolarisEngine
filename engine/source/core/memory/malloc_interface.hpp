@@ -1,6 +1,6 @@
 #pragma once
 #include "definitions_core.hpp"
-#include "predefine/platform.hpp"
+#include "global.hpp"
 
 namespace Engine
 {

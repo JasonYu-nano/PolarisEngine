@@ -1,6 +1,6 @@
 #pragma once
 #include <type_traits>
-#include "predefine/platform.hpp"
+#include "global.hpp"
 //#include "foundation/uchar.hpp"
 
 using namespace Engine;

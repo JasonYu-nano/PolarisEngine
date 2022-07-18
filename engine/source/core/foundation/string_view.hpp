@@ -1,140 +1,11 @@
 #pragma once
 
-#include "predefine/platform.hpp"
-#include "foundation/char_utils.hpp"
-#include "foundation/uchar.hpp"
-#include "type_traits.hpp"
-//#include "math/generic_math.hpp"
+#include "global.hpp"
+#include "foundation/char_traits.hpp"
+#include "foundation/details/string_algorithm.hpp"
 
 namespace Engine
 {
-    template <CharConcept T, IntegralType U>
-    struct PrivateCharTraits
-    {
-        using CharType = T;
-        using IntType = U;
-
-        static constexpr strsize Length(const CharType* str) noexcept
-        {
-            strsize len = 0;
-            while (*str != CharType())
-            {
-                ++len;
-                ++str;
-            }
-            return len;
-        }
-
-        static constexpr const CharType* Find(const CharType* first, strsize len, const CharType& ch) noexcept
-        {
-            for (; 0 < len; --len, ++first)
-            {
-                if (*first == ch)
-                {
-                    return first;
-                }
-            }
-            return nullptr;
-        }
-
-        static constexpr CharType* Assign(const CharType* first, size_t len, const CharType ch) noexcept
-        {
-            for (CharType* next = first; len > 0; --len, ++next)
-            {
-                *next = ch;
-            }
-
-            return first;
-        }
-
-        static constexpr IntType ToInt(const CharType ch) noexcept
-        {
-            return static_cast<IntType>(ch);
-        }
-
-        static constexpr CharType ToChar(const IntType i) noexcept
-        {
-            return static_cast<CharType>(i);
-        }
-
-        static constexpr bool Equals(const CharType lhs, const CharType rhs) noexcept
-        {
-            return lhs == rhs;
-        }
-
-        template <CharConcept OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, strsize count) noexcept
-        {
-            if constexpr (std::is_same_v<CharType, OtherChar>)
-            {
-                if (lhs == rhs)
-                {
-                    return 0;
-                }
-            }
-
-            auto left = reinterpret_cast<const typename std::make_unsigned_t<CharType>*>(lhs);
-            auto right = reinterpret_cast<const typename std::make_unsigned_t<OtherChar>*>(rhs);
-            for (; 0 < count; --count, ++left, ++right)
-            {
-                if (*left != *right)
-                {
-                    return *left < *right ? -1 : +1;
-                }
-            }
-
-            return 0;
-        }
-
-        template <CharConcept OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen) noexcept
-        {
-            int32 result = Compare(lhs, rhs, Math::Min(llen, rlen));
-
-            if (result != 0)
-            {
-                return result;
-            }
-
-            if (llen > rlen)
-            {
-                return 1;
-            }
-
-            if (llen < rlen)
-            {
-                return -1;
-            }
-
-            return 0;
-        }
-
-        template <CharConcept OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs) noexcept
-        {
-            return Compare(lhs, Length(lhs), rhs, Length(rhs));
-        }
-    };
-
-    template <CharConcept T>
-    struct CharTraits : private PrivateCharTraits<T, strsize> {};
-
-    template <>
-    struct CharTraits<char> : PrivateCharTraits<char, int8> {};
-
-    template <>
-    struct CharTraits<char16_t> : PrivateCharTraits<char16_t, uint16> {};
-
-    template <>
-    struct CharTraits<char32_t> : PrivateCharTraits<char16_t, uint32> {};
-
-    template <>
-    struct CharTraits<wchar> : PrivateCharTraits<wchar, wcharsize> {};
-
-    template <>
-    struct CharTraits<UChar> : PrivateCharTraits<UChar, uint16> {};
-
-
     template <CharConcept T>
     struct BasicStringView
     {
@@ -160,7 +31,8 @@ namespace Engine
         BasicStringView& operator= (const CharType* str)
         {
             Str = str;
-            Len = CharUtils::Length(str);
+            Len = Traits::Length(str);
+            return *this;
         }
 
         constexpr strsize Length() const { return Len; }
@@ -175,20 +47,21 @@ namespace Engine
 
         constexpr void RemovePrefix(strsize num) noexcept
         {
-            //TODO: Check size
+            ENSURE(num >= 0 && num < Len);
             Len -= num;
             Str += num;
         }
 
         constexpr void RemoveSuffix(strsize num) noexcept
         {
-            //TODO: Check size
+            ENSURE(num >= 0 && num < Len);
             Len -= num;
         }
 
-        constexpr BasicStringView Substr(strsize offset, strsize num) noexcept
+        constexpr BasicStringView Slices(strsize pos, strsize len) const noexcept
         {
-            return BasicStringView(Str + offset, num);
+            ENSURE(pos >= 0 && len >= 0 && pos + len <= Len);
+            return BasicStringView(Str + pos, len);
         }
 
         constexpr int32 Compare(const BasicStringView other) const noexcept
@@ -232,6 +105,42 @@ namespace Engine
                 return false;
             }
             return Traits::Equals(Str + Len - 1, ch) == 0;
+        }
+
+        bool inline Contains(BasicStringView needle)
+        {
+            return Private::FindString<CharType>(Str, Len, 0, needle.Str, needle.Len) == 0;
+        }
+
+        int32 inline IndexOf(BasicStringView needle)
+        {
+            return Private::FindString<CharType>(Str, Len, 0, needle.Str, needle.Len);
+        }
+
+        DynamicArray<BasicStringView> Split(BasicStringView sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts)
+        {
+            DynamicArray<BasicStringView> ret;
+            strsize start = 0;
+            strsize end;
+            strsize extra = 0;
+            while ((end = Private::FindString<CharType>(Str, Len, start + extra, sep.Str, sep.Len)) != -1)
+            {
+                if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+                {
+                    ret.Add(Slices(start, end - start));
+                }
+                start = end + sep.Len;
+            }
+            if (start != Len || behavior == ESplitBehavior::KeepEmptyParts)
+            {
+                ret.Add(Slices(start, Len - start));
+            }
+            return ret;
+        }
+
+        friend bool operator== (const BasicStringView& lhs, const BasicStringView& rhs)
+        {
+            return lhs.Len == rhs.Len && CharTraits<CharType>::Compare(lhs.Str, rhs.Str, lhs.Len) == 0;
         }
 
     private:

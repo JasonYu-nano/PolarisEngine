@@ -3,7 +3,6 @@
 #include "foundation/bit_array.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/type_traits.hpp"
-#include "predefine/common_marco.hpp"
 
 namespace Engine
 {
@@ -150,7 +149,7 @@ namespace Engine
 
         SparseArray& operator= (const SparseArray& other)
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             FirstFreeNodeIndex = other.FirstFreeNodeIndex;
             FreeElementCount = other.FreeElementCount;
             AllocateFlags = other.AllocateFlags;
@@ -160,7 +159,7 @@ namespace Engine
 
         SparseArray& operator= (SparseArray&& other) noexcept
         {
-            PL_ASSERT(this != &other);
+            ENSURE(this != &other);
             FirstFreeNodeIndex = other.FirstFreeNodeIndex;
             other.FirstFreeNodeIndex = INDEX_NONE;
             FreeElementCount = other.FreeElementCount;
@@ -204,13 +203,13 @@ namespace Engine
 
         ElementType& operator[] (int32 index)
         {
-            PL_ASSERT(0 <=index && AllocateFlags[index]);
+            ENSURE(0 <=index && AllocateFlags[index]);
             return ElementNodes[index].Element;
         }
 
         const ElementType& operator[] (int32 index) const
         {
-            PL_ASSERT(0 <= index && AllocateFlags[index]);
+            ENSURE(0 <= index && AllocateFlags[index]);
             return ElementNodes[index].Element;
         }
 
@@ -238,7 +237,7 @@ namespace Engine
 
         void RemoveAt(int32 index)
         {
-            PL_ASSERT(0 <= index && index < GetMaxIndex());
+            ENSURE(0 <= index && index < GetMaxIndex());
             ElementLinkNode& node = ElementNodes[index];
             node.Element.~ElementType();
             RemoveWithoutDestruct(index, &node);
@@ -288,7 +287,7 @@ namespace Engine
 
         bool HasElement(int32 index) const
         {
-            PL_ASSERT(index >= 0 && index < GetMaxIndex());
+            ENSURE(index >= 0 && index < GetMaxIndex());
             return AllocateFlags[index];
         }
 
@@ -341,7 +340,7 @@ namespace Engine
 
         void CopyElement(const ElementType* data, int32 count)
         {
-            PL_ASSERT(count >= 0);
+            ENSURE(count >= 0);
             Reserve(count);
             for (int32 idx = 0; idx < count; ++idx)
             {
@@ -355,7 +354,7 @@ namespace Engine
             if (FirstFreeNodeIndex != INDEX_NONE)
             {
                 // return allocated element node
-                PL_ASSERT(!AllocateFlags[FirstFreeNodeIndex]);
+                ENSURE(!AllocateFlags[FirstFreeNodeIndex]);
                 ElementLinkNode& node = ElementNodes[FirstFreeNodeIndex];
                 index = FirstFreeNodeIndex;
                 AllocateFlags[index] = true;
@@ -379,7 +378,7 @@ namespace Engine
                 Reserve(index + 1);
             }
 
-            PL_ASSERT(AllocateFlags[index] == false);
+            ENSURE(AllocateFlags[index] == false);
 
             FreeElementCount--;
             ElementLinkNode& node = ElementNodes[index];
@@ -410,7 +409,7 @@ namespace Engine
                 node = &ElementNodes[index];
             }
 
-            PL_ASSERT(node != nullptr);
+            ENSURE(node != nullptr);
 
             if (FirstFreeNodeIndex != INDEX_NONE)
             {

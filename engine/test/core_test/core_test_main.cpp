@@ -1,7 +1,15 @@
 #include "gtest/gtest.h"
+#include "foundation/encoding.hpp"
 
 int main(int argc, char* argv[])
 {
     ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+
+    Engine::SetupLocale();
+
+    auto ret = RUN_ALL_TESTS();
+
+    Engine::ShutdownLocale();
+
+    return ret;
 }
