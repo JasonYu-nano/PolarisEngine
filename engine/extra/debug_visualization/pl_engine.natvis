@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <!-- Array visualizer -->
-    <Type Name="Engine::DynamicArray&lt;*,Engine::InlineAllocator&lt;*,*,*,*&gt; &gt;">
+    <Type Name="Engine::DynamicArray&lt;*,Engine::InlineAllocator&lt;*&gt; &gt;">
         <DisplayString Condition="ArraySize == 0">Empty</DisplayString>
         <DisplayString Condition="ArraySize &lt; 0">Invalid</DisplayString>
         <DisplayString Condition="ArrayCapacity &lt; ArraySize">Invalid</DisplayString>
@@ -9,8 +9,8 @@
         <Expand>
             <ArrayItems Condition="ArraySize &lt;= ArrayCapacity">
                 <Size>ArraySize</Size>
-                <ValuePointer Condition="AllocatorInstance.Allocator.Data == 0">($T1*)AllocatorInstance.Data</ValuePointer>
-                <ValuePointer Condition="AllocatorInstance.Allocator.Data != 0">($T1*)AllocatorInstance.Allocator.Data</ValuePointer>
+                <ValuePointer Condition="AllocatorInstance.SecondaryData.Data == 0">($T1*)AllocatorInstance.InlineData</ValuePointer>
+                <ValuePointer Condition="AllocatorInstance.SecondaryData.Data != 0">($T1*)AllocatorInstance.SecondaryData.Data</ValuePointer>
             </ArrayItems>
         </Expand>
     </Type>
@@ -39,9 +39,9 @@
         <DisplayString Condition="Source.ArraySize == 0">Empty</DisplayString>
         <DisplayString Condition="Source.ArraySize &lt; 0">Invalid</DisplayString>
         <DisplayString Condition="Source.ArrayCapacity &lt; Source.ArraySize">Invalid</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data == 0">{(const char16_t*)Source.AllocatorInstance.Data,su}</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data != 0">{(const char16_t*)Source.AllocatorInstance.Allocator.Data,su}</DisplayString>
-        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data == 0">(const char16_t*)Source.AllocatorInstance.Data,su</StringView>
-        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.Allocator.Data != 0">(const char16_t*)Source.AllocatorInstance.Allocator.Data,su</StringView>
+        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data == 0">{(const char16_t*)Source.AllocatorInstance.InlineData,su}</DisplayString>
+        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data != 0">{(const char16_t*)Source.AllocatorInstance.SecondaryData.Data,su}</DisplayString>
+        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data == 0">(const char16_t*)Source.AllocatorInstance.InlineData,su</StringView>
+        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data != 0">(const char16_t*)Source.AllocatorInstance.SecondaryData.Data,su</StringView>
     </Type>
 </AutoVisualizer>

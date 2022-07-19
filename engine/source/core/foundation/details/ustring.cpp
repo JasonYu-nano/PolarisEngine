@@ -710,7 +710,9 @@ namespace Engine
         {
             return;
         }
-        if (source.Length() < before.Length())
+
+        strsize blen = before.Length();
+        if (source.Length() < blen)
         {
             return;
         }
@@ -718,14 +720,17 @@ namespace Engine
         {
             return;
         }
-        //TODO:
-        Private::StringMatcher<UChar> matcher(before.Data(), before.Length(), cs);
+
+        Private::StringMatcher<UChar> matcher(before.Data(), blen, cs);
 
         DynamicArray<strsize, InlineAllocator<128>> indices;
-        strsize from = 0;
-        while (strsize pos = matcher.IndexIn(source.Data(), source.Length(), from) >= 0)
+        strsize pos = matcher.IndexIn(source.Data(), source.Length(), 0);
+
+        while (pos >= 0)
         {
             indices.Add(pos);
+            pos += blen;
+            pos = matcher.IndexIn(source.Data(), source.Length(), pos);
         }
 
         ReplaceHelper(source, indices.Data(), indices.Size(), before.Length(), after.Data(), after.Length());
@@ -761,6 +766,7 @@ namespace Engine
                 Memory::Memcpy(src + idx + alen, src + idx + blen, (len - idx - blen) * sizeof(UChar));
                 Memory::Memcpy(src + idx, (void*)after, alen * sizeof(UChar));
             }
+            *(src + len + deltaSize) = u'\0';
         }
     }
 }

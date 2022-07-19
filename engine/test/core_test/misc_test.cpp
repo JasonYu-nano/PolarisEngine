@@ -226,6 +226,11 @@ namespace Engine
         removeTest = removeTest.Trimmed();
         EXPECT_TRUE(removeTest == "lots\t of\nwhitespace");
 
+        UString replaceTest = "UString is unicode string name";
+        auto t= replaceTest.IndexOf("string");
+        replaceTest.Replace("string", "stb");
+        EXPECT_TRUE(replaceTest == "UString is unicode str name");
+
         std::string_view a = "111";
     }
 }
