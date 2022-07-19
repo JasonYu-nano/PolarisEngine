@@ -5,6 +5,7 @@
 #include "memory/memory.hpp"
 #include "foundation/encoding.hpp"
 #include "foundation/dynamic_array.hpp"
+#include "foundation/uchar.hpp"
 #include "foundation/string_type.hpp"
 
 #define REHASH(a) \
@@ -37,6 +38,33 @@ namespace Engine::Private
             }
             ++needle;
         }
+    }
+
+    template <>
+    void inline _BMInitSkipTable<char16_t>(const char16_t* needle, strsize len, char16_t* skipTable, ECaseSensitivity cs)
+    {
+        strsize l = Math::Min(len, 255);
+        Memory::Memset(skipTable, l, 256 * sizeof(char16_t));
+        const char16_t* start = needle;
+        needle += len - l;
+        while (l--)
+        {
+            if (cs == ECaseSensitivity::Sensitive)
+            {
+                skipTable[*needle & 0xff] = l;
+            }
+            else
+            {
+                skipTable[Utf16::FoldCase(needle, start) & 0xff] = l;
+            }
+            ++needle;
+        }
+    }
+
+    template <>
+    void inline _BMInitSkipTable<UChar>(const UChar* needle, strsize len, UChar* skipTable, ECaseSensitivity cs)
+    {
+        _BMInitSkipTable(K_UCHAR_TO_UTF16(needle), len, UCHAR_TO_UTF16(skipTable), cs);
     }
 
     template <typename CharType>
@@ -142,6 +170,117 @@ namespace Engine::Private
             }
         }
         return -1;
+    }
+
+    template <>
+    strsize inline _BMFind<char16_t>(const char16_t* haystack, strsize alen, strsize from, const char16_t* needle, strsize blen, const char16_t* skipTable, ECaseSensitivity cs)
+    {
+        if (from < 0)
+        {
+            from += alen;
+        }
+
+        if (from < 0 || from >= alen)
+        {
+            return -1;
+        }
+
+        if (blen == 0)
+        {
+            return from > alen ? -1 : from;
+        }
+        const strsize plMinusOne = blen - 1;
+
+        const char16_t* haystackStart = haystack;
+        const char16_t* needleStart = needle;
+        const char16_t* current = haystack + from + plMinusOne;
+        const char16_t* end = haystack + alen;
+
+        if (cs == ECaseSensitivity::Sensitive)
+        {
+            while (current < end)
+            {
+                size_t skip = skipTable[*current & 0xff];
+                if (!skip)
+                {
+                    // possible match
+                    while (skip < blen)
+                    {
+                        if (*(current - skip) != needle[plMinusOne - skip])
+                        {
+                            break;
+                        }
+                        ++skip;
+                    }
+                    if (skip > plMinusOne) // we have a match
+                    {
+                        return (strsize)(current - haystack) - plMinusOne;
+                    }
+
+                    // in case we don't have a match we are a bit inefficient as we only skip by one
+                    // when we have the non matching char in the string.
+                    if (skipTable[*(current - skip) & 0xff] == blen)
+                    {
+                        skip = blen - skip;
+                    }
+                    else
+                    {
+                        skip = 1;
+                    }
+                }
+                if (current > end - skip)
+                {
+                    break;
+                }
+                current += skip;
+            }
+        }
+        else
+        {
+            while (current < end)
+            {
+                size_t skip = skipTable[Utf16::FoldCase(current, haystackStart) & 0xff];
+                if (!skip)
+                {
+                    // possible match
+                    while (skip < blen)
+                    {
+                        if (Utf16::FoldCase(current - skip, haystackStart) != Utf16::FoldCase(needle + plMinusOne - skip, needleStart))
+                        {
+                            break;
+                        }
+                        ++skip;
+                    }
+                    if (skip > plMinusOne) // we have a match
+                    {
+                        return (strsize)(current - haystack) - plMinusOne;
+                    }
+
+                    // in case we don't have a match we are a bit inefficient as we only skip by one
+                    // when we have the non matching char in the string.
+                    if (skipTable[Utf16::FoldCase(current - skip, haystackStart) & 0xff] == blen)
+                    {
+                        skip = blen - skip;
+                    }
+                    else
+                    {
+                        skip = 1;
+                    }
+                }
+                if (current > end - skip)
+                {
+                    break;
+                }
+                current += skip;
+            }
+        }
+        return -1;
+    }
+
+    template <>
+    strsize inline _BMFind<UChar>(const UChar* haystack, strsize alen, strsize from, const UChar* needle, strsize blen, const UChar* skipTable, ECaseSensitivity cs)
+    {
+        return _BMFind(K_UCHAR_TO_UTF16(haystack), alen, from, K_UCHAR_TO_UTF16(needle), blen, K_UCHAR_TO_UTF16(skipTable), cs);
     }
 
     template <typename CharType>
@@ -366,6 +505,34 @@ namespace Engine::Private
 
     strsize UFindStringInsensitive(const char16_t* haystack, strsize alen, strsize from, const char16_t* needle, strsize blen);
 
+    template <CharConcept CharType>
+    class StringMatcher
+    {
+    public:
+        StringMatcher(const CharType* pattern, strsize len, ECaseSensitivity cs)
+            : CS(cs), Length(len), Pattern(pattern)
+        {
+            UpdateSkipTable();
+        }
+
+        strsize IndexIn(const CharType* str, strsize len, strsize from = 0) const
+        {
+            from = from < 0 ? 0 : from;
+
+            return _BMFind(str, len, from, Pattern, Length, SkipTable, CS);
+        }
+
+    private:
+        void UpdateSkipTable()
+        {
+            _BMInitSkipTable(Pattern, Length, SkipTable, CS);
+        }
+
+        ECaseSensitivity CS;
+        strsize Length;
+        const CharType* Pattern;
+        CharType SkipTable[256] = {};
+    };
 //    template <typename CharType, typename Allocator>
 //    void SplitString(const CharType* source, strsize alen, const CharType* sep, strsize blen, DynamicArray<int32, Allocator>& outPos)
 //    {

@@ -719,10 +719,25 @@ namespace Engine
             return;
         }
         //TODO:
+        Private::StringMatcher<UChar> matcher(before.Data(), before.Length(), cs);
+
+        DynamicArray<strsize, InlineAllocator<128>> indices;
+        strsize from = 0;
+        while (strsize pos = matcher.IndexIn(source.Data(), source.Length(), from) >= 0)
+        {
+            indices.Add(pos);
+        }
+
+        ReplaceHelper(source, indices.Data(), indices.Size(), before.Length(), after.Data(), after.Length());
     }
 
     void UString::ReplaceHelper(UString& source, strsize* indices, int32 nIndices, strsize blen, const UChar* after, strsize alen)
     {
+        if (nIndices <= 0)
+        {
+            return;
+        }
+
         UChar* src = source.Data();
         if (blen == alen)
         {
