@@ -667,14 +667,7 @@ namespace Engine
 
     strsize UString::FindStringHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
     {
-        if (cs == ECaseSensitivity::Sensitive)
-        {
-            return Private::FindString<UChar>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length());
-        }
-        else
-        {
-            return Private::UFindStringInsensitive(K_UCHAR_TO_UTF16(haystack.Data()), haystack.Length(), from, K_UCHAR_TO_UTF16(needle.Data()), needle.Length());
-        }
+        return Private::FindString<UChar>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length(), cs);
     }
 
     strsize UString::FindStringHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs)
@@ -767,6 +760,11 @@ namespace Engine
                 Memory::Memcpy(src + idx, (void*)after, alen * sizeof(UChar));
             }
             *(src + len + deltaSize) = u'\0';
+
+            if (deltaSize < 0)
+            {
+                source.Resize(deltaSize * nIndices + len);
+            }
         }
     }
 }

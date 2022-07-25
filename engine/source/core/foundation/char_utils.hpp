@@ -7,6 +7,9 @@
 
 namespace Engine
 {
+    /**
+     * @deprecated
+     */
     class CharUtils
     {
     public:
@@ -102,7 +105,7 @@ namespace Engine
 
             for (size_t idx = 0; idx < len; ++idx)
             {
-                int32 diff = Encoding::FoldCase((int32)lhs[idx]) - Encoding::FoldCase((int32)rhs[idx]);
+                int32 diff = Unicode::FoldCase((int32)lhs[idx]) - Unicode::FoldCase((int32)rhs[idx]);
                 if (diff)
                 {
                     return diff;

@@ -165,6 +165,10 @@ namespace Engine
         EXPECT_TRUE(str.Contains(sub));
         EXPECT_TRUE(str.IndexOf(sub) == 2);
 
+        UString multiPattern = "UString is unicode string name";
+        EXPECT_TRUE(multiPattern.IndexOf("string") == 19);
+        EXPECT_TRUE(multiPattern.IndexOf("string", ECaseSensitivity::Insensitive) == 1);
+
         sub.Append('P');
         EXPECT_FALSE(str.Contains(sub));
 
@@ -228,7 +232,7 @@ namespace Engine
 
         UString replaceTest = "UString is unicode string name";
         auto t= replaceTest.IndexOf("string");
-        replaceTest.Replace("string", "stb");
+        replaceTest.Replace("string", "str");
         EXPECT_TRUE(replaceTest == "UString is unicode str name");
 
         std::string_view a = "111";

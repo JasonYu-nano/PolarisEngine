@@ -117,12 +117,23 @@ namespace Engine
 
     UString Path::GetShortName(const UString& path, bool withExtension)
     {
-        UString ret;
-        if (int32 pos = path.LastIndexOf('.') > 0)
+        UString ret = path;
+        strsize idxA = path.LastIndexOf("/");
+        strsize idxB = path.LastIndexOf("\\");
+        if (idxA > idxB)
         {
-            return path.Slices(0, pos);
+            ret = ret.Slices(idxA + 1, path.Length() - idxA - 1);
         }
-        //TODO:
+        else if (idxB > idxA)
+        {
+            ret = ret.Slices(idxB + 1, path.Length() - idxB - 1);
+        }
+
+        if (!withExtension)
+        {
+            return RemoveExtension(ret);
+        }
+
         return ret;
     }
 
@@ -133,6 +144,7 @@ namespace Engine
 
     DynamicArray<UString> Path::SplitPath(const UString& path)
     {
-        return DynamicArray<UString>();
+        //TODO: Consider "\\"
+        return path.Split("/");
     }
 }

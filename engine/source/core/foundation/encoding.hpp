@@ -2,21 +2,6 @@
 
 #include "foundation/dynamic_array.hpp"
 
-namespace Encoding
-{
-    bool IsUpper(int32 ch);
-
-    bool IsLower(int32 ch);
-
-    int32 ToUpper(int32 ch);
-
-    int32 ToLower(int32 ch);
-
-    int32 FoldCase(int32 ch);
-
-    bool IsSpace(int32 ch);
-}
-
 namespace Engine
 {
     void CORE_API SetupLocale();

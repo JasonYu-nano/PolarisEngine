@@ -4,39 +4,6 @@
 #include "unicode/uchar.h"
 #include "unicode/ucasemap.h"
 
-namespace Encoding
-{
-    bool IsUpper(int32 ch)
-    {
-        return u_isupper(ch);
-    }
-
-    bool IsLower(int32 ch)
-    {
-        return u_islower(ch);
-    }
-
-    int32 ToUpper(int32 ch)
-    {
-        return u_toupper(ch);
-    }
-
-    int32 ToLower(int32 ch)
-    {
-        return u_tolower(ch);
-    }
-
-    int32 FoldCase(int32 ch)
-    {
-        return u_foldCase(ch, U_FOLD_CASE_DEFAULT);
-    }
-
-    bool IsSpace(int32 ch)
-    {
-        return u_isspace(ch);
-    }
-}
-
 namespace Engine
 {
     UCaseMap* GCsm;
@@ -83,11 +50,11 @@ namespace Engine
         char32_t ucs4 = *ch;
         if (IsLowSurrogate(ucs4) && ch > start && IsHighSurrogate(*(ch - 1)))
         {
-            ucs4 = SurrogateToUcs4(*(ch - 1), ucs4);
+            ucs4 = SurrogateToUcs4(*(ch - 1), static_cast<char16_t >(ucs4));
         }
         else if (IsHighSurrogate(ucs4) && (ch + 1) < end && (IsLowSurrogate(*(ch + 1))))
         {
-            ucs4 = SurrogateToUcs4(ucs4, *(ch + 1));
+            ucs4 = SurrogateToUcs4(ucs4, static_cast<char16_t >(*(ch + 1)));
         }
         return ucs4;
     }

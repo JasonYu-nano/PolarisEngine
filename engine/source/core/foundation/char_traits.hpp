@@ -45,6 +45,17 @@ namespace Engine
             return first;
         }
 
+        static constexpr IntType* MaxSize() noexcept
+        {
+            return NumericLimits<IntType>::Max();
+        }
+
+        template <CharConcept OtherCharType>
+        static constexpr CharType CastTo(const OtherCharType ch) noexcept
+        {
+            return static_cast<CharType>(ch);
+        }
+
         static constexpr IntType ToInt(const CharType ch) noexcept
         {
             return static_cast<IntType>(ch);
@@ -128,7 +139,7 @@ namespace Engine
             auto right = reinterpret_cast<const typename std::make_unsigned_t<OtherChar>*>(rhs);
             while (len > 0)
             {
-                if (int32 diff = Encoding::FoldCase(*left) - Encoding::FoldCase(*right))
+                if (int32 diff = Unicode::FoldCase(*left) - Unicode::FoldCase(*right))
                 {
                     return diff;
                 }

@@ -7,7 +7,7 @@ namespace Engine
 
     bool UChar::IsSpaceHelper(char32_t ucs4) noexcept
     {
-        return Encoding::IsSpace(static_cast<int32>(ucs4));
+        return Unicode::IsSpace(static_cast<int32>(ucs4));
     }
 
     bool UChar::IsLetterHelper(char32_t ucs4) noexcept
@@ -30,22 +30,22 @@ namespace Engine
 
     void UChar::ToLower()
     {
-        UCS = Encoding::ToLower(UCS);
+        UCS = Unicode::ToLower(UCS);
     }
 
     void UChar::ToUpper()
     {
-        UCS = Encoding::ToUpper(UCS);
+        UCS = Unicode::ToUpper(UCS);
     }
 
     bool UChar::IsUpper(char32_t ucs4)
     {
-        return Encoding::IsUpper(static_cast<int32>(ucs4));
+        return Unicode::IsUpper(static_cast<int32>(ucs4));
     }
 
     bool UChar::IsLower(char32_t ucs4)
     {
-        return Encoding::IsLower(static_cast<int32>(ucs4));
+        return Unicode::IsLower(static_cast<int32>(ucs4));
     }
 
     char32_t UChar::FoldCase(const char16_t* ch, const char16_t* start)
