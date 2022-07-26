@@ -4,6 +4,7 @@
 #include "math/city_hash.hpp"
 #include "foundation/fixed_string.hpp"
 #include "foundation/ustring.hpp"
+#include "file_system/path.hpp"
 
 namespace Engine
 {
@@ -32,6 +33,15 @@ namespace Engine
         EXPECT_TRUE(Utf8::ToUCS4(a + 0, a, a + 6) == 0x4F60);
         EXPECT_TRUE(Utf8::ToUCS4(a + 1, a, a + 6) == 0x4F60);
         EXPECT_TRUE(Utf8::ToUCS4(a + 2, a, a + 6) == 0x4F60);
+    }
+
+    TEST(Path, All)
+    {
+        UString path = "c:/dirA\\dirB/file.ex";
+        UString ex = Path::GetShortName(path, false);
+        EXPECT_TRUE(Path::GetExtension(path) == ".ex");
+        EXPECT_TRUE(Path::GetShortName(path, false) == "file");
+        EXPECT_TRUE(Path::SplitPath(path).Size() == 4);
     }
 
     TEST(FixedString, Base)

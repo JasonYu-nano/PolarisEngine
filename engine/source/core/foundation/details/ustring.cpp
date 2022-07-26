@@ -500,9 +500,29 @@ namespace Engine
         return FindStringHelper((UStringView)*this, 0 , latin1, cs);
     }
 
+    strsize UString::IndexOfAny(UStringView str, ECaseSensitivity cs) const
+    {
+        return FindAnyCharHelper((UStringView)*this, 0, str, cs);
+    }
+
+    strsize UString::IndexOfAny(const char* latin1, ECaseSensitivity cs) const
+    {
+        return FindAnyCharHelper((UStringView)*this, 0, latin1, cs);
+    }
+
     strsize UString::LastIndexOf(UStringView str, ECaseSensitivity cs) const
     {
         return FindLastHelper((UStringView)*this, -1 , str, cs);
+    }
+
+    strsize UString::LastIndexOfAny(UStringView str, ECaseSensitivity cs) const
+    {
+        return FindLastAnyCharHelper((UStringView)*this, 0, str, cs);
+    }
+
+    strsize UString::LastIndexOfAny(const char* latin1, ECaseSensitivity cs) const
+    {
+        return FindLastAnyCharHelper((UStringView)*this, 0, latin1, cs);
     }
 
     bool UString::Contains(UStringView str, ECaseSensitivity cs) const
@@ -631,6 +651,26 @@ namespace Engine
         return ret;
     }
 
+    DynamicArray<UString> UString::SplitAny(const UString& sep, ESplitBehavior behavior, ECaseSensitivity cs) const
+    {
+        DynamicArray<UString> ret;
+        strsize start = 0;
+        strsize end;
+        while ((end = FindAnyCharHelper((UStringView)*this, start, (UStringView)sep, cs)) != -1)
+        {
+            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            {
+                ret.Add(Slices(start, end - start));
+            }
+            start = end + 1;
+        }
+        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        {
+            ret.Add(Slices(start, Length() - start));
+        }
+        return ret;
+    }
+
     int32 UString::Compare(UStringView other, ECaseSensitivity cs) const
     {
         if (cs == ECaseSensitivity::Sensitive)
@@ -681,6 +721,30 @@ namespace Engine
         return FindStringHelper(haystack, from, view, cs);
     }
 
+    strsize UString::FindAnyCharHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
+    {
+        const UChar* data = haystack.Data();
+        for (strsize idx = from; idx < haystack.Length(); ++idx)
+        {
+            if (FindStringHelper(needle, 0, UStringView(data + idx, 1), cs) > -1)
+            {
+                return idx;
+            }
+        }
+        return -1;
+    }
+
+    strsize UString::FindAnyCharHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs)
+    {
+        strsize len = needle.Length();
+        DynamicArray<UChar, InlineAllocator<STR_INLINE_BUFFER_SIZE>> unicode(len + 1);
+        ENSURE(unicode.Capacity() >= len);
+        COPY_CHAR_TO_UCHAR_ARRAY(unicode, needle.Data(), len);
+
+        UStringView view(unicode.Data(), len);
+        return FindAnyCharHelper(haystack, from, view, cs);
+    }
+
     strsize UString::FindLastHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
     {
         return Private::FindLastString<UChar>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length());
@@ -695,6 +759,30 @@ namespace Engine
 
         UStringView view(unicode.Data(), len);
         return FindLastHelper(haystack, from, view, cs);
+    }
+
+    strsize UString::FindLastAnyCharHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
+    {
+        const UChar* data = haystack.Data();
+        for (strsize idx = haystack.Length() - 1; idx >= from; --idx)
+        {
+            if (FindStringHelper(needle, 0, UStringView(data + idx, 1), cs) > -1)
+            {
+                return idx;
+            }
+        }
+        return -1;
+    }
+
+    strsize UString::FindLastAnyCharHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs)
+    {
+        strsize len = needle.Length();
+        DynamicArray<UChar, InlineAllocator<STR_INLINE_BUFFER_SIZE>> unicode(len + 1);
+        ENSURE(unicode.Capacity() >= len);
+        COPY_CHAR_TO_UCHAR_ARRAY(unicode, needle.Data(), len);
+
+        UStringView view(unicode.Data(), len);
+        return FindLastAnyCharHelper(haystack, from, view, cs);
     }
 
     void UString::ReplaceHelper(UString& source, UStringView before, UStringView after, ECaseSensitivity cs)

@@ -167,11 +167,18 @@ namespace Engine
         inline strsize IndexOf(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         inline strsize IndexOf(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
+        strsize IndexOfAny(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        strsize IndexOfAny(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize IndexOfAny(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
         strsize LastIndexOf(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         inline strsize LastIndexOf(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         inline strsize LastIndexOf(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         inline strsize LastIndexOf(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
+        strsize LastIndexOfAny(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        strsize LastIndexOfAny(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize LastIndexOfAny(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
         bool Contains(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
         bool Contains(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
@@ -190,6 +197,8 @@ namespace Engine
         UString Simplified() const;
 
         DynamicArray<UString> Split(const UString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
+        DynamicArray<UString> SplitAny(const UString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
         int32 Compare(UStringView other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
@@ -243,9 +252,17 @@ namespace Engine
 
         static strsize FindStringHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs);
 
+        static strsize FindAnyCharHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs);
+
+        static strsize FindAnyCharHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs);
+
         static strsize FindLastHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs);
 
         static strsize FindLastHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs);
+
+        static strsize FindLastAnyCharHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs);
+
+        static strsize FindLastAnyCharHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs);
 
         static void ReplaceHelper(UString& source, UStringView before, UStringView after, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
 
@@ -340,6 +357,11 @@ namespace Engine
         return IndexOf(UStringView(&ch, 1), cs);
     }
 
+    strsize UString::IndexOfAny(const UString& str, ECaseSensitivity cs) const
+    {
+        return IndexOfAny(UStringView(str), cs);
+    }
+
     strsize UString::LastIndexOf(const UString& str, ECaseSensitivity cs) const
     {
         return LastIndexOf((UStringView)str, cs);
@@ -353,6 +375,11 @@ namespace Engine
     strsize UString::LastIndexOf(UChar ch, ECaseSensitivity cs) const
     {
         return LastIndexOf(UStringView(&ch, 1), cs);
+    }
+
+    strsize UString::LastIndexOfAny(const UString& str, ECaseSensitivity cs) const
+    {
+        return LastIndexOf(UStringView(str), cs);
     }
 
     bool UString::Contains(const UString& str, ECaseSensitivity cs) const

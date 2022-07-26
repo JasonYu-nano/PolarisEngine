@@ -19,9 +19,19 @@ namespace Engine
         return PlatformFile->MakeDir(*path);
     }
 
+    bool FileSystem::MakeDir(const UString& path)
+    {
+        return PlatformFile->MakeDir(path.ToUtf8().Data());
+    }
+
     bool FileSystem::RemoveDir(const String& path)
     {
         return PlatformFile->RemoveDir(*path);
+    }
+
+    bool FileSystem::RemoveDir(const UString& path)
+    {
+        return PlatformFile->RemoveDir(path.ToUtf8().Data());
     }
 
     inline bool FileSystem::RemoveFile(const String& path)
@@ -58,6 +68,34 @@ namespace Engine
         }
         
         String destPath = String::Empty();
+        for (int32 index = 0; index < dirs.Size(); index++)
+        {
+            destPath = Path::MakePath(destPath, dirs[index]);
+            if (DirExists(destPath))
+            {
+                continue;
+            }
+            else if (MakeDir(destPath))
+            {
+                continue;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool FileSystem::MakeDirTree(const UString& path)
+    {
+        DynamicArray<UString> dirs = Path::SplitPath(path);
+        if (dirs.Size() <= 0)
+        {
+            return false;
+        }
+
+        UString destPath;
         for (int32 index = 0; index < dirs.Size(); index++)
         {
             destPath = Path::MakePath(destPath, dirs[index]);
@@ -135,9 +173,19 @@ namespace Engine
         return PlatformFile->MakeFile(path);
     }
 
+    bool FileSystem::MakeFile(const UString& path)
+    {
+        return PlatformFile->MakeFile(path.ToUtf8().Data());
+    }
+
     bool FileSystem::RemoveFile(const char* path)
     {
         return PlatformFile->RemoveFile(path);
+    }
+
+    bool FileSystem::RemoveFile(const UString& path)
+    {
+        return PlatformFile->RemoveFile(path.ToUtf8().Data());
     }
 
     bool FileSystem::DirExists(const char* path)
@@ -145,13 +193,28 @@ namespace Engine
         return PlatformFile->DirExists(path);
     }
 
+    bool FileSystem::DirExists(const UString& path)
+    {
+        return PlatformFile->DirExists(path.ToUtf8().Data());
+    }
+
     bool FileSystem::FileExists(const char* path)
     {
         return PlatformFile->FileExists(path);
     }
 
+    bool FileSystem::FileExists(const UString& path)
+    {
+        return PlatformFile->FileExists(path.ToUtf8().Data());
+    }
+
     FileTime FileSystem::GetFileTime(const char* path)
     {
         return PlatformFile->GetFileTime(path);
+    }
+
+    FileTime FileSystem::GetFileTime(const UString& path)
+    {
+        return PlatformFile->GetFileTime(path.ToUtf8().Data());
     }
 }
