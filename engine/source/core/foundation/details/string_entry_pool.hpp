@@ -3,6 +3,7 @@
 #include <shared_mutex>
 #include "foundation/map.hpp"
 #include "foundation/string.hpp"
+#include "foundation/ustring.hpp"
 #include "foundation/char_utils.hpp"
 #include "math/limit.hpp"
 #include "math/city_hash.hpp"
@@ -79,9 +80,14 @@ namespace Engine
             static StringEntryPool inst;
             return inst;
         }
+
         static FixedEntryId AllocEntryId(const FixedStringView& entry);
 
+        static FixedEntryId AllocEntryId(const UStringView& entry);
+
         FixedEntryId FindOrStore(const FixedStringView& entry);
+
+        FixedEntryId FindOrStore(const UStringView& entry);
 
         FixedEntryId Store(const FixedStringView& entry);
 
@@ -101,6 +107,21 @@ namespace Engine
             #else
             return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));
             #endif
+        }
+
+        template <>
+        static FixedEntryId GetLowerCaseHash<UChar>(const UChar* str, int32 length)
+        {
+            UChar lowerStr[MAX_ENTRY_LENGTH];
+            for (int32 idx = 0; idx < length; ++idx)
+            {
+                lowerStr[idx] = Unicode::ToLower(static_cast<char16_t>(str[idx]));
+            }
+#ifdef SMALLER_FIXED_STRING
+            return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));
+#else
+            return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), length * sizeof(UChar));
+#endif
         }
     private:
         std::shared_mutex Mutex;

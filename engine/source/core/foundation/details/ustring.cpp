@@ -15,10 +15,10 @@
 
 namespace Engine
 {
-    UString::UString(UChar c)
+    UString::UString(UChar ch)
     {
         Source.Reserve(2);
-        Source.Add(c);
+        Source.Add(ch);
         Source.Add(u'\0');
     }
 
@@ -488,51 +488,6 @@ namespace Engine
         }
 
         return UString(Data(), Length() - n);
-    }
-
-    strsize UString::IndexOf(UStringView str, ECaseSensitivity cs) const
-    {
-        return FindStringHelper((UStringView)*this, 0, str, cs);
-    }
-
-    strsize UString::IndexOf(const char* latin1, ECaseSensitivity cs) const
-    {
-        return FindStringHelper((UStringView)*this, 0 , latin1, cs);
-    }
-
-    strsize UString::IndexOfAny(UStringView str, ECaseSensitivity cs) const
-    {
-        return FindAnyCharHelper((UStringView)*this, 0, str, cs);
-    }
-
-    strsize UString::IndexOfAny(const char* latin1, ECaseSensitivity cs) const
-    {
-        return FindAnyCharHelper((UStringView)*this, 0, latin1, cs);
-    }
-
-    strsize UString::LastIndexOf(UStringView str, ECaseSensitivity cs) const
-    {
-        return FindLastHelper((UStringView)*this, -1 , str, cs);
-    }
-
-    strsize UString::LastIndexOfAny(UStringView str, ECaseSensitivity cs) const
-    {
-        return FindLastAnyCharHelper((UStringView)*this, 0, str, cs);
-    }
-
-    strsize UString::LastIndexOfAny(const char* latin1, ECaseSensitivity cs) const
-    {
-        return FindLastAnyCharHelper((UStringView)*this, 0, latin1, cs);
-    }
-
-    bool UString::Contains(UStringView str, ECaseSensitivity cs) const
-    {
-        return FindStringHelper((UStringView)*this, 0, str, cs) >= 0;
-    }
-
-    bool UString::Contains(const char* latin1, ECaseSensitivity cs) const
-    {
-        return false;
     }
 
     int32 UString::Count(const UString& str, ECaseSensitivity cs) const

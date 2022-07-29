@@ -14,6 +14,11 @@ namespace Engine
         return entryId;
     }
 
+    FixedEntryId StringEntryPool::FindOrStore(const UStringView& entry)
+    {
+        return 0;
+    }
+
     FixedEntryId StringEntryPool::Store(const FixedStringView& entry)
     {
         FixedEntryId entryId = AllocEntryId(entry);
@@ -29,6 +34,13 @@ namespace Engine
     }
 
     FixedEntryId StringEntryPool::AllocEntryId(const FixedStringView& entry)
+    {
+        FixedEntryId entryId = 0;
+        entryId = GetLowerCaseHash(entry.Data(), entry.Length());
+        return entryId;
+    }
+
+    FixedEntryId StringEntryPool::AllocEntryId(const UStringView& entry)
     {
         FixedEntryId entryId = 0;
         entryId = GetLowerCaseHash(entry.Data(), entry.Length());

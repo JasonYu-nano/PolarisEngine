@@ -13,6 +13,8 @@ namespace Engine
 
         FixedString(const char_t* str);
 
+        FixedString(const char* str);
+
         FixedString(const FixedString& other);
 
         FixedString& operator= (const FixedString& other);
@@ -29,6 +31,8 @@ namespace Engine
 
     private:
         void MakeFixedString(FixedStringView view);
+
+        void MakeFixedString(StringView view);
 
     private:
         FixedEntryId EntryId{ 0 };

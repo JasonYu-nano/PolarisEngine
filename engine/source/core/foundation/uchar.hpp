@@ -91,14 +91,10 @@ namespace Engine
         constexpr UChar(char c) noexcept : UCS(c) {}
 
         static constexpr UChar FromUCS2(char16_t c) noexcept { return UChar{c}; }
-        // static constexpr inline auto fromUcs4(char32_t c) noexcept;
-
-        // Unicode information
-
 
         constexpr inline char ToLatin1() const noexcept { return UCS > 0xff ? '\0' : char(UCS); }
         constexpr inline char16_t Unicode() const noexcept { return UCS; }
-        constexpr inline char16_t &Unicode() noexcept { return UCS; }
+        constexpr inline char16_t& Unicode() noexcept { return UCS; }
 
         constexpr inline bool IsNull() const noexcept { return UCS == 0; }
         constexpr inline bool IsSpace() const noexcept { return UChar::IsSpace(UCS); }
@@ -141,20 +137,24 @@ namespace Engine
         {
             return (ucs4 >= 0x10000);
         }
+
         static constexpr inline char32_t SurrogateToUcs4(char16_t high, char16_t low) noexcept
         {
             // 0x010000 through 0x10ffff, provided params are actual high, low surrogates.
             // 0x010000 + ((high - 0xd800) << 10) + (low - 0xdc00), optimized:
             return (char32_t(high)<<10) + low - 0x35fdc00;
         }
+
         static constexpr inline char32_t SurrogateToUcs4(UChar high, UChar low) noexcept
         {
             return SurrogateToUcs4(high.UCS, low.UCS);
         }
+
         static constexpr inline char16_t HighSurrogate(char32_t ucs4) noexcept
         {
             return char16_t((ucs4>>10) + 0xd7c0);
         }
+
         static constexpr inline char16_t LowSurrogate(char32_t ucs4) noexcept
         {
             return char16_t(ucs4%0x400 + 0xdc00);
@@ -176,10 +176,12 @@ namespace Engine
             return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))
                    || (ucs4 > 127 && UChar::IsLetterHelper(ucs4));
         }
+
         static constexpr inline bool IsNumber(char32_t ucs4) noexcept
         {
             return (ucs4 <= '9' && ucs4 >= '0') || (ucs4 > 127 && UChar::IsNumberHelper(ucs4));
         }
+
         static constexpr inline bool IsLetterOrNumber(char32_t ucs4) noexcept
         {
             return (ucs4 >= 'A' && ucs4 <= 'z' && (ucs4 >= 'a' || ucs4 <= 'Z'))

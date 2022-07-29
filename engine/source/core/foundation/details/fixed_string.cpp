@@ -8,6 +8,11 @@ namespace Engine
         MakeFixedString(FixedStringView{str, static_cast<int32>(CharUtils::Length(str))});
     }
 
+    FixedString::FixedString(const char* str)
+    {
+
+    }
+
     FixedString::FixedString(const FixedString& other)
         : EntryId(other.EntryId)
         , Number(other.Number)
@@ -32,8 +37,13 @@ namespace Engine
 
     void FixedString::MakeFixedString(FixedStringView view)
     {
-        int32 numberCount = 0;
         Number = FixedStringHelper::SplitNumber(const_cast<char_t*>(view.Data()), view.Length());
+        EntryId = StringEntryPool::Get().FindOrStore(view);
+    }
+
+    void FixedString::MakeFixedString(StringView view)
+    {
+        Number = FixedStringHelper::SplitNumber(view.Data(), view.Length());
         EntryId = StringEntryPool::Get().FindOrStore(view);
     }
 
