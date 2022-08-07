@@ -2,32 +2,27 @@
 
 namespace Engine
 {
-    FixedEntryId StringEntryPool::FindOrStore(const FixedStringView& entry)
+    FixedEntryId StringEntryPool::FindOrStore(const UStringView& entry)
     {
         FixedEntryId entryId = AllocEntryId(entry);
 
         if (Find(entryId) == nullptr)
         {
             std::lock_guard lock(Mutex);
-            EntryPool.Add(entryId, entry);
+            EntryPool.Add(entryId, UString(entry.Data(), entry.Length()));
         }
         return entryId;
     }
 
-    FixedEntryId StringEntryPool::FindOrStore(const UStringView& entry)
-    {
-        return 0;
-    }
-
-    FixedEntryId StringEntryPool::Store(const FixedStringView& entry)
+    FixedEntryId StringEntryPool::Store(const UStringView& entry)
     {
         FixedEntryId entryId = AllocEntryId(entry);
         std::lock_guard lock(Mutex);
-        EntryPool.Add(entryId, entry);
+        EntryPool.Add(entryId, UString(entry.Data(), entry.Length()));
         return entryId;
     }
 
-    FixedStringView* StringEntryPool::Find(FixedEntryId entryId)
+    UString* StringEntryPool::Find(FixedEntryId entryId)
     {
         std::shared_lock lock(Mutex);
         return EntryPool.Find(entryId);
@@ -43,7 +38,7 @@ namespace Engine
     FixedEntryId StringEntryPool::AllocEntryId(const UStringView& entry)
     {
         FixedEntryId entryId = 0;
-        entryId = GetLowerCaseHash(entry.Data(), entry.Length());
+        entryId = GetLowerCaseHash(entry);
         return entryId;
     }
 }

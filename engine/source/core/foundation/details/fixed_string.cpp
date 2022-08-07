@@ -3,14 +3,19 @@
 
 namespace Engine
 {
-    FixedString::FixedString(const char_t* str)
+    FixedString::FixedString(const char* latain1)
     {
-        MakeFixedString(FixedStringView{str, static_cast<int32>(CharUtils::Length(str))});
+        MakeFixedString(static_cast<UStringView>(UString::FromLatin1(latain1)));
     }
 
-    FixedString::FixedString(const char* str)
+    FixedString::FixedString(StringView str)
     {
+        MakeFixedString(static_cast<UStringView>(UString::FromLatin1(str)));
+    }
 
+    FixedString::FixedString(UStringView str)
+    {
+        MakeFixedString(str);
     }
 
     FixedString::FixedString(const FixedString& other)
@@ -35,36 +40,26 @@ namespace Engine
         return EntryId != other.EntryId || Number != other.Number;
     }
 
-    void FixedString::MakeFixedString(FixedStringView view)
+    void FixedString::MakeFixedString(UStringView view)
     {
-        Number = FixedStringHelper::SplitNumber(const_cast<char_t*>(view.Data()), view.Length());
+        Number = FixedStringHelper::SplitNumber(view);
         EntryId = StringEntryPool::Get().FindOrStore(view);
     }
 
-    void FixedString::MakeFixedString(StringView view)
+    UString FixedString::ToString() const
     {
-        Number = FixedStringHelper::SplitNumber(view.Data(), view.Length());
-        EntryId = StringEntryPool::Get().FindOrStore(view);
-    }
-
-    String FixedString::ToString() const
-    {
-        FixedStringView* entry = StringEntryPool::Get().Find(EntryId);
+        UString* entry = StringEntryPool::Get().Find(EntryId);
         if (entry == nullptr)
         {
-            return String::Empty();
+            return UString();
         }
 
         if (Number == SUFFIX_NUMBER_NONE)
         {
-            return String(entry->Data());
-        }
-        else
-        {
-            return Format("{0}_{1}", entry->Data(), SUFFIX_TO_ACTUAL(Number));
+            return *entry;
         }
 
-        return String::Empty();
+        return UString::Formats("{0}_{1}", *entry, SUFFIX_TO_ACTUAL(Number));
     }
 
     uint32 FixedString::GetNumber() const

@@ -11,9 +11,11 @@ namespace Engine
     public:
         FixedString() = default;
 
-        FixedString(const char_t* str);
+        FixedString(const char* latain1);
 
-        FixedString(const char* str);
+        FixedString(StringView str);
+
+        FixedString(UStringView str);
 
         FixedString(const FixedString& other);
 
@@ -23,14 +25,14 @@ namespace Engine
 
         bool operator!= (const FixedString& other) const;
 
-        String ToString() const;
+        UString ToString() const;
 
         FixedEntryId GetEntryId() const {return EntryId;}
 
         uint32 GetNumber() const;
 
     private:
-        void MakeFixedString(FixedStringView view);
+        void MakeFixedString(UStringView view);
 
         void MakeFixedString(StringView view);
 

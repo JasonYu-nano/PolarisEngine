@@ -23,37 +23,38 @@ namespace Engine
     class FixedStringHelper
     {
     public:
-        template <typename CharType>
-        static constexpr int64 Atoi64(const CharType* str, int32 length)
+        static constexpr int64 Atoi64(const UChar* str, int32 length)
         {
             int64 number = 0;
             for (int32 Idx = 0; Idx < length; ++Idx)
             {
-                number = 10 * number + str[Idx] - '0';
+                number = 10 * number + static_cast<int32>(str[Idx]) - '0';
             }
 
             return number;
         }
 
-        template <typename CharType>
-        static uint32 SplitNumber(CharType* str, int32& length)
+        static uint32 SplitNumber(UStringView& view)
         {
+            const UChar* str = view.Data();
+            strsize& len = view.Length();
+
             int32 numberCount = 0;
-            for (CharType* pChar = str + length - 1; pChar >= str && *pChar >= '0' && *pChar <= '9'; --pChar )
+            for (const UChar* pChar = str + len - 1; pChar >= str && *pChar >= '0' && *pChar <= '9'; --pChar )
             {
                 ++numberCount;
             }
 
             // number suffix must start with _ and skip number like 01
-            const CharType* firstNumber = str + length - numberCount;
-            if (numberCount > 0 && numberCount < length && *(firstNumber - 1) == '_')
+            const UChar* firstNumber = str + len - numberCount;
+            if (numberCount > 0 && numberCount < len && *(firstNumber - 1) == '_')
             {
                 if (numberCount == 1 || *firstNumber != '0')
                 {
                     int64 number = Atoi64(firstNumber, numberCount);
                     if (number < MAX_UINT32)
                     {
-                        length -= (numberCount + 1);
+                        len -= (numberCount + 1);
                         return static_cast<uint32>(ACTUAL_TO_SUFFIX(number));
                     }
                 }
@@ -63,7 +64,7 @@ namespace Engine
         }
     };
 
-    using StringEntryPoolAllocator = SetAllocator<DefaultAllocator , DefaultAllocator, 2, InitialBucketCount, 4>;
+    using StringEntryPoolAllocator = SetAllocator<DefaultAllocator, DefaultAllocator, 2, InitialBucketCount, 4>;
 
 #ifdef SMALLER_FIXED_STRING
     using FixedEntryId = uint32;
@@ -73,7 +74,8 @@ namespace Engine
 
     class StringEntryPool
     {
-        using TEntryPool = Map<uint64, FixedStringView, MapDefaultHashFunc<uint64, FixedStringView>, StringEntryPoolAllocator>;
+        using TEntryPool = Map<FixedEntryId, FixedStringView, MapDefaultHashFunc<FixedEntryId, FixedStringView>, StringEntryPoolAllocator>;
+        using EntryPoolType = Map<FixedEntryId, UString, MapDefaultHashFunc<FixedEntryId, UString>, StringEntryPoolAllocator>;
     public:
         static StringEntryPool& Get()
         {
@@ -85,13 +87,11 @@ namespace Engine
 
         static FixedEntryId AllocEntryId(const UStringView& entry);
 
-        FixedEntryId FindOrStore(const FixedStringView& entry);
-
         FixedEntryId FindOrStore(const UStringView& entry);
 
-        FixedEntryId Store(const FixedStringView& entry);
+        FixedEntryId Store(const UStringView& entry);
 
-        FixedStringView* Find(FixedEntryId entryId);
+        UString* Find(FixedEntryId entryId);
 
     private:
         template <typename CharType>
@@ -100,7 +100,7 @@ namespace Engine
             CharType lowerStr[MAX_ENTRY_LENGTH];
             for (int32 idx = 0; idx < length; ++idx)
             {
-                lowerStr[idx] = CharUtils::ToLower(str[idx]);
+                lowerStr[idx] = CharTraits<CharType>::Latin1ToLower(str[idx]);
             }
             #ifdef SMALLER_FIXED_STRING
             return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));
@@ -109,22 +109,23 @@ namespace Engine
             #endif
         }
 
-        template <>
-        static FixedEntryId GetLowerCaseHash<UChar>(const UChar* str, int32 length)
+        static FixedEntryId GetLowerCaseHash(UStringView view)
         {
             UChar lowerStr[MAX_ENTRY_LENGTH];
-            for (int32 idx = 0; idx < length; ++idx)
+            strsize len = view.Length();
+            const UChar* data = view.Data();
+            for (strsize idx = 0; idx < len; ++idx)
             {
-                lowerStr[idx] = Unicode::ToLower(static_cast<char16_t>(str[idx]));
+                lowerStr[idx] = CharTraits<UChar>::Latin1ToLower(static_cast<char16_t>(data[idx]));
             }
 #ifdef SMALLER_FIXED_STRING
-            return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));
+            return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), len * sizeof(UChar));
 #else
-            return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), length * sizeof(UChar));
+            return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), len * sizeof(UChar));
 #endif
         }
     private:
         std::shared_mutex Mutex;
-        TEntryPool EntryPool;
+        EntryPoolType EntryPool;
     };
 }

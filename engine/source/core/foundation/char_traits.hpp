@@ -173,6 +173,16 @@ namespace Engine
 
             return 0;
         }
+
+        static constexpr CharType Latin1ToUpper(CharType character)
+        {
+            return ToChar(ToInt(character) - ((ToInt(character) - 'a' < 26u) << 5));
+        }
+
+        static constexpr CharType Latin1ToLower(CharType character)
+        {
+            return ToChar(ToInt(character) + ((ToInt(character) - 'A' < 26u) << 5));
+        }
     };
 
     template <CharConcept T>
