@@ -4,7 +4,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/pattern_formatter.h"
-#include "global.hpp"
+#include "foundation/ustring.hpp"
 #include "foundation/smart_ptr.hpp"
 
 namespace Engine
@@ -23,52 +23,40 @@ namespace Engine
     class CORE_API LogSystem
     {
     public:
-        template<typename TChar, typename... Args>
-        static void Info(const ansi* category, const TChar* fmt, Args&&... args)
+        template<typename... Args>
+        static void Info(const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->info(fmt, std::forward<Args>(args)...);
+            GetLogger()->info(UString::Format(fmt, Forward<Args>(args)...));
         }
 
         template<typename TChar, typename... Args>
-        static void Info(const char* category, const char16_t* fmt, Args&&... args)
+        static void Warn(const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->info(fmt, std::forward<Args>(args)...);
+            GetLogger()->warn(UString::Format(fmt, Forward<Args>(args)...));
         }
 
         template<typename TChar, typename... Args>
-        static void Warn(const ansi* category, const TChar* fmt, Args&&... args)
+        static void Error(const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->warn(fmt, std::forward<Args>(args)...);
+            GetLogger()->error(UString::Format(fmt, Forward<Args>(args)...));
         }
 
         template<typename TChar, typename... Args>
-        static void Error(const ansi* category, const TChar* fmt, Args&&... args)
+        static void Fatal(const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->error(fmt, std::forward<Args>(args)...);
+            GetLogger()->critical(UString::Format(fmt, Forward<Args>(args)...));
         }
 
-        template<typename TChar, typename... Args>
-        static void Fatal(const ansi* category, const TChar* fmt, Args&&... args)
+        template<typename... Args>
+        static void Log(spdlog::source_loc src, spdlog::level::level_enum level, const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->critical(fmt, std::forward<Args>(args)...);
+            GetLogger()->log(src, level, UString::Format(fmt, Forward<Args>(args)...));
         }
 
-        template<typename TChar, typename... Args>
-        static void Log(spdlog::source_loc src, spdlog::level::level_enum level, const ansi* category, const TChar* fmt, Args&&... args)
+        template<typename... Args>
+        static void Log(spdlog::level::level_enum level, const ansi* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->log(src, level, fmt, std::forward<Args>(args)...);
-        }
-
-        template<typename TChar, typename... Args>
-        static void Log(spdlog::source_loc src, ELogLevel level, const ansi* category, const TChar* fmt, Args&&... args)
-        {
-            GetLogger()->log(src, (spdlog::level::level_enum)level, fmt, std::forward<Args>(args)...);
-        }
-
-        template<typename TChar, typename... Args>
-        static void Log(spdlog::level::level_enum level, const ansi* category, const TChar* fmt, Args&&... args)
-        {
-            GetLogger()->log(level, fmt, std::forward<Args>(args)...);
+            GetLogger()->log(level, UString::Format(fmt, Forward<Args>(args)...));
         }
 
         static void AssertFail(spdlog::source_loc src, const ansi* expr)
@@ -102,14 +90,12 @@ namespace Engine
     #define PL_LOG_IMPL(level, category, fmt, ...)  {LogSystem::Log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, category, fmt, ## __VA_ARGS__);}
     #define PL_LOG_WITHOUT_SOURCE(level, category, fmt, ...)  {LogSystem::Log(level, category, fmt, ## __VA_ARGS__);}
 
-    #define PL_VERBOSE(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::trace, category, fmt, ## __VA_ARGS__)
-    #define PL_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::info, category, fmt, ## __VA_ARGS__)
-    #define PL_WARN(category, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
-    #define PL_ERROR(category, fmt, ...) PL_LOG_IMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
-    #define PL_FATAL(category, fmt, ...) PL_LOG_IMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
+    #define LOG_VERBOSE(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::trace, category, fmt, ## __VA_ARGS__)
+    #define LOG_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::info, category, fmt, ## __VA_ARGS__)
+    #define LOG_WARN(category, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
+    #define LOG_ERROR(category, fmt, ...) PL_LOG_IMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
+    #define LOG_FATAL(category, fmt, ...) PL_LOG_IMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
 
-    #define LOG_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::info, category, u##fmt, ## __VA_ARGS__)
-    // #define LOG(category, level, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
     #define CLOG(expr, category, level, fmt, ...) \
         if (expr)                                          \
         {                                                  \

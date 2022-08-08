@@ -2,7 +2,6 @@
 
 #include "definitions_core.hpp"
 #include "global.hpp"
-#include "log/logger.hpp"
 
 namespace Engine
 {

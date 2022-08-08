@@ -89,7 +89,7 @@ namespace Engine
         auto result = RegisterClassEx(&wc);
         if (result == 0)
         {
-            PL_ERROR("Application", _T("RegisterClassEx failed in windows platform"));
+            LOG_ERROR("Application", "RegisterClassEx failed in windows platform");
         }
     }
 

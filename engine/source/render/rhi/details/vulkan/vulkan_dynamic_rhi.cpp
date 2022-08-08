@@ -13,16 +13,16 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     switch (messageSeverity)
     {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        PL_VERBOSE("Render", pCallbackData->pMessage)
+        LOG_VERBOSE("Render", pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        PL_INFO("Render", pCallbackData->pMessage)
+        LOG_INFO("Render", pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        PL_WARN("Render", pCallbackData->pMessage)
+        LOG_WARN("Render", pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        PL_ERROR("Render", pCallbackData->pMessage)
+        LOG_ERROR("Render", pCallbackData->pMessage)
             break;
     default:
         break;
@@ -125,7 +125,7 @@ namespace Engine
 
         if (vkCreateInstance(&createInfo, nullptr, &Instance) != VK_SUCCESS) 
         {
-            PL_FATAL("Render", _T("Failed to create vulkan instance"));
+            LOG_FATAL("Render", "Failed to create vulkan instance");
             return;
         }
     }
@@ -184,7 +184,7 @@ namespace Engine
         }
         else
         {
-            PL_WARN("Render", _T("CheckValidationLayerSupport failed in vulkan debug mode"));
+            LOG_WARN("Render", "CheckValidationLayerSupport failed in vulkan debug mode");
         }
 #endif
     }
@@ -212,7 +212,7 @@ namespace Engine
         }
         else
         {
-            PL_ERROR("Render", _T("Failed to set up debug messenger!"));
+            LOG_ERROR("Render", "Failed to set up debug messenger!");
             return;
         }
 #endif
@@ -236,7 +236,7 @@ namespace Engine
 
         if (deviceNum <= 0)
         {
-            PL_ERROR("Render", _T("Failed to find GPUs with Vulkan support"));
+            LOG_ERROR("Render", "Failed to find GPUs with Vulkan support");
             return false;
         }
 
@@ -329,7 +329,7 @@ namespace Engine
 
         if (vkCreateDevice(PhysicalDevice, &createInfo, nullptr, &Device) != VK_SUCCESS) 
         {
-            PL_ERROR("Render", _T("Failed to create logical device!"));
+            LOG_ERROR("Render", "Failed to create logical device!");
             return false;
         }
 
@@ -498,7 +498,7 @@ namespace Engine
 
         if (vkCreateSwapchainKHR(Device, &createInfo, nullptr, &SwapChain) != VK_SUCCESS)
         {
-            PL_ERROR("Render", _T("Failed to create swap chain!"));
+            LOG_ERROR("Render", "Failed to create swap chain!");
         }
 
         vkGetSwapchainImagesKHR(Device, SwapChain, &imageCount, nullptr);
@@ -532,7 +532,7 @@ namespace Engine
 
             if (vkCreateImageView(Device, &createInfo, nullptr, &SwapChainImageViews[idx]) != VK_SUCCESS)
             {
-                PL_ERROR("", _T("Failed to create image views!"));
+                LOG_ERROR("", "Failed to create image views!");
             }
             ++idx;
         }

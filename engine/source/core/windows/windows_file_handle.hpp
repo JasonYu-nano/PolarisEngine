@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-    class CORE_API WindowsFileHandle : public IFileHandle
+    class CORE_API WindowsFileHandle final : public IFileHandle
     {
     public:
         explicit WindowsFileHandle(HANDLE handle) : Handle(handle)

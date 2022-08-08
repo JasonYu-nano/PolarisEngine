@@ -10,11 +10,6 @@
 
 namespace Engine
 {
-#ifdef Format
-    #undefine Format
-#endif
-    #define Format(context, ...) fmt::format(_T(context), __VA_ARGS__)
-
     class CORE_API String
     {
         typedef std::basic_string<char_t, std::char_traits<char_t>, std::allocator<char_t>> InnerString;

@@ -1,7 +1,7 @@
 #pragma once
+
 #include <type_traits>
 #include "global.hpp"
-//#include "foundation/uchar.hpp"
 
 using namespace Engine;
 

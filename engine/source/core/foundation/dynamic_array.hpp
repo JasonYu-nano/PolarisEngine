@@ -2,10 +2,8 @@
 
 #include <initializer_list>
 #include "definitions_core.hpp"
-#include "global.hpp"
 #include "math/generic_math.hpp"
 #include "memory/allocator_policies.hpp"
-#include "log/logger.hpp"
 #include "foundation/type_traits.hpp"
 #include "foundation/functional.hpp"
 
@@ -412,7 +410,7 @@ namespace Engine
             {
                 return Data() + index;
             }
-            throw std::out_of_range{"Index an element out of range"};
+            //throw std::out_of_range{"Index an element out of range"};
         }
 
         ElementType* Data()

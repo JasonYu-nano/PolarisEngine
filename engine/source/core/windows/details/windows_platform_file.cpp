@@ -1,7 +1,7 @@
-#include "precompiled_core.hpp"
+#include <windows.h>
 #include <corecrt_io.h>
-#include "foundation/regex.hpp"
 #include "windows/windows_platform_file.hpp"
+#include "foundation/regex.hpp"
 #include "file_system/path.hpp"
 #include "foundation/queue.hpp"
 #include "foundation/char_utils.hpp"
@@ -11,6 +11,17 @@ using namespace Engine;
 
 namespace Engine
 {
+    static uint64 GetTimeStamp(const ::FILETIME& fileTime)
+    {
+        const int64 k_UnixTimeStart = 0x019DB1DED53E8000;
+        const int64 k_TicksPerSecond = 10000000;
+
+        LARGE_INTEGER li;
+        li.LowPart = fileTime.dwLowDateTime;
+        li.HighPart = fileTime.dwHighDateTime;
+
+        return (li.QuadPart - k_UnixTimeStart) / k_TicksPerSecond;
+    }
 
     bool WindowsPlatformFile::MakeDir(const char_t* path)
     {
@@ -126,23 +137,26 @@ namespace Engine
         return ret;
     }
 
-    DynamicArray<String>
-    WindowsPlatformFile::QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion)
+    DynamicArray<UString>
+    WindowsPlatformFile::QueryFiles(const UString& searchPath, const UString& regexExpr, bool recursion)
     {
-        DynamicArray<String> ret;
+        DynamicArray<UString> ret;
 
-        Regex pattern(regexExpr);
+        DynamicArray<char> regex = regexExpr.ToUtf8();
+        std::regex pattern(regex.Data());
 
-        Queue<String> searchQueue;
+        Queue<UString> searchQueue;
         searchQueue.emplace(searchPath);
 
-        WIN32_FIND_DATA data;
+        WIN32_FIND_DATAA data;
 
         while (!searchQueue.empty())
         {
-            String& path = searchQueue.front();
+            UString& path = searchQueue.front();
+            UString queryPath = Path::MakePath(path, "*");
 
-            HANDLE handle = ::FindFirstFile(*Path::MakePath(path, _T("*")), &data);
+
+            HANDLE handle = ::FindFirstFileA(queryPath.ToUtf8().Data(), &data);
             if (handle != INVALID_HANDLE_VALUE)
             {
                 do
@@ -164,7 +178,7 @@ namespace Engine
                     {
                         ret.Add(Path::MakePath(path, data.cFileName));
                     }
-                } while (::FindNextFile(handle, &data));
+                } while (::FindNextFileA(handle, &data));
             }
             ::FindClose(handle);
             searchQueue.pop();
@@ -176,18 +190,6 @@ namespace Engine
     uint32 WindowsPlatformFile::GetLastError()
     {
         return (uint32) ::GetLastError();
-    }
-
-    uint64 WindowsPlatformFile::GetTimeStamp(const ::FILETIME& fileTime)
-    {
-        const int64 k_UnixTimeStart = 0x019DB1DED53E8000;
-        const int64 k_TicksPerSecond = 10000000;
-
-        LARGE_INTEGER li;
-        li.LowPart = fileTime.dwLowDateTime;
-        li.HighPart = fileTime.dwHighDateTime;
-
-        return (li.QuadPart - k_UnixTimeStart) / k_TicksPerSecond;
     }
 
     UniquePtr<IFileHandle>

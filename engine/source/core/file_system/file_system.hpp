@@ -45,13 +45,21 @@ namespace Engine
         bool FileExists(const UString& path);
 
         inline bool IsDirectory(const String& path);
+        inline bool IsDirectory(const UString& path)
+        {
+            return DirExists(path);
+        }
 
         inline bool IsFile(const String& path);
+        inline bool IsFile(const UString& path)
+        {
+            return FileExists(path);
+        }
 
         bool MakeDirTree(const String& path);
         bool MakeDirTree(const UString& path);
 
-        bool ClearDir(const String& path);
+        bool ClearDir(const UString& path);
 
         FileTime GetFileTime(const char* path);
         FileTime GetFileTime(const UString& path);
@@ -63,9 +71,9 @@ namespace Engine
          * @param recursion recursion search or not, default false
          * @return files or directories match regex
          */
-        DynamicArray<String> QueryFiles(const String& searchPath, const String& regex, bool recursion = false);
+        DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regex, bool recursion = false);
 
-        String GetEngineRootPath() const;
+        UString GetEngineRootPath() const;
 
         void ReadFileToBinary(const String& fileName, DynamicArray64<uint8>& outBinary);
 

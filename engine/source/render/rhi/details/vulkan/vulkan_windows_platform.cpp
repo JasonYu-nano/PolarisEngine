@@ -17,7 +17,7 @@ namespace Engine
         {
             return true;
         }
-        PL_ERROR("Render", _T("Failed to create window surface!"));
+        LOG_ERROR("Render", "Failed to create window surface!");
         return false;
     }
 

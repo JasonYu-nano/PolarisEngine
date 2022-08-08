@@ -1,9 +1,8 @@
 #pragma once
-#include "definitions_core.hpp"
+
 #include "global.hpp"
 #include "foundation/type_traits.hpp"
 #include "memory/memory.hpp"
-#include "log/logger.hpp"
 #include "math/limit.hpp"
 
 namespace Engine

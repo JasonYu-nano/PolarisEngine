@@ -3,9 +3,9 @@
 #include <string>
 #include "foundation/uchar.hpp"
 #include "foundation/string_view.hpp"
-#include "foundation/char_utils.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/string_type.hpp"
+#include "spdlog/pattern_formatter.h"
 
 namespace Engine
 {
@@ -210,17 +210,17 @@ namespace Engine
 
         inline bool operator== (const UString& other) const
         {
-            return CharUtils::Compare(Data(), Length(), other.Data(), other.Length()) == 0;
+            return Compare(other) == 0;
         }
 
         inline bool operator== (const UStringView& other) const
         {
-            return CharUtils::Compare(Data(), Length(), other.Data(), other.Length()) == 0;
+            return Compare(other) == 0;
         }
 
         inline bool operator== (const char* other) const
         {
-            return CharUtils::Compare(Data(), Length(), other, CharUtils::Length(other)) == 0;
+            return Compare(other) == 0;
         }
 
         inline Iterator begin();
@@ -239,7 +239,7 @@ namespace Engine
         inline ConstIterator crend();
 
         template <typename... Args>
-        static UString Formats(const char* fmt, Args&&... args)
+        static UString Format(const char* fmt, Args&&... args)
         {
             fmt::basic_memory_buffer<char> buffer;
             const auto& vargs = fmt::make_args_checked<Args...>(fmt, args...);
@@ -308,7 +308,7 @@ namespace Engine
 
     UString& UString::Prepend(const UChar* str, strsize len)
     {
-        len = len >= 0 ? len : CharUtils::Length(str);
+        len = len >= 0 ? len : CharTraits<UChar>::Length(str);
         return Prepend(UStringView(str, len));
     }
 

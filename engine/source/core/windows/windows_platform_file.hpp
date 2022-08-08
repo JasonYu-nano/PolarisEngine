@@ -1,6 +1,6 @@
 #pragma once
+
 #include "file_system/platform_file_interface.hpp"
-#include <windows.h>
 
 namespace Engine
 {
@@ -31,12 +31,11 @@ namespace Engine
         virtual FileTime GetFileTime(const char* path) final;
         FileTime GetFileTime(const char_t* path) override;
 
-        DynamicArray<String> QueryFiles(const char_t* searchPath, const char_t* regexExpr, bool recursion) override;
+        DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regexExpr, bool recursion) override;
 
-        UniquePtr<IFileHandle> OpenFile(const char_t* fileName, EFileAccess access, EFileShareMode mode) final;
+        UniquePtr<IFileHandle> OpenFile(const char_t* fileName, EFileAccess access, EFileShareMode mode);
+
     private:
         uint32 GetLastError();
-
-        uint64 GetTimeStamp(const ::FILETIME& fileTime);
     };
 }

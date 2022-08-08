@@ -115,9 +115,9 @@ namespace Engine
         return true;
     }
 
-    bool FileSystem::ClearDir(const String& path)
+    bool FileSystem::ClearDir(const UString& path)
     {
-        auto files = PlatformFile->QueryFiles(*path, _T("."), false);
+        auto files = PlatformFile->QueryFiles(path, ".", false);
         //! files is BFS
         for (auto iter = files.rbegin(); iter != files.rend(); --iter)
         {
@@ -133,12 +133,12 @@ namespace Engine
         return true;
     }
 
-    DynamicArray<String> FileSystem::QueryFiles(const String& searchPath, const String& regex, bool recursion)
+    DynamicArray<UString> FileSystem::QueryFiles(const UString& searchPath, const UString& regex, bool recursion)
     {
-        return PlatformFile->QueryFiles(*searchPath, *regex, recursion);
+        return PlatformFile->QueryFiles(searchPath, regex, recursion);
     }
 
-    String FileSystem::GetEngineRootPath() const
+    UString FileSystem::GetEngineRootPath() const
     {
         return ENGINE_ROOT_PATH;
     }

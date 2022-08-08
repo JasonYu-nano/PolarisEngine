@@ -29,7 +29,7 @@ namespace Engine
         if (HWnd == nullptr)
         {
             uint32 errorCode = (uint32)::GetLastError();
-            PL_ERROR("Application", _T("CreateWindowEx failed, error code: {0}"), errorCode);
+            LOG_ERROR("Application", "CreateWindowEx failed, error code: {0}", errorCode);
             return;
         }
 

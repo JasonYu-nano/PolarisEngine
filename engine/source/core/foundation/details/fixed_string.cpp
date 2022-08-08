@@ -59,7 +59,7 @@ namespace Engine
             return *entry;
         }
 
-        return UString::Formats("{0}_{1}", *entry, SUFFIX_TO_ACTUAL(Number));
+        return UString::Format("{0}_{1}", *entry, SUFFIX_TO_ACTUAL(Number));
     }
 
     uint32 FixedString::GetNumber() const

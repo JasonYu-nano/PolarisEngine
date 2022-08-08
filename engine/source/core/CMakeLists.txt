@@ -15,7 +15,7 @@ target_compile_definitions(${target} PRIVATE CORE_EXPORT)
 
 if(WIN32)
     if(unicode)
-        target_compile_definitions(${target} PUBLIC ENGINE_ROOT_PATH=L"${CMAKE_SOURCE_DIR}")
+        target_compile_definitions(${target} PUBLIC ENGINE_ROOT_PATH="${CMAKE_SOURCE_DIR}")
     elseif()
         target_compile_definitions(${target} PUBLIC ENGINE_ROOT_PATH="${CMAKE_SOURCE_DIR}")
     endif()
