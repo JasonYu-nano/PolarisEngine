@@ -17,8 +17,6 @@ namespace Engine
 
     constexpr int32 InitialBucketCount = 1 << 9;
 
-    using FixedStringView = BasicStringView<char_t>;
-
     class FixedStringHelper
     {
     public:
@@ -73,7 +71,6 @@ namespace Engine
 
     class StringEntryPool
     {
-        using TEntryPool = Map<FixedEntryId, FixedStringView, MapDefaultHashFunc<FixedEntryId, FixedStringView>, StringEntryPoolAllocator>;
         using EntryPoolType = Map<FixedEntryId, UString, MapDefaultHashFunc<FixedEntryId, UString>, StringEntryPoolAllocator>;
     public:
         static StringEntryPool& Get()
@@ -81,8 +78,6 @@ namespace Engine
             static StringEntryPool inst;
             return inst;
         }
-
-        static FixedEntryId AllocEntryId(const FixedStringView& entry);
 
         static FixedEntryId AllocEntryId(const UStringView& entry);
 
