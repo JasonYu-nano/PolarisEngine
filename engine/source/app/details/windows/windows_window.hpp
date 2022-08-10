@@ -1,6 +1,5 @@
 #pragma once
-#include <windows.h>
-#include <windowsx.h>
+#include "windows/minimal_windows.hpp"
 #include "definitions_app.hpp"
 
 namespace Engine

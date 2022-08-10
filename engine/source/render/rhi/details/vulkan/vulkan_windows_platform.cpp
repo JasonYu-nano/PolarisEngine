@@ -1,7 +1,7 @@
-#include "rhi/details/vulkan/vulkan_windows_platform.hpp"
-#include <vulkan/vulkan_win32.h>
 #include "core_minimal_public.hpp"
 #include "platform_application.hpp"
+#include "rhi/details/vulkan/vulkan_windows_platform.hpp"
+#include <vulkan/vulkan_win32.h>
 
 namespace Engine
 {

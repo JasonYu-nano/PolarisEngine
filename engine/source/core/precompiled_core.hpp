@@ -18,5 +18,5 @@
 #include <optional>
 
 #ifdef _WIN32
-#include <windows.h>
+#include "windows/minimal_windows.hpp"
 #endif

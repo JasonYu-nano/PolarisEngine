@@ -1,6 +1,6 @@
 #pragma once
 
-#include <windows.h>
+#include "windows/minimal_windows.hpp"
 #include "file_system/file_handle_interface.hpp"
 
 namespace Engine

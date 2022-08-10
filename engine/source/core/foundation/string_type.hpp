@@ -15,4 +15,10 @@ namespace Engine
         KeepEmptyParts,
         SkipEmptyParts,
     };
+
+#if PLATFORM_WINDOWS
+    #define PLATFORM_U16_WCHAR 1
+#else
+    #define PLATFORM_U16_WCHAR 0
+#endif
 }

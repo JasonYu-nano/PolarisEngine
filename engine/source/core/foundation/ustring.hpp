@@ -79,6 +79,13 @@ namespace Engine
 
         std::string ToStdString() const;
 
+#if PLATFORM_U16_WCHAR
+        const wchar_t* ToWChar() const
+        {
+            return reinterpret_cast<const wchar_t*>(Data());
+        }
+#endif
+
         DynamicArray<wchar_t> ToWCharArray() const
         {
             DynamicArray<wchar_t> ret;

@@ -1,9 +1,9 @@
 #pragma once
 //#define VK_KHR_surface
 #define VK_USE_PLATFORM_WIN32_KHR
-#include <vulkan/vulkan.h>
 #include "core_minimal_public.hpp"
 #include "rhi/details/vulkan/vulkan_type.hpp"
+#include <vulkan/vulkan.h>
 
 namespace Engine
 {

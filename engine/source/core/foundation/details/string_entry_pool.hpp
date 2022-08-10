@@ -2,7 +2,6 @@
 
 #include <shared_mutex>
 #include "foundation/map.hpp"
-#include "foundation/string.hpp"
 #include "foundation/ustring.hpp"
 #include "foundation/char_utils.hpp"
 #include "math/limit.hpp"

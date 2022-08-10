@@ -1,6 +1,6 @@
 //#include "precompiled_core.hpp"
 #include "thread/details/windows/windows_tls.hpp"
-#include <windows.h>
+#include "windows/minimal_windows.hpp"
 
 namespace Engine
 {

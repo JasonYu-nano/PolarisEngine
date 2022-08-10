@@ -4,36 +4,35 @@
 
 namespace Engine
 {
-    class CORE_API WindowsPlatformFile : public IPlatformFile
+    class CORE_API WindowsPlatformFile final : public IPlatformFile
     {
     public:
         WindowsPlatformFile() = default;
         virtual ~WindowsPlatformFile() = default;
 
-        virtual bool MakeDir(const char* path) final;
-        bool MakeDir(const char_t* path) override;
+        bool MakeDir(const UString& path) final;
 
-        virtual bool RemoveDir(const char* path) final;
-        bool RemoveDir(const char_t* path) override;
+        bool RemoveDir(const UString& path) final;
 
-        virtual bool MakeFile(const char* path) final;
-        bool MakeFile(const char_t* path) override;
+        bool MakeFile(const UString& path) final;
 
-        virtual bool RemoveFile(const char* path) final;
-        bool RemoveFile(const char_t* path) override;
+        bool RemoveFile(const UString& path) final;
 
-        virtual bool FileExists(const char* path) final;
-        bool FileExists(const char_t* path) override;
+        bool MoveFile(const UString& from, const UString& to) final;
 
-        virtual bool DirExists(const char* path) final;
-        bool DirExists(const char_t* path) override;
+        bool FileExists(const UString& path) final;
 
-        virtual FileTime GetFileTime(const char* path) final;
-        FileTime GetFileTime(const char_t* path) override;
+        bool IsReadOnly(const UString& filePath) final;
 
-        DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regexExpr, bool recursion) override;
+        int64 FileSize(const UString& filePath) final;
 
-        UniquePtr<IFileHandle> OpenFile(const char_t* fileName, EFileAccess access, EFileShareMode mode);
+        bool DirExists(const UString& path) final;
+
+        FileTime GetFileTime(const UString& path) final;
+
+        DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regexExpr, bool recursion) final;
+
+        UniquePtr<IFileHandle> OpenFile(const UString& fileName, EFileAccess access, EFileShareMode mode) final;
 
     private:
         uint32 GetLastError();

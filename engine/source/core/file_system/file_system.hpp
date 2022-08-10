@@ -1,6 +1,6 @@
 #pragma once
+
 #include "global.hpp"
-#include "foundation/string.hpp"
 #include "foundation/ustring.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/smart_ptr.hpp"
@@ -13,55 +13,35 @@ namespace Engine
     public:
         static FileSystem& Get();
 
-        bool MakeDir(const String& path);
-
-        bool MakeDir(const char* path);
-        inline bool MakeDir(const UString& path);
+        bool MakeDir(const UString& path);
 
         /**
          * @brief remove an empty directory
          */
-        inline bool RemoveDir(const String& path);
-
-        bool RemoveDir(const char* path);
         bool RemoveDir(const UString& path);
 
-        bool MakeFile(const char* path);
-        bool MakeFile(const UString& path);
-
-        inline bool RemoveFile(const String& path);
-
-        bool RemoveFile(const char* path);
-        bool RemoveFile(const UString& path);
-
-        inline bool DirExists(const String& path);
-
-        bool DirExists(const char* path);
         bool DirExists(const UString& path);
 
-        inline bool FileExists(const String& path);
-
-        bool FileExists(const char* path);
-        bool FileExists(const UString& path);
-
-        inline bool IsDirectory(const String& path);
         inline bool IsDirectory(const UString& path)
         {
             return DirExists(path);
         }
 
-        inline bool IsFile(const String& path);
+        bool MakeFile(const UString& path);
+
+        bool RemoveFile(const UString& path);
+
+        bool FileExists(const UString& path);
+
         inline bool IsFile(const UString& path)
         {
             return FileExists(path);
         }
 
-        bool MakeDirTree(const String& path);
         bool MakeDirTree(const UString& path);
 
         bool ClearDir(const UString& path);
 
-        FileTime GetFileTime(const char* path);
         FileTime GetFileTime(const UString& path);
 
         /**
@@ -75,7 +55,7 @@ namespace Engine
 
         UString GetEngineRootPath() const;
 
-        void ReadFileToBinary(const String& fileName, DynamicArray64<uint8>& outBinary);
+        void ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary);
 
     private:
         FileSystem();

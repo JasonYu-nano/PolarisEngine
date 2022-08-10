@@ -1,7 +1,6 @@
 #pragma once
 
 #include "definitions_core.hpp"
-#include "foundation/string.hpp"
 #include "foundation/details/string_entry_pool.hpp"
 
 namespace Engine
