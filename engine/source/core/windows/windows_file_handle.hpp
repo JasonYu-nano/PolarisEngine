@@ -1,6 +1,7 @@
 #pragma once
 
 #include "windows/minimal_windows.hpp"
+#include "foundation/ustring.hpp"
 #include "file_system/file_handle_interface.hpp"
 
 namespace Engine
@@ -28,6 +29,17 @@ namespace Engine
         int64 Size{ 0 };
         uint64 PosInFile{ 0 };
         OVERLAPPED Overlapped;
+    };
+
+    class CORE_API WindowsFindFileHandle final : public IFindFileHandle
+    {
+    public:
+        WindowsFindFileHandle(const UString& path);
+
+        bool FindNext() const final;
+
+    private:
+        HANDLE Handle{ nullptr }
     };
 
     typedef WindowsFileHandle PlatformFileHandle;

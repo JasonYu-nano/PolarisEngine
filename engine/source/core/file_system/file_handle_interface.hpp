@@ -1,6 +1,7 @@
 #pragma once
 
 #include "definitions_core.hpp"
+#include "file_system/file_system_type.hpp"
 
 namespace Engine
 {
@@ -28,5 +29,16 @@ namespace Engine
         virtual int64 GetSize() const = 0;
 
         virtual bool Read(uint8* dest, uint64 size) = 0;
+    };
+
+    class CORE_API IFindFileHandle
+    {
+    public:
+        virtual ~IFindFileHandle() = default;
+
+        virtual bool FindNext() const = 0;
+
+    protected:
+        DirectoryEntry Entry;
     };
 }

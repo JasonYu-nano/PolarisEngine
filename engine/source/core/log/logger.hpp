@@ -24,33 +24,81 @@ namespace Engine
     {
     public:
         template<typename... Args>
-        static void Info(const char* category, const char* fmt, Args&&... args)
+        static void Log(spdlog::source_loc src, ELogLevel level, const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->info(UString::Format(fmt, Forward<Args>(args)...));
-        }
-
-        template<typename TChar, typename... Args>
-        static void Warn(const char* category, const char* fmt, Args&&... args)
-        {
-            GetLogger()->warn(UString::Format(fmt, Forward<Args>(args)...));
-        }
-
-        template<typename TChar, typename... Args>
-        static void Error(const char* category, const char* fmt, Args&&... args)
-        {
-            GetLogger()->error(UString::Format(fmt, Forward<Args>(args)...));
-        }
-
-        template<typename TChar, typename... Args>
-        static void Fatal(const char* category, const char* fmt, Args&&... args)
-        {
-            GetLogger()->critical(UString::Format(fmt, Forward<Args>(args)...));
+            switch (level)
+            {
+                case Trace:
+                {
+                    GetLogger()->log(src, spdlog::level::trace, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Debug:
+                {
+                    GetLogger()->log(src, spdlog::level::debug, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Info:
+                {
+                    GetLogger()->log(src, spdlog::level::info, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Warn:
+                {
+                    GetLogger()->log(src, spdlog::level::warn, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Error:
+                {
+                    GetLogger()->log(src, spdlog::level::err, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Critical:
+                {
+                    GetLogger()->log(src, spdlog::level::critical, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                default:;
+            }
         }
 
         template<typename... Args>
-        static void Log(spdlog::source_loc src, spdlog::level::level_enum level, const char* category, const char* fmt, Args&&... args)
+        static void Log(ELogLevel level, const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->log(src, level, UString::Format(fmt, Forward<Args>(args)...));
+            switch (level)
+            {
+                case Trace:
+                {
+                    GetLogger()->log(spdlog::level::trace, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Debug:
+                {
+                    GetLogger()->log(spdlog::level::debug, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Info:
+                {
+                    GetLogger()->log(spdlog::level::info, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Warn:
+                {
+                    GetLogger()->log(spdlog::level::warn, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Error:
+                {
+                    GetLogger()->log(spdlog::level::err, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                case Critical:
+                {
+                    GetLogger()->log(spdlog::level::critical, UString::Format(fmt, Forward<Args>(args)...));
+                    break;
+                }
+                default:;
+            }
         }
 
         template<typename... Args>
@@ -90,11 +138,11 @@ namespace Engine
     #define PL_LOG_IMPL(level, category, fmt, ...)  {LogSystem::Log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, category, fmt, ## __VA_ARGS__);}
     #define PL_LOG_WITHOUT_SOURCE(level, category, fmt, ...)  {LogSystem::Log(level, category, fmt, ## __VA_ARGS__);}
 
-    #define LOG_VERBOSE(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::trace, category, fmt, ## __VA_ARGS__)
-    #define LOG_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(spdlog::level::info, category, fmt, ## __VA_ARGS__)
-    #define LOG_WARN(category, fmt, ...) PL_LOG_IMPL(spdlog::level::warn, category, fmt, ## __VA_ARGS__)
-    #define LOG_ERROR(category, fmt, ...) PL_LOG_IMPL(spdlog::level::err, category, fmt, ## __VA_ARGS__)
-    #define LOG_FATAL(category, fmt, ...) PL_LOG_IMPL(spdlog::level::critical, category, fmt, ## __VA_ARGS__)
+    #define LOG_VERBOSE(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(Trace, category, fmt, ## __VA_ARGS__)
+    #define LOG_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(Info, category, fmt, ## __VA_ARGS__)
+    #define LOG_WARN(category, fmt, ...) PL_LOG_IMPL(Warn, category, fmt, ## __VA_ARGS__)
+    #define LOG_ERROR(category, fmt, ...) PL_LOG_IMPL(Error, category, fmt, ## __VA_ARGS__)
+    #define LOG_FATAL(category, fmt, ...) PL_LOG_IMPL(Critical, category, fmt, ## __VA_ARGS__)
 
     #define CLOG(expr, category, level, fmt, ...) \
         if (expr)                                          \

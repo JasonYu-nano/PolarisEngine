@@ -52,6 +52,11 @@ namespace Engine
         return ::MoveFileW(from.ToWChar(), to.ToWChar());
     }
 
+    bool WindowsPlatformFile::CopyFile(const UString& from, const UString& to)
+    {
+        return ::CopyFileW(from.ToWChar(), to.ToWChar(), true);
+    }
+
     bool WindowsPlatformFile::FileExists(const UString& path)
     {
         uint32 result = ::GetFileAttributesW(path.ToWChar());

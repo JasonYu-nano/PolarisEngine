@@ -9,7 +9,7 @@ namespace Engine
     WindowsFileHandle::~WindowsFileHandle()
     {
         bool result = CloseHandle(Handle);
-        CLOG(result, "FileSystem", spdlog::level::err, "Close windows file handle failed");
+        CLOG(result, "FileSystem", Error, "Close windows file handle failed");
     }
 
     int64 WindowsFileHandle::GetSize() const
@@ -52,5 +52,17 @@ namespace Engine
         pos.QuadPart = PosInFile;
         Overlapped.Offset = pos.LowPart;
         Overlapped.OffsetHigh = pos.HighPart;
+    }
+
+    WindowsFindFileHandle::WindowsFindFileHandle(const UString& path)
+    {
+        WIN32_FIND_DATAW data;
+        Handle = ::FindFirstFileExW(path.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
+    }
+
+    bool WindowsFindFileHandle::FindNext() const
+    {
+        WIN32_FIND_DATAW data;
+        return ::FindNextFileW(Handle, &data);
     }
 }

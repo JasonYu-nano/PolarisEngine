@@ -5,6 +5,7 @@
 #include "foundation/dynamic_array.hpp"
 #include "foundation/smart_ptr.hpp"
 #include "file_system/platform_file_interface.hpp"
+#include <filesystem>
 
 namespace Engine
 {
@@ -31,6 +32,10 @@ namespace Engine
 
         bool RemoveFile(const UString& path);
 
+        bool MoveFile(const UString& from, const UString& to);
+
+        bool CopyFile(const UString& from, const UString& to);
+
         bool FileExists(const UString& path);
 
         inline bool IsFile(const UString& path)
@@ -56,6 +61,16 @@ namespace Engine
         UString GetEngineRootPath() const;
 
         void ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary);
+
+        class CORE_API DirectoryIterator
+        {
+        public:
+            DirectoryIterator() noexcept = default;
+
+            DirectoryIterator(const UString& path);
+
+            DirectoryIterator& operator++();
+        };
 
     private:
         FileSystem();

@@ -25,6 +25,8 @@ namespace Engine
 
         virtual bool MoveFile(const UString& from, const UString& to) = 0;
 
+        virtual bool CopyFile(const UString& from, const UString& to) = 0;
+
         virtual bool FileExists(const UString& path) = 0;
 
         virtual bool IsReadOnly(const UString& filePath) = 0;

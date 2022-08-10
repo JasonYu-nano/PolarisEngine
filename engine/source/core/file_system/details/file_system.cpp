@@ -105,6 +105,16 @@ namespace Engine
         return PlatformFile->RemoveFile(path);
     }
 
+    bool FileSystem::MoveFile(const UString& from, const UString& to)
+    {
+        return PlatformFile->MoveFile(from, to);
+    }
+
+    bool FileSystem::CopyFile(const UString& from, const UString& to)
+    {
+        return PlatformFile->CopyFile(from, to);
+    }
+
     bool FileSystem::DirExists(const UString& path)
     {
         return PlatformFile->DirExists(path);

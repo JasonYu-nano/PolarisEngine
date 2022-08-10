@@ -62,3 +62,7 @@
 #undef DeleteFile
 #endif
 
+#ifdef CopyFile
+#undef CopyFile
+#endif
+

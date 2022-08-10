@@ -20,6 +20,8 @@ namespace Engine
 
         bool MoveFile(const UString& from, const UString& to) final;
 
+        bool CopyFile(const UString& from, const UString& to) final;
+
         bool FileExists(const UString& path) final;
 
         bool IsReadOnly(const UString& filePath) final;
