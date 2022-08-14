@@ -5,6 +5,17 @@
 
 namespace Engine
 {
+    static uint64 GetTimeStamp(const ::FILETIME& fileTime)
+    {
+        const uint64 k_UnixTimeStart = 0x019DB1DED53E8000;
+        const uint64 k_TicksPerSecond = 10000000;
+
+        ULARGE_INTEGER li;
+        li.LowPart = fileTime.dwLowDateTime;
+        li.HighPart = fileTime.dwHighDateTime;
+
+        return (li.QuadPart - k_UnixTimeStart) / k_TicksPerSecond;
+    }
 
     WindowsFileHandle::~WindowsFileHandle()
     {
@@ -57,12 +68,25 @@ namespace Engine
     WindowsFindFileHandle::WindowsFindFileHandle(const UString& path)
     {
         WIN32_FIND_DATAW data;
-        Handle = ::FindFirstFileExW(path.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
     }
 
-    bool WindowsFindFileHandle::FindNext() const
+    bool WindowsFindFileHandle::FindNext(DirectoryEntry& entry)
     {
         WIN32_FIND_DATAW data;
-        return ::FindNextFileW(Handle, &data);
+        if (Handle == nullptr)
+        {
+            Handle = ::FindFirstFileExW(FindPath.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
+        }
+        else if (Handle != INVALID_HANDLE_VALUE)
+        {
+            ::FindNextFileW(Handle, &data);
+        }
+
+        if (Handle != INVALID_HANDLE_VALUE)
+        {
+            FileStat status{GetTimeStamp(data.ftLastWriteTime) }
+        }
+
+        return Handle != INVALID_HANDLE_VALUE;
     }
 }

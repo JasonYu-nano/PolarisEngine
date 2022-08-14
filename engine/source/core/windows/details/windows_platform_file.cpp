@@ -12,10 +12,10 @@ namespace Engine
 {
     static uint64 GetTimeStamp(const ::FILETIME& fileTime)
     {
-        const int64 k_UnixTimeStart = 0x019DB1DED53E8000;
-        const int64 k_TicksPerSecond = 10000000;
+        const uint64 k_UnixTimeStart = 0x019DB1DED53E8000;
+        const uint64 k_TicksPerSecond = 10000000;
 
-        LARGE_INTEGER li;
+        ULARGE_INTEGER li;
         li.LowPart = fileTime.dwLowDateTime;
         li.HighPart = fileTime.dwHighDateTime;
 

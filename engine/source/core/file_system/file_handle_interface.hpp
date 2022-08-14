@@ -36,7 +36,7 @@ namespace Engine
     public:
         virtual ~IFindFileHandle() = default;
 
-        virtual bool FindNext() const = 0;
+        virtual bool FindNext(DirectoryEntry& entry) = 0;
 
     protected:
         DirectoryEntry Entry;

@@ -36,11 +36,13 @@ namespace Engine
     public:
         WindowsFindFileHandle(const UString& path);
 
-        bool FindNext() const final;
+        bool FindNext(DirectoryEntry& entry) final;
 
     private:
-        HANDLE Handle{ nullptr }
+        HANDLE Handle{ nullptr };
+        UString FindPath;
     };
 
     typedef WindowsFileHandle PlatformFileHandle;
+    typedef WindowsFindFileHandle PlatformFindFileHandle;
 }
