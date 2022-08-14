@@ -89,7 +89,7 @@
  * This is especially true for low-level code like
  * conversion, normalization, and collation.
  * The utf.h header enforces the default of UTF-16.
- * The UTF-8 and UTF-32 macros remain for now for completeness and backward compatibility.</p>
+ * The UTF-8 and UTF-32 macros remain for Now for completeness and backward compatibility.</p>
  *
  * <p>Accordingly, utf.h defines UChar to be an unsigned 16-bit integer. If this matches wchar_t, then
  * UChar is defined to be exactly wchar_t, otherwise uint16_t.</p>

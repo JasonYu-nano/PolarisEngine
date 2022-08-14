@@ -62,6 +62,20 @@ namespace Engine
 
         void ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary);
 
+        class DirectoryIterImpl
+        {
+        public:
+            explicit DirectoryIterImpl(const UString& path);
+
+            bool FindNext();
+
+        public:
+            DirectoryEntry Entry;
+
+        private:
+            UniquePtr<IFindFileHandle> FileHandle;
+        };
+
         class CORE_API DirectoryIterator
         {
         public:
@@ -69,7 +83,37 @@ namespace Engine
 
             DirectoryIterator(const UString& path);
 
-            DirectoryIterator& operator++();
+            NODISCARD DirectoryEntry& operator* () const
+            {
+                return Impl->Entry;
+            }
+
+            NODISCARD const DirectoryEntry* operator-> () const
+            {
+                return &Impl->Entry;
+            }
+
+            DirectoryIterator& operator++()
+            {
+                if (!Impl->FindNext())
+                {
+                    Impl.reset();
+                }
+                return *this;
+            }
+
+            NODISCARD bool operator== (const DirectoryIterator& other) const
+            {
+                return this->Impl == other.Impl;
+            }
+
+            NODISCARD bool operator!= (const DirectoryIterator& other) const
+            {
+                return this->Impl != other.Impl;
+            }
+
+        private:
+            SharedPtr<DirectoryIterImpl> Impl;
         };
 
     private:
@@ -77,4 +121,14 @@ namespace Engine
 
         UniquePtr<IPlatformFile> PlatformFile;
     };
+
+    NODISCARD inline FileSystem::DirectoryIterator begin(FileSystem::DirectoryIterator iter) noexcept
+    {
+        return iter;
+    }
+
+    NODISCARD inline FileSystem::DirectoryIterator end(FileSystem::DirectoryIterator iter) noexcept
+    {
+        return {};
+    }
 }

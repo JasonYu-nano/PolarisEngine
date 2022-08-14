@@ -4,6 +4,7 @@
 
 #if PLATFORM_WINDOWS
 #include "windows/windows_platform_file.hpp"
+#include "windows/windows_file_handle.hpp"
 #endif
 
 namespace Engine
@@ -129,4 +130,18 @@ namespace Engine
     {
         return PlatformFile->GetFileTime(path);
     }
+
+    FileSystem::DirectoryIterImpl::DirectoryIterImpl(const UString& path)
+    {
+        FileHandle = MakeUniquePtr<PlatformFindFileHandle>(path);
+    }
+
+    bool FileSystem::DirectoryIterImpl::FindNext()
+    {
+        return (bool) FileHandle && FileHandle->FindNext(Entry);
+    }
+
+    FileSystem::DirectoryIterator::DirectoryIterator(const UString& path)
+        : Impl(MakeSharedPtr<DirectoryIterImpl>(path))
+    {}
 }

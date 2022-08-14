@@ -2,21 +2,10 @@
 #include "log/logger.hpp"
 #include "math/generic_math.hpp"
 #include "math/limit.hpp"
+#include "windows/details/windows_utils.hpp"
 
 namespace Engine
 {
-    static uint64 GetTimeStamp(const ::FILETIME& fileTime)
-    {
-        const uint64 k_UnixTimeStart = 0x019DB1DED53E8000;
-        const uint64 k_TicksPerSecond = 10000000;
-
-        ULARGE_INTEGER li;
-        li.LowPart = fileTime.dwLowDateTime;
-        li.HighPart = fileTime.dwHighDateTime;
-
-        return (li.QuadPart - k_UnixTimeStart) / k_TicksPerSecond;
-    }
-
     WindowsFileHandle::~WindowsFileHandle()
     {
         bool result = CloseHandle(Handle);
@@ -66,9 +55,8 @@ namespace Engine
     }
 
     WindowsFindFileHandle::WindowsFindFileHandle(const UString& path)
-    {
-        WIN32_FIND_DATAW data;
-    }
+        : FindPath(path)
+    {}
 
     bool WindowsFindFileHandle::FindNext(DirectoryEntry& entry)
     {
@@ -84,7 +72,20 @@ namespace Engine
 
         if (Handle != INVALID_HANDLE_VALUE)
         {
-            FileStat status{GetTimeStamp(data.ftLastWriteTime) }
+            ULARGE_INTEGER fileSize;
+            fileSize.HighPart = data.nFileSizeHigh;
+            fileSize.LowPart = data.nFileSizeLow;
+
+            FileStat status{FileTimeToTimestamp(data.ftLastWriteTime),
+                            FileTimeToTimestamp(data.ftLastAccessTime),
+                            FileTimeToTimestamp(data.ftCreationTime),
+                            static_cast<int64>(fileSize.QuadPart),
+                            (data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0,
+                            (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
+                            true
+            };
+
+            entry = DirectoryEntry(status, UString(reinterpret_cast<const UChar*>(data.cFileName)));
         }
 
         return Handle != INVALID_HANDLE_VALUE;

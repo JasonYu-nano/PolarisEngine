@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include "definitions_core.hpp"
+#include "foundation/time.hpp"
 
 namespace Engine
 {
@@ -22,16 +23,25 @@ namespace Engine
 
     struct CORE_API FileStat
     {
-        std::timestamp LastWriteTime;
-        int64 FileSize;
-        FileAttribute Attributes;
-        __std_fs_reparse_tag _Reparse_point_tag;
-        int32 _Link_count;
-        __std_fs_stats_flags _Available; // which fields are available
+        Timestamp LastWriteTime = {};
+        Timestamp LastAccessTime = {};
+        Timestamp CreationTime = {};
+        int64 FileSize = 0;
+        bool ReadOnly = false;
+        bool IsDirectory = false;
+        bool IsValid = false;
     };
 
     class CORE_API DirectoryEntry
     {
-        FileStat Status;
+    public:
+        DirectoryEntry() = default;
+
+        DirectoryEntry(FileStat stat, const UString& path)
+            : Path(path), Stat(stat) {}
+
+    private:
+        UString Path;
+        FileStat Stat;
     };
 }

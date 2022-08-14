@@ -669,7 +669,7 @@ typedef enum UErrorCode {
      * Error codes in the range 0x10500-0x105ff are reserved for Plugin related error codes.
      */
     U_PLUGIN_ERROR_START=0x10500,         /**< Start of codes indicating plugin failures */
-    U_PLUGIN_TOO_HIGH=0x10500,            /**< The plugin's level is too high to be loaded right now. */
+    U_PLUGIN_TOO_HIGH=0x10500,            /**< The plugin's level is too high to be loaded right Now. */
     U_PLUGIN_DIDNT_SET_LEVEL,             /**< The plugin didn't call uplug_setPlugLevel in response to a QUERY */
 #ifndef U_HIDE_DEPRECATED_API
     /**
