@@ -283,6 +283,16 @@ namespace Engine
             return Data()[ArraySize - 1];
         }
 
+        void Push(const ElementType& element)
+        {
+            Add(Forward<ElementType>(element));
+        }
+
+        void Push(ElementType&& element)
+        {
+            Add(Forward<ElementType>(element));
+        }
+
         /**
          * Inset element at specifier position
          * @param index
@@ -331,6 +341,17 @@ namespace Engine
             }
             ArraySize -= 1;
             //TODO: check need shink
+        }
+
+        void RemoveAtSwap(SizeType index)
+        {
+            ENSURE(IsValidIndex(index));
+            DestructElements(Data() + index, 1);
+            ArraySize -= 1;
+            if (index != ArraySize)
+            {
+                Memory::Memmove(Data() + index, Data() + ArraySize, sizeof(ElementType));
+            }
         }
 
         /**
@@ -389,6 +410,14 @@ namespace Engine
             return matchCount;
         }
 
+        ElementType Pop()
+        {
+            ENSURE(ArraySize > 0);
+            ElementType Last = At(ArraySize - 1);
+            RemoveAt(ArraySize - 1);
+            return Last;
+        }
+
         /**
          * Remove all elements
          * @param slack remain capacity
@@ -408,7 +437,7 @@ namespace Engine
             BoundCheck();
             if (IsValidIndex(index))
             {
-                return Data() + index;
+                return *(Data() + index);
             }
             //throw std::out_of_range{"Index an element out of range"};
         }

@@ -90,4 +90,49 @@ namespace Engine
 
         return Handle != INVALID_HANDLE_VALUE;
     }
+
+    bool WindowsFindFileRecursionHandle::FindNext(DirectoryEntry& entry)
+    {
+        WIN32_FIND_DATAW data;
+        if (Handle == nullptr)
+        {
+            Handle = ::FindFirstFileExW(FindPath.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
+        }
+        else if (Handle != INVALID_HANDLE_VALUE)
+        {
+            bool result = ::FindNextFileW(Handle, &data);
+            if (!result && !RecursionDirectories.IsEmpty())
+            {
+                UString dirPath = RecursionDirectories.Pop();
+                Handle = ::FindFirstFileExW(dirPath.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
+            }
+        }
+
+        if (Handle != INVALID_HANDLE_VALUE)
+        {
+            if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY &&
+                    CharTraits<wchar_t>::Compare(data.cFileName, L".") != 0 &&
+                    CharTraits<wchar_t>::Compare(data.cFileName, L"..") != 0)
+            {
+                RecursionDirectories.Push(UString(reinterpret_cast<const UChar*>(data.cFileName)));
+            }
+
+            ULARGE_INTEGER fileSize;
+            fileSize.HighPart = data.nFileSizeHigh;
+            fileSize.LowPart = data.nFileSizeLow;
+
+            FileStat status{FileTimeToTimestamp(data.ftLastWriteTime),
+                            FileTimeToTimestamp(data.ftLastAccessTime),
+                            FileTimeToTimestamp(data.ftCreationTime),
+                            static_cast<int64>(fileSize.QuadPart),
+                            (data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0,
+                            (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
+                            true
+            };
+
+            entry = DirectoryEntry(status, UString(reinterpret_cast<const UChar*>(data.cFileName)));
+        }
+
+        return Handle != INVALID_HANDLE_VALUE;
+    }
 }
