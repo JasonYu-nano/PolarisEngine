@@ -188,8 +188,12 @@ namespace Engine
 
         str = "abc456AB78bc9";
         sub = "bc";
-        auto i = str.LastIndexOf(sub);
         EXPECT_TRUE(str.LastIndexOf(sub) == 10);
+
+        str = "abc";
+        UString append = "345";
+        EXPECT_TRUE(str + append == "abc345");
+        EXPECT_TRUE(str / append == "abc/345");
     }
 
     TEST(UString, Modify)

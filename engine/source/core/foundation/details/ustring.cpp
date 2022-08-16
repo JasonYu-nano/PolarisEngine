@@ -58,6 +58,10 @@ namespace Engine
         Source.Resize(count, c);
     }
 
+    UString::UString(const UString& other, strsize extraSlack)
+        : Source(other.Source, extraSlack)
+    {}
+
     UString UString::FromLatin1(StringView str)
     {
         strsize len = str.Length();

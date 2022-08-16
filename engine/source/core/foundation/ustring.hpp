@@ -34,6 +34,8 @@ namespace Engine
 
         UString(UString&& other) noexcept = default;
 
+        UString(const UString& other, strsize extraSlack);
+
         ~UString() = default;
 
         UString& operator= (const UString& other) = default;
@@ -229,6 +231,10 @@ namespace Engine
         {
             return Compare(other) == 0;
         }
+
+        inline friend UString operator+ (const UString& lhs, const UString& rhs);
+
+        inline friend UString operator/ (const UString& lhs, const UString& rhs);
 
         inline Iterator begin();
         inline ConstIterator begin() const;
@@ -442,6 +448,16 @@ namespace Engine
     bool UString::Contains(UChar ch, ECaseSensitivity cs) const
     {
         return Contains(UStringView(&ch, 1), cs);
+    }
+
+    UString operator+(const UString& lhs, const UString& rhs)
+    {
+        return UString(lhs, rhs.Length() + 1).Append(rhs);
+    }
+
+    UString operator/ (const UString& lhs, const UString& rhs)
+    {
+        return UString(lhs, rhs.Length() + 1).Append('/').Append(rhs);
     }
 
     UString::Iterator UString::begin()

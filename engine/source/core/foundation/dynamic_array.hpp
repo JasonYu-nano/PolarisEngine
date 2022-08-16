@@ -166,6 +166,11 @@ namespace Engine
             MoveElement(Forward<DynamicArray&&>(other));
         }
 
+        DynamicArray(const DynamicArray& other, SizeType extraSlack)
+        {
+            CopyElement(other.Data(), other.ArraySize, extraSlack);
+        }
+
         template <typename OtherAllocator>
         explicit DynamicArray(const DynamicArray<ElementType, OtherAllocator>& other)
         {
@@ -435,11 +440,8 @@ namespace Engine
         ElementType& At(SizeType index)
         {
             BoundCheck();
-            if (IsValidIndex(index))
-            {
-                return *(Data() + index);
-            }
-            //throw std::out_of_range{"Index an element out of range"};
+            ENSURE(IsValidIndex(index));
+            return *(Data() + index);
         }
 
         ElementType* Data()
@@ -620,10 +622,11 @@ namespace Engine
             Memory::Memmove(src + count, src, (oldCount - index) * sizeof(ElementType));
         }
 
-        void Expansion()
+        void Expansion(SizeType destSize = -1)
         {
-            ArrayCapacity = CalculateGrowth(ArraySize);
-            ENSURE(ArraySize <= ArrayCapacity);
+            destSize = destSize >= 0 ? destSize : ArraySize;
+            ArrayCapacity = CalculateGrowth(destSize);
+            ENSURE(destSize <= ArrayCapacity);
             AllocatorInstance.Resize(ArrayCapacity);
         }
 
@@ -675,13 +678,13 @@ namespace Engine
             }
         }
 
-        void CopyElement(const ElementType* data, SizeType count)
+        void CopyElement(const ElementType* data, SizeType count, SizeType extraSlack = 0)
         {
-            ENSURE(data && count > 0);
+            ENSURE(data && count > 0 && extraSlack >= 0);
             ArraySize = count;
-            if (ArraySize > ArrayCapacity)
+            if (ArraySize + extraSlack > ArrayCapacity)
             {
-                Expansion();
+                Expansion(ArraySize + extraSlack);
             }
             ConstructElements(Data(), data, count);
         }
