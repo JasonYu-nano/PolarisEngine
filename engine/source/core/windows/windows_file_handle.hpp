@@ -36,27 +36,33 @@ namespace Engine
     public:
         WindowsFindFileHandle(const UString& path);
 
+        ~WindowsFindFileHandle() final;
+
         bool FindNext(DirectoryEntry& entry) final;
 
     private:
         HANDLE Handle{ nullptr };
-        UString FindPath;
+        UString NormalizedPath;
     };
 
-    class CORE_API WindowsFindFileRecursionHandle final : public IFindFileHandle
+    class CORE_API WindowsRecursiveFindFileHandle final : public IFindFileHandle
     {
     public:
-        WindowsFindFileRecursionHandle(const UString& path) : FindPath(path) {}
+        WindowsRecursiveFindFileHandle(const UString& path);
+
+        ~WindowsRecursiveFindFileHandle() final;
 
         bool FindNext(DirectoryEntry& entry) final;
 
     private:
+        HANDLE FindTop(WIN32_FIND_DATAW& data);
+
         HANDLE Handle{ nullptr };
-        UString FindPath;
+        UString NormalizedPath;
         DynamicArray<UString> RecursionDirectories;
     };
 
     typedef WindowsFileHandle PlatformFileHandle;
     typedef WindowsFindFileHandle PlatformFindFileHandle;
-    typedef WindowsFindFileRecursionHandle PlatformFindFileRecursionHandle;
+    typedef WindowsRecursiveFindFileHandle PlatformRecursiveFindFileHandle;
 }

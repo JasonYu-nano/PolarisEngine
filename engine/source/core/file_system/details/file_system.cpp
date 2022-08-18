@@ -36,7 +36,7 @@ namespace Engine
         UString destPath;
         for (int32 index = 0; index < dirs.Size(); index++)
         {
-            destPath = Path::MakePath(destPath, dirs[index]);
+            destPath = Path::Combine(destPath, dirs[index]);
             if (DirExists(destPath))
             {
                 continue;
@@ -131,9 +131,16 @@ namespace Engine
         return PlatformFile->GetFileTime(path);
     }
 
-    FileSystem::DirectoryIterImpl::DirectoryIterImpl(const UString& path)
+    FileSystem::DirectoryIterImpl::DirectoryIterImpl(const UString& path, bool recursive)
     {
-        FileHandle = MakeUniquePtr<PlatformFindFileHandle>(path);
+        if (recursive)
+        {
+            FileHandle = MakeUniquePtr<PlatformRecursiveFindFileHandle>(path);
+        }
+        else
+        {
+            FileHandle = MakeUniquePtr<PlatformFindFileHandle>(path);
+        }
     }
 
     bool FileSystem::DirectoryIterImpl::FindNext()
@@ -141,7 +148,12 @@ namespace Engine
         return (bool) FileHandle && FileHandle->FindNext(Entry);
     }
 
-    FileSystem::DirectoryIterator::DirectoryIterator(const UString& path)
-        : Impl(MakeSharedPtr<DirectoryIterImpl>(path))
-    {}
+    FileSystem::DirectoryIterator::DirectoryIterator(UString path, bool recursive)
+        : Impl(MakeSharedPtr<DirectoryIterImpl>(path, recursive))
+    {
+        if (!Impl->FindNext())
+        {
+            Impl.reset();
+        }
+    }
 }

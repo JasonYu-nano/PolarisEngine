@@ -5,6 +5,7 @@
 #include "foundation/fixed_string.hpp"
 #include "foundation/ustring.hpp"
 #include "file_system/path.hpp"
+#include "file_system/file_system.hpp"
 
 namespace Engine
 {
@@ -248,7 +249,13 @@ namespace Engine
         auto t= replaceTest.IndexOf("string");
         replaceTest.Replace("string", "str");
         EXPECT_TRUE(replaceTest == "UString is unicode str name");
+    }
 
-        std::string_view a = "111";
+    TEST(FileSystem, All)
+    {
+        for (const DirectoryEntry& entry : FileSystem::DirectoryIterator("C:\\Code\\PolarisEngine\\engine\\test"))
+        {
+            LOG_INFO("", "{0}", entry.GetPath());
+        }
     }
 }

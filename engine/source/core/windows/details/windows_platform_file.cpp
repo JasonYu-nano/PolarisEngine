@@ -127,7 +127,7 @@ namespace Engine
         while (!searchQueue.empty())
         {
             UString& path = searchQueue.front();
-            UString queryPath = Path::MakePath(path, "*");
+            UString queryPath = Path::Combine(path, "*");
 
 
             HANDLE handle = ::FindFirstFileA(queryPath.ToUtf8().Data(), &data);
@@ -142,15 +142,15 @@ namespace Engine
                         {
                             if (std::regex_match(data.cFileName, pattern))
                             {
-                                ret.Add(Path::MakePath(path, data.cFileName));
+                                ret.Add(Path::Combine(path, data.cFileName));
                             }
-                            searchQueue.emplace(Path::MakePath(path, data.cFileName));
+                            searchQueue.emplace(Path::Combine(path, data.cFileName));
                         }
                     }
                     else if (!(data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
                              std::regex_match(data.cFileName, pattern))
                     {
-                        ret.Add(Path::MakePath(path, data.cFileName));
+                        ret.Add(Path::Combine(path, data.cFileName));
                     }
                 } while (::FindNextFileA(handle, &data));
             }

@@ -2,6 +2,7 @@
 #include "log/logger.hpp"
 #include "math/generic_math.hpp"
 #include "math/limit.hpp"
+#include "file_system/path.hpp"
 #include "windows/details/windows_utils.hpp"
 
 namespace Engine
@@ -55,23 +56,42 @@ namespace Engine
     }
 
     WindowsFindFileHandle::WindowsFindFileHandle(const UString& path)
-        : FindPath(path)
+        : NormalizedPath(Path::Normalize(path))
     {}
+
+    WindowsFindFileHandle::~WindowsFindFileHandle()
+    {
+        if (Handle && Handle != INVALID_HANDLE_VALUE)
+        {
+            ::FindClose(Handle);
+            Handle = nullptr;
+        }
+    }
 
     bool WindowsFindFileHandle::FindNext(DirectoryEntry& entry)
     {
         WIN32_FIND_DATAW data;
-        if (Handle == nullptr)
+        bool ret = false;
+        do
         {
-            Handle = ::FindFirstFileExW(FindPath.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
+            if (Handle == nullptr)
+            {
+                UString findPath = Path::Normalize(NormalizedPath) / "*";
+                Handle = ::FindFirstFileW(findPath.ToWChar(), &data);
+                ret = Handle != INVALID_HANDLE_VALUE;
+            }
+            else if (Handle != INVALID_HANDLE_VALUE)
+            {
+                ret = ::FindNextFileW(Handle, &data);
+            }
         }
-        else if (Handle != INVALID_HANDLE_VALUE)
-        {
-            ::FindNextFileW(Handle, &data);
-        }
+        while (ret && (!CharTraits<wchar_t>::Compare(data.cFileName, L".") ||
+                       !CharTraits<wchar_t>::Compare(data.cFileName, L"..")));
 
-        if (Handle != INVALID_HANDLE_VALUE)
+        if (ret)
         {
+            UString entryPath = NormalizedPath / UString(reinterpret_cast<const UChar*>(data.cFileName));
+
             ULARGE_INTEGER fileSize;
             fileSize.HighPart = data.nFileSizeHigh;
             fileSize.LowPart = data.nFileSizeLow;
@@ -85,36 +105,57 @@ namespace Engine
                             true
             };
 
-            entry = DirectoryEntry(status, UString(reinterpret_cast<const UChar*>(data.cFileName)));
+            entry = DirectoryEntry(status, entryPath);
         }
 
-        return Handle != INVALID_HANDLE_VALUE;
+        return ret;
     }
 
-    bool WindowsFindFileRecursionHandle::FindNext(DirectoryEntry& entry)
+    WindowsRecursiveFindFileHandle::WindowsRecursiveFindFileHandle(const UString& path)
+    {
+        RecursionDirectories.Push(Path::Normalize(path));
+    }
+
+    WindowsRecursiveFindFileHandle::~WindowsRecursiveFindFileHandle()
+    {
+        if (Handle && Handle != INVALID_HANDLE_VALUE)
+        {
+            ::FindClose(Handle);
+            Handle = nullptr;
+        }
+    }
+
+    bool WindowsRecursiveFindFileHandle::FindNext(DirectoryEntry& entry)
     {
         WIN32_FIND_DATAW data;
-        if (Handle == nullptr)
+        bool ret = true;
+        do
         {
-            Handle = ::FindFirstFileExW(FindPath.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
-        }
-        else if (Handle != INVALID_HANDLE_VALUE)
-        {
-            bool result = ::FindNextFileW(Handle, &data);
-            if (!result && !RecursionDirectories.IsEmpty())
+            if (Handle == nullptr)
             {
-                UString dirPath = RecursionDirectories.Pop();
-                Handle = ::FindFirstFileExW(dirPath.ToWChar(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
+                Handle = FindTop(data);
+                ret = Handle != INVALID_HANDLE_VALUE;
+            }
+            else if (Handle != INVALID_HANDLE_VALUE)
+            {
+                ret = ::FindNextFileW(Handle, &data);
+                if (!ret && !RecursionDirectories.IsEmpty())
+                {
+                    ::FindClose(Handle);
+                    Handle = FindTop(data);
+                    ret = Handle != INVALID_HANDLE_VALUE;
+                }
             }
         }
+        while (ret && (!CharTraits<wchar_t>::Compare(data.cFileName, L".") ||
+                       !CharTraits<wchar_t>::Compare(data.cFileName, L"..")));
 
-        if (Handle != INVALID_HANDLE_VALUE)
+        if (ret)
         {
-            if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY &&
-                    CharTraits<wchar_t>::Compare(data.cFileName, L".") != 0 &&
-                    CharTraits<wchar_t>::Compare(data.cFileName, L"..") != 0)
+            UString entryPath = NormalizedPath / UString(reinterpret_cast<const UChar*>(data.cFileName));
+            if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                RecursionDirectories.Push(UString(reinterpret_cast<const UChar*>(data.cFileName)));
+                RecursionDirectories.Push(entryPath);
             }
 
             ULARGE_INTEGER fileSize;
@@ -130,9 +171,17 @@ namespace Engine
                             true
             };
 
-            entry = DirectoryEntry(status, UString(reinterpret_cast<const UChar*>(data.cFileName)));
+            entry = DirectoryEntry(status, entryPath);
         }
 
-        return Handle != INVALID_HANDLE_VALUE;
+        return ret;
+    }
+
+    HANDLE WindowsRecursiveFindFileHandle::FindTop(WIN32_FIND_DATAW& data)
+    {
+        NormalizedPath = RecursionDirectories.Pop();
+        UString path = NormalizedPath / "*";
+        Handle = ::FindFirstFileW(path.ToWChar(), &data);
+        return Handle;
     }
 }

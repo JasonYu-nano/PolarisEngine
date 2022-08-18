@@ -40,6 +40,16 @@ namespace Engine
         DirectoryEntry(FileStat stat, const UString& path)
             : Path(path), Stat(stat) {}
 
+        UString GetPath() const
+        {
+            return Path;
+        }
+
+        UString& GetPath()
+        {
+            return Path;
+        }
+
     private:
         UString Path;
         FileStat Stat;

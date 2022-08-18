@@ -290,7 +290,7 @@ namespace Engine
 
         void Push(const ElementType& element)
         {
-            Add(Forward<ElementType>(element));
+            Add(element);
         }
 
         void Push(ElementType&& element)

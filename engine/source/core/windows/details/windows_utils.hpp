@@ -13,7 +13,7 @@ namespace Engine
         ULARGE_INTEGER li;
         li.LowPart = time.dwLowDateTime;
         li.HighPart = time.dwHighDateTime;
-        uint64 unixTime = (li.QuadPart - k_UnixTimeStart) / _XTIME_TICKS_PER_TIME_T;
+        uint64 unixTime = (li.QuadPart - k_UnixTimeStart) / 10'000'000;
 
 
         return Timestamp(Timestamp::Duration(unixTime));

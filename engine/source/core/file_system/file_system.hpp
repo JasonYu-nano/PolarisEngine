@@ -65,7 +65,7 @@ namespace Engine
         class DirectoryIterImpl
         {
         public:
-            explicit DirectoryIterImpl(const UString& path);
+            explicit DirectoryIterImpl(const UString& path, bool recursive);
 
             bool FindNext();
 
@@ -81,7 +81,7 @@ namespace Engine
         public:
             DirectoryIterator() noexcept = default;
 
-            DirectoryIterator(const UString& path);
+            DirectoryIterator(UString path, bool recursive = false);
 
             NODISCARD DirectoryEntry& operator* () const
             {
@@ -131,4 +131,6 @@ namespace Engine
     {
         return {};
     }
+
+    //class CORE_API Recursive
 }

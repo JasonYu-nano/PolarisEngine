@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    UString Path::MakePath(const UString& dest, const UString& part)
+    UString Path::Combine(const UString& dest, const UString& part)
     {
         UString path = dest;
         UString normalizedPart = part;
@@ -75,5 +75,18 @@ namespace Engine
     DynamicArray<UString> Path::SplitPath(const UString& path)
     {
         return path.SplitAny("/\\");
+    }
+
+    UString Path::Normalize(const UString& path)
+    {
+        UString ret = path;
+        ret.Replace(UString::FromLatin1("\\"), UString::FromLatin1("/"));
+
+        if (ret.EndsWith('/') && ret.EndsWith("//") && ret.EndsWith(":/"))
+        {
+            ret.Remove(ret.Length() - 1, 1);
+        }
+
+        return ret;
     }
 }

@@ -10,7 +10,7 @@ namespace Engine
     class CORE_API Path
     {
     public:
-        static UString MakePath(const UString& dest, const UString& part);
+        static UString Combine(const UString& dest, const UString& part);
 
         static UString GetExtension(const UString& path);
 
@@ -24,5 +24,7 @@ namespace Engine
         static UString GetShortName(const UString& path, bool withExtension = true);
 
         static DynamicArray<UString> SplitPath(const UString& path);
+
+        static UString Normalize(const UString& path);
     };
 }
