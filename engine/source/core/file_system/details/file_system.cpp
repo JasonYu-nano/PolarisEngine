@@ -9,12 +9,6 @@
 
 namespace Engine
 {
-    FileSystem& FileSystem::Get()
-    {
-        static FileSystem instance;
-        return instance;
-    }
-
     bool FileSystem::MakeDir(const UString& path)
     {
         return PlatformFile->MakeDir(path);
@@ -76,17 +70,14 @@ namespace Engine
         return PlatformFile->QueryFiles(searchPath, regex, recursion);
     }
 
-    UString FileSystem::GetEngineRootPath() const
+    UString FileSystem::GetEngineRootPath()
     {
         return ENGINE_ROOT_PATH;
     }
 
-    FileSystem::FileSystem()
-    {
 #if PLATFORM_WINDOWS
-        PlatformFile = MakeUniquePtr<WindowsPlatformFile>();
+    UniquePtr<IPlatformFile> FileSystem::PlatformFile = MakeUnique<WindowsPlatformFile>();
 #endif
-    }
 
     void FileSystem::ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary)
     {
@@ -135,11 +126,11 @@ namespace Engine
     {
         if (recursive)
         {
-            FileHandle = MakeUniquePtr<PlatformRecursiveFindFileHandle>(path);
+            FileHandle = MakeUnique<PlatformRecursiveFindFileHandle>(path);
         }
         else
         {
-            FileHandle = MakeUniquePtr<PlatformFindFileHandle>(path);
+            FileHandle = MakeUnique<PlatformFindFileHandle>(path);
         }
     }
 
@@ -149,7 +140,7 @@ namespace Engine
     }
 
     FileSystem::DirectoryIterator::DirectoryIterator(UString path, bool recursive)
-        : Impl(MakeSharedPtr<DirectoryIterImpl>(path, recursive))
+        : Impl(MakeShared<DirectoryIterImpl>(path, recursive))
     {
         if (!Impl->FindNext())
         {

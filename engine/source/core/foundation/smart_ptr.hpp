@@ -9,7 +9,7 @@ namespace Engine
     using SharedPtr = std::shared_ptr<Type>;
 
     template <typename Type, typename... Args>
-    NODISCARD SharedPtr<Type> MakeSharedPtr(Args&&... args)
+    NODISCARD SharedPtr<Type> MakeShared(Args&&... args)
     {
         return std::make_shared<Type>(Forward<Args>(args)...);
     }
@@ -21,7 +21,7 @@ namespace Engine
     using UniquePtr = std::unique_ptr<Type, Del>;
 
     template <typename Type, typename... Args>
-    NODISCARD UniquePtr<Type> MakeUniquePtr(Args&&... args)
+    NODISCARD UniquePtr<Type> MakeUnique(Args&&... args)
     {
         return std::make_unique<Type>(Forward<Args>(args)...);
     }

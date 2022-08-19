@@ -4,7 +4,7 @@ namespace Engine
 {
     void RenderModule::Startup()
     {
-        RHI = MakeUniquePtr<VulkanDynamicRHI>();
+        RHI = MakeUnique<VulkanDynamicRHI>();
         RHI->Init();
     }
 

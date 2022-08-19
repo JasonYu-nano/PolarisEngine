@@ -123,11 +123,11 @@ namespace Engine
         LogSystem()
         {
             std::vector<spdlog::sink_ptr> sinks;
-            auto colorSink = MakeSharedPtr<spdlog::sinks::stdout_color_sink_mt>();
+            auto colorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>();
             colorSink->set_color(spdlog::level::info, colorSink->WHITE);
             sinks.push_back(colorSink);
-            sinks.push_back(MakeSharedPtr<spdlog::sinks::basic_file_sink_mt>("engine_log", "logs/engine_log.txt"));
-            Logger = MakeSharedPtr<spdlog::logger>("engine_log", begin(sinks), end(sinks));
+            sinks.push_back(MakeShared<spdlog::sinks::basic_file_sink_mt>("engine_log", "logs/engine_log.txt"));
+            Logger = MakeShared<spdlog::logger>("engine_log", begin(sinks), end(sinks));
             //TODO: has bug with overriden operator new / delete
             //Logger->set_pattern("%^[%H:%M:%S] [%s:%#] [%!] %v%$");
         }

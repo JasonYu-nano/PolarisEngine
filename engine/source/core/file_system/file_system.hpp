@@ -12,42 +12,40 @@ namespace Engine
     class CORE_API FileSystem
     {
     public:
-        static FileSystem& Get();
-
-        bool MakeDir(const UString& path);
+        static bool MakeDir(const UString& path);
 
         /**
          * @brief remove an empty directory
          */
-        bool RemoveDir(const UString& path);
+        static bool RemoveDir(const UString& path);
 
-        bool DirExists(const UString& path);
+        static bool DirExists(const UString& path);
 
-        inline bool IsDirectory(const UString& path)
+        static inline bool IsDirectory(const UString& path)
         {
             return DirExists(path);
         }
 
-        bool MakeFile(const UString& path);
+        static bool MakeFile(const UString& path);
 
-        bool RemoveFile(const UString& path);
+        static bool RemoveFile(const UString& path);
 
-        bool MoveFile(const UString& from, const UString& to);
+        static bool MoveFile(const UString& from, const UString& to);
 
-        bool CopyFile(const UString& from, const UString& to);
+        static bool CopyFile(const UString& from, const UString& to);
 
-        bool FileExists(const UString& path);
+        static bool FileExists(const UString& path);
 
-        inline bool IsFile(const UString& path)
+        static inline bool IsFile(const UString& path)
         {
             return FileExists(path);
         }
 
-        bool MakeDirTree(const UString& path);
+        static bool MakeDirTree(const UString& path);
 
-        bool ClearDir(const UString& path);
+        static bool ClearDir(const UString& path);
 
-        FileTime GetFileTime(const UString& path);
+        static FileTime GetFileTime(const UString& path);
 
         /**
          * @brief query file (and directory) by regex
@@ -56,11 +54,11 @@ namespace Engine
          * @param recursion recursion search or not, default false
          * @return files or directories match regex
          */
-        DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regex, bool recursion = false);
+        static DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regex, bool recursion = false);
 
-        UString GetEngineRootPath() const;
+        static UString GetEngineRootPath();
 
-        void ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary);
+        static void ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary);
 
         class DirectoryIterImpl
         {
@@ -117,9 +115,7 @@ namespace Engine
         };
 
     private:
-        FileSystem();
-
-        UniquePtr<IPlatformFile> PlatformFile;
+        static UniquePtr<IPlatformFile> PlatformFile;
     };
 
     NODISCARD inline FileSystem::DirectoryIterator begin(FileSystem::DirectoryIterator iter) noexcept

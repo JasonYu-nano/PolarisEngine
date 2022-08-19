@@ -62,7 +62,7 @@ namespace Engine
     void WindowsApplication::Init()
     {
         RegisterWinClass();
-        Window = MakeSharedPtr<WindowsWindow>();
+        Window = MakeShared<WindowsWindow>();
         Window->Init(HInstance);
     }
 

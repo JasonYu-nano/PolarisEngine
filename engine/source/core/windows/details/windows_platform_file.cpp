@@ -217,6 +217,6 @@ namespace Engine
         }
         HANDLE handle = ::CreateFileW(filePath.ToWChar(), desiredAccess, shareMode, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
                                       nullptr);
-        return MakeUniquePtr<WindowsFileHandle>(handle);
+        return MakeUnique<WindowsFileHandle>(handle);
     }
 }
