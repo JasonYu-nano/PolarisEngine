@@ -5,6 +5,7 @@
 #include "foundation/queue.hpp"
 #include "foundation/char_utils.hpp"
 #include "windows/windows_file_handle.hpp"
+#include "log/logger.hpp"
 
 using namespace Engine;
 
@@ -168,7 +169,7 @@ namespace Engine
 
     UniquePtr<IFileHandle> WindowsPlatformFile::OpenFile(const UString& filePath, EFileAccess access, EFileShareMode mode)
     {
-        int32 desiredAccess = 0;
+        int64 desiredAccess = 0;
         int32 shareMode = 0;
         switch (access)
         {
@@ -215,8 +216,14 @@ namespace Engine
                 shareMode = 0;
             }
         }
-        HANDLE handle = ::CreateFileW(filePath.ToWChar(), desiredAccess, shareMode, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
-                                      nullptr);
+        HANDLE handle = ::CreateFileW(filePath.ToWChar(), desiredAccess, shareMode, nullptr, OPEN_EXISTING,
+                                      FILE_ATTRIBUTE_NORMAL, nullptr);
+
+        if (handle == INVALID_HANDLE_VALUE)
+        {
+            LOG_ERROR("", "Open file failed");
+        }
+
         return MakeUnique<WindowsFileHandle>(handle);
     }
 }

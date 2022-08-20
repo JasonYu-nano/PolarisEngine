@@ -10,7 +10,7 @@ namespace Engine
     WindowsFileHandle::~WindowsFileHandle()
     {
         bool result = CloseHandle(Handle);
-        CLOG(result, "FileSystem", Error, "Close windows file handle failed");
+        CLOG(!result, "FileSystem", Error, "Close windows file handle failed");
     }
 
     int64 WindowsFileHandle::GetSize() const
@@ -25,16 +25,21 @@ namespace Engine
         Size = size.QuadPart;
     }
 
-    bool WindowsFileHandle::Read(uint8* dest, uint64 size)
+    bool WindowsFileHandle::Read(uint8* dest, int64 size)
     {
+        if (size <= 0)
+        {
+            return false;
+        }
+
         uint64 totalSize = 0;
         do
         {
             DWORD readBytes = 0;
-            DWORD bytesToRead = (DWORD)Math::Min(size, static_cast<uint64>(MAX_DWORD));
+            DWORD bytesToRead = (DWORD)Math::Min(size, static_cast<int64>(MAX_DWORD));
             if (!::ReadFile(Handle, dest, bytesToRead, &readBytes, &Overlapped))
             {
-                LOG_ERROR("FileSystem", "Read file meet error");
+                LOG_ERROR("FileSystem", "Read file meet error, error code: {0}", ::GetLastError());
             }
             size -= bytesToRead;
             dest += bytesToRead;

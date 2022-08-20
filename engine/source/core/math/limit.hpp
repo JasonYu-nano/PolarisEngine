@@ -28,11 +28,7 @@ using namespace Engine;
 #define MAX_DBL         (1.7976931348623158e+308)
 
 #if PLATFORM_WINDOWS
-#if ENV64BIT
-    #define MAX_DWORD   MAX_UINT64
-#else
     #define MAX_DWORD   MAX_UINT32
-#endif
 #endif
 
 namespace Engine

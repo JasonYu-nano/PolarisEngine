@@ -28,7 +28,7 @@ namespace Engine
 
         virtual int64 GetSize() const = 0;
 
-        virtual bool Read(uint8* dest, uint64 size) = 0;
+        virtual bool Read(uint8* dest, int64 size) = 0;
     };
 
     class CORE_API IFindFileHandle

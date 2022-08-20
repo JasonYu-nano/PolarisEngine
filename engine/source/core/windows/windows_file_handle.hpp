@@ -18,7 +18,7 @@ namespace Engine
 
         int64 GetSize() const final;
 
-        bool Read(uint8* dest, uint64 size) final;
+        bool Read(uint8* dest, int64 size) final;
     private:
         void CalcFileSize();
 
@@ -28,7 +28,7 @@ namespace Engine
         HANDLE Handle{ nullptr };
         int64 Size{ 0 };
         uint64 PosInFile{ 0 };
-        OVERLAPPED Overlapped;
+        OVERLAPPED Overlapped{ 0 };
     };
 
     class CORE_API WindowsFindFileHandle final : public IFindFileHandle

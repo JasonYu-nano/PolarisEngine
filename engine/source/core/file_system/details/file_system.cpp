@@ -83,7 +83,7 @@ namespace Engine
     {
         UniquePtr<IFileHandle> handle = PlatformFile->OpenFile(fileName, EFileAccess::Read, EFileShareMode::Read);
         int64 fileSize = handle->GetSize();
-        outBinary.Reserve(fileSize);
+        outBinary.Resize(fileSize);
         handle->Read(outBinary.Data(), fileSize);
     }
 
