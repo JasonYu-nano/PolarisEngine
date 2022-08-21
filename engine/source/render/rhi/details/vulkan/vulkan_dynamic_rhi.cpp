@@ -1,5 +1,6 @@
 //#include "GLFW/glfw3.h"
 #include "core_minimal_public.hpp"
+#include "file_system/file_system.hpp"
 #include "rhi/details/vulkan/vulkan_dynamic_rhi.hpp"
 #include "rhi/details/vulkan/vulkan_platform.hpp"
 #include "platform_application.hpp"
@@ -68,6 +69,11 @@ namespace Engine
         for (auto&& imageView : SwapChainImageViews)
         {
             vkDestroyImageView(Device, imageView, nullptr);
+        }
+
+        if (Device && PipelineLayout)
+        {
+            vkDestroyPipelineLayout(Device, PipelineLayout, nullptr);
         }
 
         if (Device && SwapChain)
@@ -499,6 +505,7 @@ namespace Engine
         if (vkCreateSwapchainKHR(Device, &createInfo, nullptr, &SwapChain) != VK_SUCCESS)
         {
             LOG_ERROR("Render", "Failed to create swap chain!");
+            return;
         }
 
         vkGetSwapchainImagesKHR(Device, SwapChain, &imageCount, nullptr);
@@ -540,6 +547,106 @@ namespace Engine
 
     void VulkanDynamicRHI::CreateGraphicsPipeline()
     {
+        DynamicArray64<uint8> vertShader;
+        DynamicArray64<uint8> fragShader;
+        FileSystem::ReadFileToBinary(FileSystem::GetEngineRootPath() / "intermediate/generated/shader/spv/shader.vert.spv", vertShader);
+        FileSystem::ReadFileToBinary(FileSystem::GetEngineRootPath() / "intermediate/generated/shader/spv/shader.frag.spv", fragShader);
 
+        VkShaderModule vertShaderModule = CreateShaderModule(vertShader);
+        VkShaderModule fragShaderModule = CreateShaderModule(fragShader);
+
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
+        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        vertShaderStageInfo.module = vertShaderModule;
+        vertShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
+        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        fragShaderStageInfo.module = fragShaderModule;
+        fragShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+
+        VkPipelineVertexInputStateCreateInfo vertInputInfo = {};
+        vertInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertInputInfo.vertexBindingDescriptionCount = 0;
+        vertInputInfo.vertexAttributeDescriptionCount = 0;
+
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+        VkViewport viewport = {};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(SwapChainExtent.width);
+        viewport.height = static_cast<float>(SwapChainExtent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        VkRect2D scissor = {};
+        scissor.offset = {0, 0};
+        scissor.extent = SwapChainExtent;
+
+        VkPipelineViewportStateCreateInfo viewportState = {};
+        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewportState.viewportCount = 1;
+        viewportState.pViewports = &viewport;
+        viewportState.scissorCount = 1;
+        viewportState.pScissors = &scissor;
+
+        VkPipelineRasterizationStateCreateInfo rasterizer = {};
+        rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterizer.depthClampEnable = VK_FALSE;
+        rasterizer.rasterizerDiscardEnable = VK_FALSE;
+        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+        rasterizer.lineWidth = 1.0f;
+        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.depthBiasEnable = VK_FALSE;
+        rasterizer.depthBiasConstantFactor = 0.0f;
+        rasterizer.depthBiasClamp = 0.0f;
+        rasterizer.depthBiasSlopeFactor = 0.0f;
+
+        VkPipelineMultisampleStateCreateInfo multisampling = {};
+        multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        multisampling.sampleShadingEnable = VK_FALSE;
+        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+        VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        colorBlendAttachment.blendEnable = VK_FALSE;
+
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
+        if (vkCreatePipelineLayout(Device, &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
+        {
+            LOG_ERROR("Render", "Failed to create pipeline layout");
+        }
+
+
+        vkDestroyShaderModule(Device, vertShaderModule, nullptr);
+        vkDestroyShaderModule(Device, fragShaderModule, nullptr);
+    }
+
+    VkShaderModule VulkanDynamicRHI::CreateShaderModule(DynamicArray64<uint8> code)
+    {
+        VkShaderModuleCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.Size();
+        createInfo.pCode = reinterpret_cast<const uint32*>(code.Data());
+
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule(Device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+        {
+            LOG_ERROR("Render", "Create shader module failed");
+        }
+
+        return shaderModule;
     }
 }

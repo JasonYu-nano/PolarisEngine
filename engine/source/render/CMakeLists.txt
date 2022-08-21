@@ -30,6 +30,8 @@ else()
     message(FATAL_ERROR "Can't find vulkan sdk")
 endif()
 
+add_dependencies(${target} ${shader_target})
+
 # target_link_libraries(${target} PUBLIC ${link_libs})
 
 # ide

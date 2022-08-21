@@ -41,7 +41,7 @@ conan_cmake_configure(REQUIRES spdlog/1.8.2
     OPTIONS spdlog:shared=True spdlog:wchar_support=True)
 
 conan_cmake_autodetect(settings)
-message(${settings})
+
 conan_cmake_install(PATH_OR_REFERENCE .
     BUILD missing
     SETTINGS ${settings}

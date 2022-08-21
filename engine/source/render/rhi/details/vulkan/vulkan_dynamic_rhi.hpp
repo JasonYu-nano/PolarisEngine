@@ -77,6 +77,8 @@ namespace Engine
         void CreateImageViews();
 
         void CreateGraphicsPipeline();
+
+        VkShaderModule CreateShaderModule(DynamicArray64<uint8> code);
     private:
         VkInstance Instance{ nullptr };
 
@@ -94,6 +96,8 @@ namespace Engine
         VkArray<VkImage> SwapChainImages;
         VkFormat SwapChainImageFormat;
         VkExtent2D SwapChainExtent;
+
+        VkPipelineLayout PipelineLayout;
 
         VkArray<VkImageView> SwapChainImageViews;
     };

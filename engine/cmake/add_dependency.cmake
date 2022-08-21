@@ -41,13 +41,13 @@ function(add_3rd_dependency target package_name )
     file(GLOB link_dlls ${package_link_dir}/bin/*.dll)
 
     foreach(lib ${link_libs})
-        message("Add dependency lib: ${lib}")
+        message(STATUS "Add dependency lib: ${lib}")
     endforeach()
     target_link_libraries(${target} ${link_libs})
 
     foreach(dll ${link_dlls})
         file(COPY ${dll} DESTINATION ${CMAKE_BINARY_DIR}/output/bin)
-        message("Copy dependency dll: ${dll}")
+        message(STATUS "Copy dependency dll: ${dll}")
     endforeach()
 
 endfunction()

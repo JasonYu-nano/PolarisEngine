@@ -57,12 +57,19 @@ set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin)
 
+# set global variable
+set(engine_intermediate_path ${CMAKE_SOURCE_DIR}/intermediate)
+set(engine_generated_path ${engine_intermediate_path}/generated)
+
+set(shader_target "shader_target")
+
 #add sub dir
 
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_cpu_architectures.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/add_dependency.cmake)
 
+add_subdirectory(shader)
 add_subdirectory(source)
 
 if(with_test)
