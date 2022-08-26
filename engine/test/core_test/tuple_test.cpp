@@ -31,4 +31,14 @@ namespace Engine
         const auto t3 = MakeTuple(name, level, 10);
         EXPECT(t3 == MakeTuple(std::string{name}, 7, 10));
     }
+
+    TEST(TupleTest, Get)
+    {
+        std::string name = "string";
+        int32 level = 5;
+
+        auto t0 = MakeTuple(name, level, 10.0f);
+
+        EXPECT(t0.Get<std::string>() == "string");
+    }
 }

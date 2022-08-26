@@ -17,13 +17,45 @@ namespace Engine
         Type Value;
     };
 
+    template <typename... ArgTypes>
+    struct TypeNumInPack;
+
+    template <typename T>
+    struct TypeNumInPack<T>
+    {
+        constexpr static uint32 Value = 0;
+    };
+
+    template <typename T, typename U, typename... Reset>
+    struct TypeNumInPack<T, U, Reset...>
+    {
+        constexpr static uint32 Value = TypeNumInPack<T, Reset...>::Value + (std::is_same_v<T, U> ? 1 : 0);
+    };
+
     template <uint32 Index, uint32 TupleSize>
-    struct TupleElementGetter
+    struct TupleElementIndexGetter
     {
         template <typename ElementType, typename TupleType>
         static decltype(auto) GetImpl(const TupleElement<ElementType, Index, TupleSize>&, TupleType&& tuple)
         {
             using RetType = typename CopyQualifiersAndRefFrom<TupleType, TupleElement<ElementType, Index, TupleSize>>::Type;
+            return (static_cast<RetType>(tuple).Value);
+        }
+
+        template <typename TupleType>
+        static decltype(auto) Get(TupleType&& tuple)
+        {
+            return GetImpl(tuple, Forward<TupleType>(tuple));
+        }
+    };
+
+    template <typename Type, uint32 TupleSize>
+    struct TupleElementTypeGetter
+    {
+        template <uint32 EleIndex, typename TupleType>
+        static decltype(auto) GetImpl(const TupleElement<Type, EleIndex, TupleSize>&, TupleType&& tuple)
+        {
+            using RetType = typename CopyQualifiersAndRefFrom<TupleType, TupleElement<Type, EleIndex, TupleSize>>::Type;
             return (static_cast<RetType>(tuple).Value);
         }
 
@@ -73,13 +105,25 @@ namespace Engine
         template <uint32 Index, std::enable_if_t<(Index < sizeof...(Types)), bool> = false>
         decltype(auto) Get()
         {
-            return TupleElementGetter<Index, sizeof...(Types)>::Get(static_cast<TupleImpl&>(*this));
+            return TupleElementIndexGetter<Index, sizeof...(Types)>::Get(static_cast<TupleImpl&>(*this));
         }
 
         template <uint32 Index, std::enable_if_t<(Index < sizeof...(Types)), bool> = false>
         decltype(auto) Get() const
         {
-            return TupleElementGetter<Index, sizeof...(Types)>::Get(static_cast<const TupleImpl&>(*this));
+            return TupleElementIndexGetter<Index, sizeof...(Types)>::Get(static_cast<const TupleImpl&>(*this));
+        }
+
+        template <typename Type, std::enable_if_t<TypeNumInPack<Type, Types...>::Value == 1, bool> = false>
+        decltype(auto) Get()
+        {
+            return TupleElementTypeGetter<Type, sizeof...(Types)>::Get(static_cast<TupleImpl&>(*this));
+        }
+
+        template <typename Type, std::enable_if_t<TypeNumInPack<Type, Types...>::Value == 1, bool> = false>
+        decltype(auto) Get() const
+        {
+            return TupleElementTypeGetter<Type, sizeof...(Types)>::Get(static_cast<const TupleImpl&>(*this));
         }
 
         template <typename Callback>
