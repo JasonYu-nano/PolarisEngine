@@ -25,29 +25,44 @@ NODISCARD constexpr std::remove_reference_t<Type>&& MoveTemp(Type&& arg) noexcep
     return static_cast<std::remove_reference_t<Type>&&>(arg);
 }
 
-template<bool Test, typename Type = void>
-using EnableIf = typename std::enable_if<Test, Type>;
+template <typename From, typename To>
+struct CopyQualifiersFrom { using Type = To; };
 
-template<bool Test, typename Type = void>
-using EnableIfT = typename std::enable_if<Test, Type>::type;
+template <typename From, typename To>
+struct CopyQualifiersFrom<const From, To> { using Type = const To; };
 
-template <typename Type>
-using IsPointer = std::is_pointer<Type>;
+template <typename From, typename To>
+struct CopyQualifiersFrom<volatile From, To> { using Type = volatile To; };
 
-template <typename Type>
-constexpr bool IsUnsignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, uint8, uint16, uint32, uint64>;
+template <typename From, typename To>
+struct CopyQualifiersFrom<const volatile From, To> { using Type = const volatile To; };
 
-template <typename Type>
-constexpr bool IsSignedIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, int8, int16, int32, int64>;
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom { using Type = typename CopyQualifiersFrom<From, To>::Type; };
 
-template <typename Type>
-constexpr bool IsIntegralV = std::_Is_any_of_v<std::remove_cv_t<Type>, int8, uint8, int16, uint16, int32, uint32, int64, uint64>;
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From, To&> { using Type = typename CopyQualifiersFrom<From, To>::Type&; };
 
-template <typename Type>
-struct IsUnsignedIntegral : std::bool_constant<IsUnsignedIntegralV<Type>> {};
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From, To&&> { using Type = typename CopyQualifiersFrom<From, To>::Type&&; };
 
-template <typename Type>
-struct IsIntegral : std::bool_constant<IsIntegralV<Type>> {};
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From&, To> { using Type = typename CopyQualifiersFrom<From, To>::Type&; };
+
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From&, To&> { using Type = typename CopyQualifiersFrom<From, To>::Type&; };
+
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From&, To&&> { using Type = typename CopyQualifiersFrom<From, To>::Type&; };
+
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From&&, To> { using Type = typename CopyQualifiersFrom<From, To>::Type&&; };
+
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From&&, To&> { using Type = typename CopyQualifiersFrom<From, To>::Type&; };
+
+template <typename From, typename To>
+struct CopyQualifiersAndRefFrom<From&&, To&&> { using Type = typename CopyQualifiersFrom<From, To>::Type&&; };
 
 template <typename Type>
 constexpr bool HasTrivialDestructorV = __has_trivial_destructor(Type);
@@ -72,7 +87,7 @@ struct SwitchType<false, TrueType, FalseType>
 };
 
 template <typename T>
-concept SignedIntegralType = IsSignedIntegralV<T>;
+concept SignedIntegralType = std::is_signed_v<T> && std::is_integral_v<T>;
 
 template <typename T>
-concept IntegralType = IsIntegralV<T>;
+concept IntegralType = std::is_integral_v<T>;
