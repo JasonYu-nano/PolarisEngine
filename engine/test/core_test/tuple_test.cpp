@@ -27,9 +27,6 @@ namespace Engine
 
         EXPECT(t2.Get<0>() == "name");
         EXPECT(t2.Get<1>() == 5);
-
-        const auto t3 = MakeTuple(name, level, 10);
-        EXPECT(t3 == MakeTuple(std::string{name}, 7, 10));
     }
 
     TEST(TupleTest, Get)
@@ -40,5 +37,20 @@ namespace Engine
         auto t0 = MakeTuple(name, level, 10.0f);
 
         EXPECT(t0.Get<std::string>() == "string");
+    }
+
+    TEST(TupleTest, Compare)
+    {
+        auto t0 = MakeTuple(20, 19, 18.5f);
+        auto t1 = MakeTuple(19, 18, 18.0f);
+        auto t2 = MakeTuple(19, 19, 18.0f);
+
+        EXPECT(t0 > t1);
+        EXPECT(t1 < t0);
+        EXPECT_FALSE(t0 > t2);
+        EXPECT_FALSE(t0 < t2);
+
+        const auto t3 = MakeTuple(std::string{"string"}, 7, 10.0f);
+        EXPECT(t3 == MakeTuple(std::string{"string"}, 7, 10.0f));
     }
 }

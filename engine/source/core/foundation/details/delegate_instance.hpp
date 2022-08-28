@@ -4,8 +4,13 @@
 
 namespace Engine
 {
+    class IDelegateInstance
+    {
+
+    };
+
     template <typename... VarTypes>
-    class DelegateInstanceBase
+    class DelegateInstanceBase : public IDelegateInstance
     {
     public:
         DelegateInstanceBase(VarTypes... vars) : Variables(vars...) {};
@@ -24,13 +29,13 @@ namespace Engine
     public:
         using FuncType = RetType (*)(ParamTypes...);
 
-        StaticDelegateInstance(FuncType func, VarTypes... vars)
-            : Super(vars...), Func(func)
+        StaticDelegateInstance(FuncType&& func, VarTypes... vars)
+            : Super(Forward<VarTypes>(vars)...), Func(Forward<FuncType>(func))
         {}
 
         RetType Execute(ParamTypes... args)
         {
-            Variables.ApplyAfter(Func, Forward<ParamTypes>(args)...);
+            this->Variables.ApplyAfter(Func, Forward<ParamTypes>(args)...);
         }
 
     private:

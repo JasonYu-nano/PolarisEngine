@@ -66,26 +66,6 @@ namespace Engine
         }
     };
 
-    template <uint32 Index, uint32 TupleSize>
-    struct TupleElementCompare
-    {
-        template <typename TupleType>
-        static bool Equals(const TupleType& lhs, const TupleType& rhs)
-        {
-            return lhs.template Get<Index>() == rhs.template Get<Index>() && TupleElementCompare<Index + 1, TupleSize>::Equals(lhs, rhs);
-        }
-    };
-
-    template <uint32 TupleSize>
-    struct TupleElementCompare<TupleSize, TupleSize>
-    {
-        template <typename TupleType>
-        static bool Equals(const TupleType& lhs, const TupleType& rhs)
-        {
-            return true;
-        }
-    };
-
     template <typename Indices, typename... Types>
     class TupleImpl;
 
@@ -146,12 +126,22 @@ namespace Engine
 
         friend bool operator== (const TupleImpl& lhs, const TupleImpl& rhs)
         {
-            return TupleElementCompare<0, sizeof...(Types)>::Equals(lhs, rhs);
+            return ((lhs.template Get<Indices>() == rhs.template Get<Indices>()) && ...);
         }
 
         friend bool operator!= (const TupleImpl& lhs, const TupleImpl& rhs)
         {
-            return !(lhs == rhs);
+            return ((lhs.template Get<Indices>() != rhs.template Get<Indices>()) || ...);
+        }
+
+        friend bool operator> (const TupleImpl& lhs, const TupleImpl& rhs)
+        {
+            return ((lhs.template Get<Indices>() > rhs.template Get<Indices>()) && ...);
+        }
+
+        friend bool operator< (const TupleImpl& lhs, const TupleImpl& rhs)
+        {
+            return ((lhs.template Get<Indices>() < rhs.template Get<Indices>()) && ...);
         }
     };
 
