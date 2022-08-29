@@ -75,9 +75,11 @@ namespace Engine
     public:
         TupleImpl() = default;
 
-        explicit TupleImpl(Types&&... args) : TupleElement<Types, Indices, sizeof...(Types)>(Forward<Types>(args))...
+        /** Avoid duplicated with default constructor*/
+        explicit TupleImpl(void* placeholder, Types&&... args) : TupleElement<Types, Indices, sizeof...(Types)>(Forward<Types>(args))...
         {}
 
+        /** Avoid duplicated with default constructor*/
         template <typename OtherTupleType>
         TupleImpl(void* placeholder, OtherTupleType&& tuple) : TupleElement<Types, Indices, sizeof...(Types)>(tuple.template Get<Indices>())...
         {}
@@ -109,19 +111,19 @@ namespace Engine
         template <typename Callback>
         decltype(auto) Apply(Callback&& callback)
         {
-            std::invoke(Forward<Callback>(callback), Get<Indices>()...);
+            return std::invoke(Forward<Callback>(callback), Get<Indices>()...);
         }
 
         template <typename Callback, typename... ArgTypes>
         decltype(auto) ApplyAfter(Callback&& callback, ArgTypes&&... args)
         {
-            std::invoke(Forward<Callback>(callback), args..., Get<Indices>()...);
+            return std::invoke(Forward<Callback>(callback), args..., Get<Indices>()...);
         }
 
         template <typename Callback, typename... ArgTypes>
         decltype(auto) ApplyBefore(Callback&& callback, ArgTypes&&... args)
         {
-            std::invoke(Forward<Callback>(callback), Get<Indices>()..., args...);
+            return std::invoke(Forward<Callback>(callback), Get<Indices>()..., args...);
         }
 
         friend bool operator== (const TupleImpl& lhs, const TupleImpl& rhs)
@@ -154,7 +156,8 @@ namespace Engine
         Tuple(const Tuple& other) = default;
         Tuple(Tuple& other) = default;
 
-        explicit Tuple(Types&&... args) : Super(Forward<Types>(args)...) {}
+        template <typename... ArgTypes, std::enable_if_t<(sizeof...(ArgTypes) > 0), bool> = false>
+        explicit Tuple(ArgTypes&&... args) : Super(nullptr, Forward<ArgTypes>(args)...) {}
 
         template <typename... OtherTypes>
         explicit Tuple(const Tuple<OtherTypes...>& other) : Super(nullptr, other) {}
