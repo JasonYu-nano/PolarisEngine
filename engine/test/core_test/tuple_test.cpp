@@ -2,6 +2,7 @@
 #include <tuple>
 #include "foundation/tuple.hpp"
 #include "log/logger.hpp"
+#include "foundation/delegate.hpp"
 
 
 namespace Engine
@@ -52,5 +53,27 @@ namespace Engine
 
         const auto t3 = MakeTuple(std::string{"string"}, 7, 10.0f);
         EXPECT(t3 == MakeTuple(std::string{"string"}, 7, 10.0f));
+    }
+
+    TEST(DelegateTest, All)
+    {
+        struct DelegateRegister
+        {
+            static int32 Add(int32 a, int32 b)
+            {
+                return a + b;
+            }
+
+            std::string GetName() { return Name; }
+
+            std::string Name;
+        };
+
+        Delegate<int32, int32> delegate = Delegate<int32, int32>::CreateStatic(&DelegateRegister::Add, 1);
+        EXPECT(delegate.Execute(2) == 3);
+
+        DelegateRegister inst{ "registerA" };
+        Delegate<std::string> delegate1 = Delegate<std::string>::CreateRaw(&inst, &DelegateRegister::GetName);
+        EXPECT(delegate1.Execute() == "registerA");
     }
 }

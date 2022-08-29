@@ -4,42 +4,88 @@
 
 namespace Engine
 {
-    class IDelegateInstance
-    {
+    template <bool Const, typename Class, typename FuncType>
+    struct MemFunPtrType;
 
+    template <typename Class, typename RetType, typename... ArgTypes>
+    struct MemFunPtrType<false, Class, RetType(ArgTypes...)>
+    {
+        typedef RetType (Class::* Type)(ArgTypes...);
     };
 
-    template <typename... VarTypes>
-    class DelegateInstanceBase : public IDelegateInstance
+    template <typename Class, typename RetType, typename... ArgTypes>
+    struct MemFunPtrType<true, Class, RetType(ArgTypes...)>
+    {
+        typedef RetType (Class::* Type)(ArgTypes...) const;
+    };
+
+    template <typename RetType, typename... ArgTypes>
+    class IDelegateInstance
     {
     public:
-        DelegateInstanceBase(VarTypes... vars) : Variables(vars...) {};
+        virtual ~IDelegateInstance() = default;
+        virtual RetType Execute(ArgTypes&&... args) = 0;
+    };
+
+    template <typename FuncType, typename... VarTypes>
+    class DelegateInstanceBase;
+
+    template <typename RetType, typename... ArgTypes, typename... VarTypes>
+    class DelegateInstanceBase<RetType(ArgTypes...), VarTypes...> : public IDelegateInstance<RetType, ArgTypes...>
+    {
+    public:
+        DelegateInstanceBase(VarTypes&&... vars) : Variables(Forward<VarTypes>(vars)...) {};
 
     protected:
-         Tuple<VarTypes...> Variables;
+        Tuple<VarTypes...> Variables;
     };
 
     template <typename InFuncType, typename... VarTypes>
     class StaticDelegateInstance;
 
-    template <typename RetType, typename... ParamTypes, typename... VarTypes>
-    class StaticDelegateInstance<RetType(ParamTypes...), VarTypes...> : public DelegateInstanceBase<VarTypes...>
+    template <typename RetType, typename... ArgTypes, typename... VarTypes>
+    class StaticDelegateInstance<RetType(ArgTypes...), VarTypes...> : public DelegateInstanceBase<RetType(ArgTypes...), VarTypes...>
     {
-        using Super = DelegateInstanceBase<VarTypes...>;
+        using Super = DelegateInstanceBase<RetType(ArgTypes...), VarTypes...>;
     public:
-        using FuncType = RetType (*)(ParamTypes...);
+        using FunType = RetType(ArgTypes..., VarTypes...);
 
-        StaticDelegateInstance(FuncType&& func, VarTypes... vars)
-            : Super(Forward<VarTypes>(vars)...), Func(Forward<FuncType>(func))
+        StaticDelegateInstance(FunType* func, VarTypes... vars)
+            : Super(Forward<VarTypes>(vars)...), Func(func)
         {}
 
-        RetType Execute(ParamTypes... args)
+        virtual RetType Execute(ArgTypes&&... args)
         {
-            this->Variables.ApplyAfter(Func, Forward<ParamTypes>(args)...);
+            return this->Variables.ApplyAfter(Func, Forward<ArgTypes>(args)...);
         }
 
     private:
 
-        FuncType Func;
+        FunType* Func;
+    };
+
+    template <bool Const, typename Class, typename InFuncType, typename... VarTypes>
+    class RawDelegateInstance;
+
+    template <bool Const, typename Class, typename RetType, typename... ArgTypes, typename... VarTypes>
+    class RawDelegateInstance<Const, Class, RetType(ArgTypes...), VarTypes...> : public DelegateInstanceBase<RetType(ArgTypes...), VarTypes...>
+    {
+        using Super = DelegateInstanceBase<RetType(ArgTypes...), VarTypes...>;
+    public:
+        using FunPtr = typename MemFunPtrType<Const, Class, RetType(ArgTypes..., VarTypes...)>::Type;
+
+        RawDelegateInstance(FunPtr fun, Class* obj, VarTypes... vars)
+            : Super(Forward<VarTypes>(vars)...), Obj(obj), Fun(fun)
+        {}
+
+        virtual RetType Execute(ArgTypes&&... args)
+        {
+            return this->Variables.ApplyAfter(Fun, Obj, Forward<ArgTypes>(args)...);
+        }
+
+    private:
+        Class* Obj;
+
+        FunPtr Fun;
     };
 }
