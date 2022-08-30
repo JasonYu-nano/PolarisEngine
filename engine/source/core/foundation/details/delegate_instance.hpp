@@ -50,18 +50,18 @@ namespace Engine
     public:
         using FunType = RetType(ArgTypes..., VarTypes...);
 
-        StaticDelegateInstance(FunType* func, VarTypes... vars)
-            : Super(Forward<VarTypes>(vars)...), Func(func)
+        StaticDelegateInstance(FunType* fun, VarTypes... vars)
+            : Super(Forward<VarTypes>(vars)...), Fun(fun)
         {}
 
         virtual RetType Execute(ArgTypes&&... args)
         {
-            return this->Variables.ApplyAfter(Func, Forward<ArgTypes>(args)...);
+            return this->Variables.ApplyAfter(Fun, Forward<ArgTypes>(args)...);
         }
 
     private:
 
-        FunType* Func;
+        FunType* Fun;
     };
 
     template <bool Const, typename Class, typename InFuncType, typename... VarTypes>
@@ -85,6 +85,31 @@ namespace Engine
 
     private:
         Class* Obj;
+
+        FunPtr Fun;
+    };
+
+    template <bool Const, typename Class, typename InFuncType, typename... VarTypes>
+    class SPDelegateInstance;
+
+    template <bool Const, typename Class, typename RetType, typename... ArgTypes, typename... VarTypes>
+    class SPDelegateInstance<Const, Class, RetType(ArgTypes...), VarTypes...> : public DelegateInstanceBase<RetType(ArgTypes...), VarTypes...>
+    {
+        using Super = DelegateInstanceBase<RetType(ArgTypes...), VarTypes...>;
+    public:
+        using FunPtr = typename MemFunPtrType<Const, Class, RetType(ArgTypes..., VarTypes...)>::Type;
+
+        SPDelegateInstance(FunPtr fun, SharedPtr<Class> obj, VarTypes... vars)
+            : Super(Forward<VarTypes>(vars)...), Obj(obj), Fun(fun)
+        {}
+
+        virtual RetType Execute(ArgTypes&&... args)
+        {
+            return this->Variables.ApplyAfter(Fun, Obj.lock().get(), Forward<ArgTypes>(args)...);
+        }
+
+    private:
+        WeakPtr<Class> Obj;
 
         FunPtr Fun;
     };

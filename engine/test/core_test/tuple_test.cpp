@@ -59,12 +59,14 @@ namespace Engine
     {
         struct DelegateRegister
         {
+            DelegateRegister(std::string name) : Name(name) {}
+
             static int32 Add(int32 a, int32 b)
             {
                 return a + b;
             }
 
-            std::string GetName() { return Name; }
+            std::string GetName() const { return Name; }
 
             std::string Name;
         };
@@ -74,6 +76,11 @@ namespace Engine
 
         DelegateRegister inst{ "registerA" };
         Delegate<std::string> delegate1 = Delegate<std::string>::CreateRaw(&inst, &DelegateRegister::GetName);
+        EXPECT(delegate1.Execute() == "registerA");
+
+        SharedPtr<DelegateRegister> inst2 = MakeShared<DelegateRegister>("registerA");
+        delegate1.Unbind();
+        delegate1 = Delegate<std::string>::CreateSP(inst2, &DelegateRegister::GetName);
         EXPECT(delegate1.Execute() == "registerA");
     }
 }
