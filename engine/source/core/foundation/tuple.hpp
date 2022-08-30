@@ -4,6 +4,9 @@
 
 namespace Engine
 {
+namespace Private
+{
+
     template <typename T, uint32 Index, uint32 TupleSize>
     class TupleElement
     {
@@ -146,11 +149,12 @@ namespace Engine
             return ((lhs.template Get<Indices>() < rhs.template Get<Indices>()) && ...);
         }
     };
+}
 
     template <typename... Types>
-    class Tuple : public TupleImpl<std::make_integer_sequence<uint32, sizeof...(Types)>, Types...>
+class Tuple : public Private::TupleImpl<std::make_integer_sequence<uint32, sizeof...(Types)>, Types...>
     {
-        using Super = TupleImpl<std::make_integer_sequence<uint32, sizeof...(Types)>, Types...>;
+        using Super = Private::TupleImpl<std::make_integer_sequence<uint32, sizeof...(Types)>, Types...>;
     public:
         Tuple() = default;
         Tuple(const Tuple& other) = default;

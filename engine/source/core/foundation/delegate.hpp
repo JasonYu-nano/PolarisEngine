@@ -15,7 +15,7 @@ namespace Engine
 
         Delegate(Delegate&& other) noexcept : Instance(MoveTemp(other.Instance)) {}
 
-        Delegate& operator= (Delegate&& other)
+        Delegate& operator= (Delegate&& other) noexcept
         {
             Instance = MoveTemp(other.Instance);
             return *this;
@@ -56,10 +56,27 @@ namespace Engine
             Instance.reset();
         }
 
+        bool IsBound() const
+        {
+            return Instance != nullptr && Instance->IsSafeToExecute();
+        }
+
         RetType Execute(ArgTypes... args)
         {
             return Instance->Execute(Forward<ArgTypes>(args)...);
         }
+
+        bool ExecuteIfBound(ArgTypes... args)
+        {
+            if (!IsBound())
+            {
+                return false;
+            }
+
+            Instance->Execute(Forward<ArgTypes>(args)...);
+            return true;
+        }
+
     private:
         explicit Delegate(UniquePtr<IDelegateInstance<RetType, ArgTypes...>> instance) : Instance(MoveTemp(instance)) {}
 

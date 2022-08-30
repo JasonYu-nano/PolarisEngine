@@ -25,6 +25,7 @@ namespace Engine
     public:
         virtual ~IDelegateInstance() = default;
         virtual RetType Execute(ArgTypes&&... args) = 0;
+        virtual bool IsSafeToExecute() const = 0;
     };
 
     template <typename FuncType, typename... VarTypes>
@@ -59,6 +60,11 @@ namespace Engine
             return this->Variables.ApplyAfter(Fun, Forward<ArgTypes>(args)...);
         }
 
+        virtual bool IsSafeToExecute() const
+        {
+            return true;
+        }
+
     private:
 
         FunType* Fun;
@@ -80,7 +86,13 @@ namespace Engine
 
         virtual RetType Execute(ArgTypes&&... args)
         {
+            ENSURE(Obj != nullptr && Fun != nullptr);
             return this->Variables.ApplyAfter(Fun, Obj, Forward<ArgTypes>(args)...);
+        }
+
+        virtual bool IsSafeToExecute() const
+        {
+            return true;
         }
 
     private:
@@ -105,7 +117,13 @@ namespace Engine
 
         virtual RetType Execute(ArgTypes&&... args)
         {
+            ENSURE(!Obj.expired() && Fun != nullptr);
             return this->Variables.ApplyAfter(Fun, Obj.lock().get(), Forward<ArgTypes>(args)...);
+        }
+
+        virtual bool IsSafeToExecute() const
+        {
+            return !Obj.expired() && Fun != nullptr;
         }
 
     private:
