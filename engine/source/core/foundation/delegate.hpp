@@ -51,6 +51,36 @@ namespace Engine
             return Delegate(MakeUnique<SPDelegateInstance<true, Class, FuncType, VarTypes...>>(fun, obj, Forward<VarTypes>(vars)...));
         }
 
+        template <typename... VarTypes>
+        void BindStatic(RetType (*fun)(ArgTypes..., VarTypes...), VarTypes&&... vars)
+        {
+            *this = CreateStatic(fun, Forward<VarTypes>(vars)...);
+        }
+
+        template <typename Class, typename... VarTypes>
+        void BindRaw(Class* obj, typename MemFunPtrType<false, Class, RetType(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            *this = CreateRaw(obj, fun, Forward<VarTypes>(vars)...);
+        }
+
+        template <typename Class, typename... VarTypes>
+        void BindRaw(Class* obj, typename MemFunPtrType<true, Class, RetType(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            *this = CreateRaw(obj, fun, Forward<VarTypes>(vars)...);
+        }
+
+        template <typename Class, typename... VarTypes>
+        void BindSP(SharedPtr<Class> obj, typename MemFunPtrType<false, Class, RetType(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            *this = CreateSP(obj, fun, Forward<VarTypes>(vars)...);
+        }
+
+        template <typename Class, typename... VarTypes>
+        void BindSP(SharedPtr<Class> obj, typename MemFunPtrType<true, Class, RetType(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            *this = CreateSP(obj, fun, Forward<VarTypes>(vars)...);
+        }
+
         void Unbind()
         {
             Instance.reset();
