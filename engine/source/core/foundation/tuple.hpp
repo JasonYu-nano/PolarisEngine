@@ -6,7 +6,6 @@ namespace Engine
 {
 namespace Private
 {
-
     template <typename T, uint32 Index, uint32 TupleSize>
     class TupleElement
     {
@@ -152,7 +151,7 @@ namespace Private
 }
 
     template <typename... Types>
-class Tuple : public Private::TupleImpl<std::make_integer_sequence<uint32, sizeof...(Types)>, Types...>
+    class Tuple : public Private::TupleImpl<std::make_integer_sequence<uint32, sizeof...(Types)>, Types...>
     {
         using Super = Private::TupleImpl<std::make_integer_sequence<uint32, sizeof...(Types)>, Types...>;
     public:
