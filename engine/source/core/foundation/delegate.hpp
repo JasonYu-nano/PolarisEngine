@@ -30,6 +30,7 @@ namespace Engine
         template <typename Class, typename... VarTypes>
         static Delegate CreateRaw(Class* obj, typename MemFunPtrType<false, Class, RetType(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
         {
+            static_assert(!std::is_const_v<Class>, "Can't bind none const member function with const object");
             return Delegate(MakeUnique<RawDelegateInstance<false, Class, FuncType, VarTypes...>>(fun, obj, Forward<VarTypes>(vars)...));
         }
 
@@ -42,6 +43,7 @@ namespace Engine
         template <typename Class, typename... VarTypes>
         static Delegate CreateSP(SharedPtr<Class> obj, typename MemFunPtrType<false, Class, RetType(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
         {
+            static_assert(!std::is_const_v<Class>, "Can't bind none const member function with const object");
             return Delegate(MakeUnique<SPDelegateInstance<false, Class, FuncType, VarTypes...>>(fun, obj, Forward<VarTypes>(vars)...));
         }
 
@@ -125,25 +127,56 @@ namespace Engine
         using DelegateType = Delegate<void, ArgTypes...>;
         using InstanceType = IDelegateInstance<void, ArgTypes...>;
     public:
+        ~MultiDelegate() = default;
+
         void Add(DelegateType&& delegate)
         {
-            InstanceArray.Add(Forward<DelegateType>(delegate));
+            DelegateArray.Add(Forward<DelegateType>(delegate));
+        }
+
+        void Clear()
+        {
+            DelegateArray.Clear();
         }
 
         template <typename... VarTypes>
         void AddStatic(void (*fun)(ArgTypes..., VarTypes...), VarTypes&&... vars)
         {
-            InstanceArray.Add(DelegateType::template CreateStatic<VarTypes...>(fun, Forward<VarTypes>(vars)...));
+            DelegateArray.Add(DelegateType::template CreateStatic<VarTypes...>(fun, Forward<VarTypes>(vars)...));
+        }
+
+        template <typename Class, typename... VarTypes>
+        void AddRaw(Class* obj, typename MemFunPtrType<false, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            DelegateArray.Add(DelegateType::template CreateRaw<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+        }
+
+        template <typename Class, typename... VarTypes>
+        void AddRaw(Class* obj, typename MemFunPtrType<true, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            DelegateArray.Add(DelegateType::template CreateRaw<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+        }
+
+        template <typename Class, typename... VarTypes>
+        void AddSP(SharedPtr<Class> obj, typename MemFunPtrType<false, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            DelegateArray.Add(DelegateType::template CreateSP<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+        }
+
+        template <typename Class, typename... VarTypes>
+        void AddSP(SharedPtr<Class> obj, typename MemFunPtrType<true, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        {
+            DelegateArray.Add(DelegateType::template CreateSP<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
         }
 
         inline bool IsBound() const
         {
-            return InstanceArray.Size() > 0;
+            return DelegateArray.Size() > 0;
         }
 
         void Broadcast(ArgTypes... args)
         {
-            for (auto&& inst : InstanceArray)
+            for (auto&& inst : DelegateArray)
             {
                 inst.ExecuteIfBound(Forward<ArgTypes>(args)...);
             }
@@ -157,6 +190,19 @@ namespace Engine
             }
         }
     private:
-        DynamicArray<DelegateType> InstanceArray;
+        DynamicArray<DelegateType> DelegateArray;
     };
+
+
+    #define DECLARE_DELEGATE(alias) using alias = Delegate<void>
+    #define DECLARE_DELEGATE_ONE_PARAM(alias, type1) using alias = Delegate<void, type1>
+    #define DECLARE_DELEGATE_TWO_PARAMS(alias, type1, type2) using alias = Delegate<void, type1, type2>
+
+    #define DECLARE_DELEGATE_RET(alias, ret) using alias = Delegate<ret>
+    #define DECLARE_DELEGATE_ONE_PARAM_RET(alias, ret, type1) using alias = Delegate<ret, type1>
+    #define DECLARE_DELEGATE_TWO_PARAMS_RET(alias, ret, type1, type2) using alias = Delegate<ret, type1, type2>
+
+    #define DECLARE_MULTI_DELEGATE(alias) using alias = MultiDelegate<void>
+    #define DECLARE_MULTI_DELEGATE_ONE_PARAM(alias, type1) using alias = MultiDelegate<void, type1>
+    #define DECLARE_MULTI_DELEGATE_TWO_PARAMS(alias, type1, type2) using alias = MultiDelegate<void, type1, type2>
 }

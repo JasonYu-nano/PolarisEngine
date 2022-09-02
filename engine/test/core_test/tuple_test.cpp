@@ -18,16 +18,16 @@ namespace Engine
 
         std::get<0>(t0) = "nano";
         std::get<1>(t0) = 7;
-        EXPECT(name == "nano");
-        EXPECT(level == 7);
+        EXPECT_TRUE(name == "nano");
+        EXPECT_TRUE(level == 7);
 
-        EXPECT(t1.Get<0>() == "nano");
-        EXPECT(t1.Get<1>() == 7);
-        EXPECT(std::is_reference_v<decltype(get<2>(t0))>);
-        EXPECT(std::is_reference_v<decltype(t1.Get<2>())>);
+        EXPECT_TRUE(t1.Get<0>() == "nano");
+        EXPECT_TRUE(t1.Get<1>() == 7);
+        EXPECT_TRUE(std::is_reference_v<decltype(get<2>(t0))>);
+        EXPECT_TRUE(std::is_reference_v<decltype(t1.Get<2>())>);
 
-        EXPECT(t2.Get<0>() == "name");
-        EXPECT(t2.Get<1>() == 5);
+        EXPECT_TRUE(t2.Get<0>() == "name");
+        EXPECT_TRUE(t2.Get<1>() == 5);
     }
 
     TEST(TupleTest, Get)
@@ -37,7 +37,7 @@ namespace Engine
 
         auto t0 = MakeTuple(name, level, 10.0f);
 
-        EXPECT(t0.Get<std::string>() == "string");
+        EXPECT_TRUE(t0.Get<std::string>() == "string");
     }
 
     TEST(TupleTest, Compare)
@@ -46,8 +46,8 @@ namespace Engine
         auto t1 = MakeTuple(19, 18, 18.0f);
         auto t2 = MakeTuple(19, 19, 18.0f);
 
-        EXPECT(t0 > t1);
-        EXPECT(t1 < t0);
+        EXPECT_TRUE(t0 > t1);
+        EXPECT_TRUE(t1 < t0);
         EXPECT_FALSE(t0 > t2);
         EXPECT_FALSE(t0 < t2);
 
@@ -55,42 +55,65 @@ namespace Engine
         EXPECT(t3 == MakeTuple(std::string{"string"}, 7, 10.0f));
     }
 
+    struct DelegateTestClass
+    {
+        static int32 Add(int32 a, int32 b)
+        {
+            return a + b;
+        }
+
+        static void OnMultiDelegateBroadcastStatic(const UString& name)
+        {
+            LastDelegateName = name;
+        }
+
+        UString GetName() const { return LastDelegateName; }
+
+        void OnMultiDelegateBroadcastMember(const UString& name, int32 additionNumber)
+        {
+            ReceiveBroadcastCount += additionNumber;
+        }
+
+        static UString LastDelegateName;
+
+        int32 ReceiveBroadcastCount = 0;
+    };
+
+    UString DelegateTestClass::LastDelegateName = "";
+
     TEST(DelegateTest, All)
     {
-        struct DelegateRegister
-        {
-            DelegateRegister(std::string name) : Name(name) {}
+        DECLARE_DELEGATE_ONE_PARAM(DelegateType, const UString&);
+        DECLARE_DELEGATE_RET(GetNameDelegate, UString);
 
-            static int32 Add(int32 a, int32 b)
-            {
-                return a + b;
-            }
+        DelegateType delegate = DelegateType::CreateStatic(&DelegateTestClass::OnMultiDelegateBroadcastStatic);
+        delegate.Execute("SingleDelegate");
+        EXPECT_TRUE(DelegateTestClass::LastDelegateName == "SingleDelegate");
 
-            static void LogAdd(int32 a, int32 b)
-            {
-                LOG_INFO("", "{0}", a + b);
-            }
+        const DelegateTestClass inst;
+        GetNameDelegate delegate1 = GetNameDelegate::CreateRaw(&inst, &DelegateTestClass::GetName);
+        EXPECT_TRUE(delegate1.Execute() == "SingleDelegate");
 
-            std::string GetName() const { return Name; }
-
-            std::string Name;
-        };
-
-        Delegate<int32, int32> delegate = Delegate<int32, int32>::CreateStatic(&DelegateRegister::Add, 1);
-        EXPECT(delegate.Execute(2) == 3);
-
-        DelegateRegister inst{ "registerA" };
-        Delegate<std::string> delegate1 = Delegate<std::string>::CreateRaw(&inst, &DelegateRegister::GetName);
-        EXPECT(delegate1.Execute() == "registerA");
-
-        SharedPtr<DelegateRegister> inst2 = MakeShared<DelegateRegister>("registerA");
+        SharedPtr<DelegateTestClass> inst2 = MakeShared<DelegateTestClass>();
         delegate1.Unbind();
-        delegate1 = Delegate<std::string>::CreateSP(inst2, &DelegateRegister::GetName);
-        EXPECT(delegate1.Execute() == "registerA");
+        delegate1.BindSP(inst2, &DelegateTestClass::GetName);
+        EXPECT_TRUE(delegate1.Execute() == "SingleDelegate");
+    }
 
-        MultiDelegate<void, int32, int32> multiDelegate;
-        multiDelegate.AddStatic(&DelegateRegister::LogAdd);
+    TEST(MultiDelegateTest, All)
+    {
+        DECLARE_MULTI_DELEGATE_ONE_PARAM(Notifier, const UString&);
 
-        multiDelegate.BroadcastIfBound(2, 3);
+        SharedPtr<DelegateTestClass> testClass = MakeShared<DelegateTestClass>();
+
+        Notifier multiDelegate;
+        multiDelegate.AddStatic(&DelegateTestClass::OnMultiDelegateBroadcastStatic);
+        multiDelegate.AddRaw(testClass.get(), &DelegateTestClass::OnMultiDelegateBroadcastMember, 1);
+        multiDelegate.AddSP(testClass, &DelegateTestClass::OnMultiDelegateBroadcastMember, 1);
+
+        multiDelegate.BroadcastIfBound("MultiDelegate");
+
+        EXPECT_TRUE(DelegateTestClass::LastDelegateName == "MultiDelegate");
+        EXPECT_TRUE(testClass->ReceiveBroadcastCount == 2);
     }
 }
