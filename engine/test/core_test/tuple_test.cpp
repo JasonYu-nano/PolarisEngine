@@ -66,6 +66,11 @@ namespace Engine
                 return a + b;
             }
 
+            static void LogAdd(int32 a, int32 b)
+            {
+                LOG_INFO("", "{0}", a + b);
+            }
+
             std::string GetName() const { return Name; }
 
             std::string Name;
@@ -82,5 +87,10 @@ namespace Engine
         delegate1.Unbind();
         delegate1 = Delegate<std::string>::CreateSP(inst2, &DelegateRegister::GetName);
         EXPECT(delegate1.Execute() == "registerA");
+
+        MultiDelegate<void, int32, int32> multiDelegate;
+        multiDelegate.AddStatic(&DelegateRegister::LogAdd);
+
+        multiDelegate.BroadcastIfBound(2, 3);
     }
 }

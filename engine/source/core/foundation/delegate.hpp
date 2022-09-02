@@ -112,4 +112,51 @@ namespace Engine
 
         UniquePtr<IDelegateInstance<RetType, ArgTypes...>> Instance;
     };
+
+    template <typename RetType, typename... ArgTypes>
+    class MultiDelegate
+    {
+        static_assert(sizeof(RetType) == 0, "Return type must be void");
+    };
+
+    template <typename... ArgTypes>
+    class MultiDelegate<void, ArgTypes...>
+    {
+        using DelegateType = Delegate<void, ArgTypes...>;
+        using InstanceType = IDelegateInstance<void, ArgTypes...>;
+    public:
+        void Add(DelegateType&& delegate)
+        {
+            InstanceArray.Add(Forward<DelegateType>(delegate));
+        }
+
+        template <typename... VarTypes>
+        void AddStatic(void (*fun)(ArgTypes..., VarTypes...), VarTypes&&... vars)
+        {
+            InstanceArray.Add(DelegateType::template CreateStatic<VarTypes...>(fun, Forward<VarTypes>(vars)...));
+        }
+
+        inline bool IsBound() const
+        {
+            return InstanceArray.Size() > 0;
+        }
+
+        void Broadcast(ArgTypes... args)
+        {
+            for (auto&& inst : InstanceArray)
+            {
+                inst.ExecuteIfBound(Forward<ArgTypes>(args)...);
+            }
+        }
+
+        void BroadcastIfBound(ArgTypes... args)
+        {
+            if (IsBound())
+            {
+                Broadcast(Forward<ArgTypes>(args)...);
+            }
+        }
+    private:
+        DynamicArray<DelegateType> InstanceArray;
+    };
 }
