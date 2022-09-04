@@ -40,10 +40,24 @@ namespace Engine
             return *this;
         }
 
+        ConstIndexIterator operator++ (int32)
+        {
+            ConstIndexIterator temp = *this;
+            ++*this;
+            return temp;
+        }
+
         ConstIndexIterator& operator-- ()
         {
             --Index;
             return *this;
+        }
+
+        ConstIndexIterator operator-- (int32)
+        {
+            ConstIndexIterator temp = *this;
+            --*this;
+            return temp;
         }
 
         SizeType GetIndex() const
@@ -78,12 +92,12 @@ namespace Engine
 
         ElementType& operator* () const
         {
-            return const_cast<ElementType&>(this->Container[this->Index]);
+            return const_cast<ElementType&>(Super::operator*());
         }
 
         ElementType* operator-> () const
         {
-            return const_cast<ElementType*>(&(this->Container[this->Index]));
+            return const_cast<ElementType*>(Super::operator->());
         }
 
         IndexIterator& operator++ ()
@@ -92,10 +106,24 @@ namespace Engine
             return *this;
         }
 
+        IndexIterator operator++ (int32)
+        {
+            IndexIterator temp = *this;
+            Super::operator++();
+            return temp;
+        }
+
         IndexIterator& operator-- ()
         {
             Super::operator--();
             return *this;
+        }
+
+        IndexIterator operator-- (int32)
+        {
+            IndexIterator temp = *this;
+            Super::operator--();
+            return temp;
         }
 
         void RemoveSelf()

@@ -11,10 +11,10 @@ using namespace Engine;
 
 static void BM_DyanmicArrayAdd(benchmark::State& state)
 {
-    DynamicArray<uint32> array;
+    DynamicArray<int32> array;
     for (auto _ : state) 
     {
-        for (uint32 i = 0; i < 1000; i++)
+        for (int32 i = 0; i < 1000; i++)
         {
             array.Add(i);
         }
@@ -25,10 +25,10 @@ static void BM_DyanmicArrayAdd(benchmark::State& state)
 
 static void BM_VectorAdd(benchmark::State& state)
 {
-    std::vector<uint32> array;
+    std::vector<int32> array;
     for (auto _ : state) 
     {
-        for (uint32 i = 0; i < 1000; i++)
+        for (int32 i = 0; i < 1000; i++)
         {
             array.push_back(i);
         }
@@ -39,72 +39,78 @@ static void BM_VectorAdd(benchmark::State& state)
 
 static void BM_DyanmicArrayRemove(benchmark::State& state)
 {
-    DynamicArray<uint32> array;
+    DynamicArray<int32> array;
+    for (int32 i = 0; i < 1000; i++)
+    {
+        array.Add(i);
+    }
+
     for (auto _ : state) 
     {
-        for (uint32 i = 0; i < 1000; i++)
-        {
-            array.Add(i);
-        }
+        auto copy = array;
 
-        while (array.Size() > 0)
+        while (copy.Size() > 0)
         {
-            array.RemoveAt(0);
+            copy.RemoveAt(0);
         }
-
-        array.Resize(0);
     }
 }
 
 static void BM_VectorRemove(benchmark::State& state)
 {
-    std::vector<uint32> array;
+    std::vector<int32> array;
+    for (int32 i = 0; i < 1000; i++)
+    {
+        array.push_back(i);
+    }
+
     for (auto _ : state) 
     {
-        for (uint32 i = 0; i < 1000; i++)
-        {
-            array.push_back(i);
-        }
+        auto copy = array;
 
-        while (array.size() > 0)
+        while (!copy.empty())
         {
-            array.erase(array.begin());
+            copy.erase(copy.begin());
         }
-
-        array.resize(0);
     }
 }
 
 static void BM_DyanmicArrayLoop(benchmark::State& state)
 {
-    DynamicArray<uint32> array;
-    for (uint32 i = 0; i < 1000; i++)
+    DynamicArray<int32> array;
+    for (int32 i = 0; i < 10000; i++)
     {
         array.Add(i);
     }
-    for (auto _ : state) 
+    int64 count = 0;
+    for (auto _ : state)
     {
-        for (auto _ : array)
+        for (auto&& val : array)
         {
-
+            count += val;
         }
     }
+
+    printf("%lld\n", count);
 }
 
 static void BM_VectorLoop(benchmark::State& state)
 {
-    std::vector<uint32> array;
-    for (uint32 i = 0; i < 1000; i++)
+    std::vector<int32> array;
+    for (int32 i = 0; i < 10000; i++)
     {
         array.push_back(i);
     }
+    int64 count = 0;
     for (auto _ : state) 
     {
-        for (auto _ : array)
+        for (auto&& val : array)
         {
-
+            count += val;
         }
     }
+
+    printf("%lld\n", count);
 }
 
 static void BM_SetAdd(benchmark::State& state)
@@ -264,15 +270,15 @@ static void BM_UStringFromLatin1(benchmark::State& state)
     }
 }
 
-//BENCHMARK(BM_DyanmicArrayAdd);
-//BENCHMARK(BM_VectorAdd);
-//
-//BENCHMARK(BM_DyanmicArrayRemove);
-//BENCHMARK(BM_VectorRemove);
-//
-//BENCHMARK(BM_DyanmicArrayLoop);
-//BENCHMARK(BM_VectorLoop);
-//
+BENCHMARK(BM_DyanmicArrayAdd);
+BENCHMARK(BM_VectorAdd);
+
+BENCHMARK(BM_DyanmicArrayRemove);
+BENCHMARK(BM_VectorRemove);
+
+BENCHMARK(BM_DyanmicArrayLoop);
+BENCHMARK(BM_VectorLoop);
+
 //BENCHMARK(BM_SetAdd);
 //BENCHMARK(BM_StlHashSetAdd);
 //BENCHMARK(BM_StlSetAdd);
