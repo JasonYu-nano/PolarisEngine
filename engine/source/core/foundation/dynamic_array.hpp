@@ -268,15 +268,13 @@ namespace Engine
 
         ElementType& operator[] (SizeType index)
         {
-            BoundCheck();
-            ENSURE(index < ArraySize);
+            ENSURE(BoundCheck() && IsValidIndex(index));
             return *(Data() + index);
         }
 
         const ElementType& operator[] (SizeType index) const
         {
-            BoundCheck();
-            ENSURE(index < ArraySize);
+            ENSURE(BoundCheck() && IsValidIndex(index));
             return *(Data() + index);
         }
 
@@ -286,7 +284,7 @@ namespace Engine
          */
         void Add(const ElementType& element)
         {
-            AddressCheck(&element);
+            ENSURE(AddressCheck(&element));
             EmplaceBack(Forward<const ElementType&>(element));
         };
 
@@ -296,7 +294,7 @@ namespace Engine
          */
         void Add(ElementType&& element)
         {
-            AddressCheck(&element);
+            ENSURE(AddressCheck(&element));
             EmplaceBack(Forward<ElementType&&>(element));
         }
 
@@ -333,8 +331,7 @@ namespace Engine
          */
         void Insert(SizeType index, const ElementType& element)
         {
-            ENSURE(0 <=index && index <= ArraySize);
-            AddressCheck(&element);
+            ENSURE(AddressCheck(&element) && 0 <=index && index <= ArraySize);
             EmplaceAt(index, element);
         };
 
@@ -345,15 +342,13 @@ namespace Engine
          */
         void Insert(SizeType index, ElementType&& element)
         {
-            ENSURE(0 <=index && index <= ArraySize);
-            AddressCheck(&element);
+            ENSURE(AddressCheck(&element) && 0 <=index && index <= ArraySize);
             EmplaceAt(index, element);
         };
 
         void Insert(SizeType index, const ElementType* elements, SizeType size)
         {
-            ENSURE(0 <=index && index <= ArraySize && size > 0);
-            AddressCheck(elements);
+            ENSURE(AddressCheck(elements) && 0 <=index && index <= ArraySize && size > 0);
             InsertUnconstructElement(index, size);
             ConstructElements(Data() + index, elements, size);
         };
@@ -467,8 +462,7 @@ namespace Engine
 
         ElementType& At(SizeType index)
         {
-            BoundCheck();
-            ENSURE(IsValidIndex(index));
+            ENSURE(BoundCheck() && IsValidIndex(index));
             return *(Data() + index);
         }
 
@@ -678,14 +672,14 @@ namespace Engine
             return geometric;
         }
 
-        void BoundCheck() const
+        bool BoundCheck() const
         {
-            ENSURE(ArraySize >= 0 && ArraySize <= ArrayCapacity);
+            return ArraySize >= 0 && ArraySize <= ArrayCapacity;
         }
 
-        void AddressCheck(const ElementType* address)
+        bool AddressCheck(const ElementType* address)
         {
-            ENSURE(address < Data() || address >= Data() + ArrayCapacity);
+            return address < Data() || address >= Data() + ArrayCapacity;
         }
 
         void ConstructElements(ElementType* dest, const ElementType* src, SizeType count)
