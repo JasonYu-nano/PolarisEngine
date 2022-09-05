@@ -1,6 +1,7 @@
 #pragma once
 
 #include "foundation/tuple.hpp"
+#include "foundation/details/delegate_handle.hpp"
 
 namespace Engine
 {
@@ -26,6 +27,7 @@ namespace Engine
         virtual ~IDelegateInstance() = default;
         virtual RetType Execute(ArgTypes&&... args) = 0;
         virtual bool IsSafeToExecute() const = 0;
+        virtual DelegateHandle GetHandle() const  = 0;
     };
 
     template <typename FuncType, typename... VarTypes>
@@ -35,10 +37,17 @@ namespace Engine
     class DelegateInstanceBase<RetType(ArgTypes...), VarTypes...> : public IDelegateInstance<RetType, ArgTypes...>
     {
     public:
-        DelegateInstanceBase(VarTypes&&... vars) : Variables(Forward<VarTypes>(vars)...) {};
+        DelegateInstanceBase(VarTypes&&... vars)
+            : Variables(Forward<VarTypes>(vars)...), Handle(DelegateHandle::GetNext()) {};
+
+        DelegateHandle GetHandle() const override
+        {
+            return Handle;
+        }
 
     protected:
         Tuple<VarTypes...> Variables;
+        DelegateHandle Handle;
     };
 
     template <typename InFuncType, typename... VarTypes>

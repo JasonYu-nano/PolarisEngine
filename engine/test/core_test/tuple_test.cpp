@@ -108,12 +108,16 @@ namespace Engine
 
         Notifier multiDelegate;
         multiDelegate.AddStatic(&DelegateTestClass::OnMultiDelegateBroadcastStatic);
-        multiDelegate.AddRaw(testClass.get(), &DelegateTestClass::OnMultiDelegateBroadcastMember, 1);
-        multiDelegate.AddSP(testClass, &DelegateTestClass::OnMultiDelegateBroadcastMember, 1);
+        DelegateHandle handle0 = multiDelegate.AddRaw(testClass.get(), &DelegateTestClass::OnMultiDelegateBroadcastMember, 1);
+        DelegateHandle handle1 = multiDelegate.AddSP(testClass, &DelegateTestClass::OnMultiDelegateBroadcastMember, 1);
 
         multiDelegate.BroadcastIfBound("MultiDelegate");
 
         EXPECT_TRUE(DelegateTestClass::LastDelegateName == "MultiDelegate");
         EXPECT_TRUE(testClass->ReceiveBroadcastCount == 2);
+
+        multiDelegate.Remove(handle1);
+        multiDelegate.BroadcastIfBound("MultiDelegate");
+        EXPECT_TRUE(testClass->ReceiveBroadcastCount == 3);
     }
 }

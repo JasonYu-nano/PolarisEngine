@@ -83,6 +83,11 @@ namespace Engine
             *this = CreateSP(obj, fun, Forward<VarTypes>(vars)...);
         }
 
+        DelegateHandle GetHandle() const
+        {
+            return Instance->GetHandle();
+        }
+
         void Unbind()
         {
             Instance.reset();
@@ -129,9 +134,11 @@ namespace Engine
     public:
         ~MultiDelegate() = default;
 
-        void Add(DelegateType&& delegate)
+        DelegateHandle Add(DelegateType&& delegate)
         {
+            DelegateHandle handle = delegate.GetHandle();
             DelegateArray.Add(Forward<DelegateType>(delegate));
+            return handle;
         }
 
         void Clear()
@@ -140,33 +147,40 @@ namespace Engine
         }
 
         template <typename... VarTypes>
-        void AddStatic(void (*fun)(ArgTypes..., VarTypes...), VarTypes&&... vars)
+        DelegateHandle AddStatic(void (*fun)(ArgTypes..., VarTypes...), VarTypes&&... vars)
         {
-            DelegateArray.Add(DelegateType::template CreateStatic<VarTypes...>(fun, Forward<VarTypes>(vars)...));
+            return Add(DelegateType::template CreateStatic<VarTypes...>(fun, Forward<VarTypes>(vars)...));
         }
 
         template <typename Class, typename... VarTypes>
-        void AddRaw(Class* obj, typename MemFunPtrType<false, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        DelegateHandle AddRaw(Class* obj, typename MemFunPtrType<false, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
         {
-            DelegateArray.Add(DelegateType::template CreateRaw<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+            return Add(DelegateType::template CreateRaw<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
         }
 
         template <typename Class, typename... VarTypes>
-        void AddRaw(Class* obj, typename MemFunPtrType<true, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        DelegateHandle AddRaw(Class* obj, typename MemFunPtrType<true, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
         {
-            DelegateArray.Add(DelegateType::template CreateRaw<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+            return Add(DelegateType::template CreateRaw<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
         }
 
         template <typename Class, typename... VarTypes>
-        void AddSP(SharedPtr<Class> obj, typename MemFunPtrType<false, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        DelegateHandle AddSP(SharedPtr<Class> obj, typename MemFunPtrType<false, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
         {
-            DelegateArray.Add(DelegateType::template CreateSP<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+            return Add(DelegateType::template CreateSP<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
         }
 
         template <typename Class, typename... VarTypes>
-        void AddSP(SharedPtr<Class> obj, typename MemFunPtrType<true, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
+        DelegateHandle AddSP(SharedPtr<Class> obj, typename MemFunPtrType<true, Class, void(ArgTypes..., VarTypes...)>::Type fun, VarTypes&&... vars)
         {
-            DelegateArray.Add(DelegateType::template CreateSP<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+            return Add(DelegateType::template CreateSP<Class, VarTypes...>(obj, fun, Forward<VarTypes>(vars)...));
+        }
+
+        void Remove(const DelegateHandle& handle)
+        {
+            DelegateArray.RemoveMatch([&handle](const DelegateType& delegate){
+                return delegate.GetHandle() == handle;
+            });
         }
 
         inline bool IsBound() const
