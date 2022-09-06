@@ -178,9 +178,21 @@ namespace Engine
 
         void Remove(const DelegateHandle& handle)
         {
-            DelegateArray.RemoveMatch([&handle](const DelegateType& delegate){
-                return delegate.GetHandle() == handle;
-            });
+            for (auto it = DelegateArray.rbegin(); (bool)it; --it)
+            {
+                if (it->GetHandle() == handle)
+                {
+                    if (LockCounter > 0)
+                    {
+                        it->Unbind();
+                    }
+                    else
+                    {
+                        DelegateArray.RemoveAtSwap(it.GetIndex());
+                    }
+                    break;
+                }
+            }
         }
 
         inline bool IsBound() const
@@ -190,10 +202,12 @@ namespace Engine
 
         void Broadcast(ArgTypes... args)
         {
-            for (auto&& inst : DelegateArray)
+            AddLock();
+            for (auto it = DelegateArray.rbegin(); (bool)it; --it)
             {
-                inst.ExecuteIfBound(Forward<ArgTypes>(args)...);
+                it->ExecuteIfBound(Forward<ArgTypes>(args)...);
             }
+            RemoveLock();
         }
 
         void BroadcastIfBound(ArgTypes... args)
@@ -203,7 +217,13 @@ namespace Engine
                 Broadcast(Forward<ArgTypes>(args)...);
             }
         }
-    private:
+    protected:
+        void AddLock() { ++LockCounter; }
+
+        void RemoveLock() { --LockCounter; }
+    protected:
+        int8 LockCounter{ 0 };
+
         DynamicArray<DelegateType> DelegateArray;
     };
 

@@ -119,5 +119,35 @@ namespace Engine
         multiDelegate.Remove(handle1);
         multiDelegate.BroadcastIfBound("MultiDelegate");
         EXPECT_TRUE(testClass->ReceiveBroadcastCount == 3);
+
+        struct RemoveSelfDelegateTestClass
+        {
+            RemoveSelfDelegateTestClass(Notifier& notifier) : Delegate(notifier)
+            {
+                notifier.AddRaw(this, &RemoveSelfDelegateTestClass::OnMultiDelegateBroadcastMember);
+                RemoveHandle = notifier.AddRaw(this, &RemoveSelfDelegateTestClass::OnMultiDelegateBroadcastMemberRemoveSelf);
+            }
+
+            void OnMultiDelegateBroadcastMember(const UString& name)
+            {
+                ReceiveBroadcastCount += 1;
+            }
+
+            void OnMultiDelegateBroadcastMemberRemoveSelf(const UString& name)
+            {
+                ReceiveBroadcastCount += 1;
+                Delegate.Remove(RemoveHandle);
+            }
+
+
+            Notifier& Delegate;
+            DelegateHandle RemoveHandle;
+            int32 ReceiveBroadcastCount = 0;
+        };
+
+        RemoveSelfDelegateTestClass removeSelfTest(multiDelegate);
+
+        multiDelegate.BroadcastIfBound("MultiDelegate");
+        EXPECT_TRUE(removeSelfTest.ReceiveBroadcastCount == 2);
     }
 }
