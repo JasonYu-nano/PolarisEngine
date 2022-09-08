@@ -149,5 +149,20 @@ namespace Engine
 
         multiDelegate.BroadcastIfBound("MultiDelegate");
         EXPECT_TRUE(removeSelfTest.ReceiveBroadcastCount == 2);
+
+        multiDelegate.RemoveAll(testClass.get());
+        EXPECT_TRUE(multiDelegate.GetBoundNum() == 2);
+
+        struct EventTestClass
+        {
+            DECLARE_EVENT(GTestEvent, EventTestClass);
+
+            EventTestClass()
+            {
+                Event.Broadcast();
+            }
+
+            GTestEvent Event;
+        };
     }
 }

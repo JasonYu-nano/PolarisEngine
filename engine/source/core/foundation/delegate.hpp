@@ -98,6 +98,11 @@ namespace Engine
             return Instance != nullptr && Instance->IsSafeToExecute();
         }
 
+        bool IsBoundToObject(const void* obj) const
+        {
+            return Instance != nullptr && Instance->IsBoundToObject(obj);
+        }
+
         RetType Execute(ArgTypes... args)
         {
             return Instance->Execute(Forward<ArgTypes>(args)...);
@@ -130,12 +135,12 @@ namespace Engine
     class MultiDelegate<void, ArgTypes...>
     {
         using DelegateType = Delegate<void, ArgTypes...>;
-        using InstanceType = IDelegateInstance<void, ArgTypes...>;
     public:
         ~MultiDelegate() = default;
 
         DelegateHandle Add(DelegateType&& delegate)
         {
+            CompactDelegateArray();
             DelegateHandle handle = delegate.GetHandle();
             DelegateArray.Add(Forward<DelegateType>(delegate));
             return handle;
@@ -178,9 +183,33 @@ namespace Engine
 
         void Remove(const DelegateHandle& handle)
         {
-            for (auto it = DelegateArray.rbegin(); (bool)it; --it)
+            if (!handle.IsValid())
+            {
+                return;
+            }
+            for (auto&& it = DelegateArray.rbegin(); (bool)it; --it)
             {
                 if (it->GetHandle() == handle)
+                {
+                    if (LockCounter > 0)
+                    {
+                        it->Unbind();
+                    }
+                    else
+                    {
+                        DelegateArray.RemoveAtSwap(it.GetIndex());
+                    }
+                    break;
+                }
+            }
+        }
+
+        template <typename Class>
+        void RemoveAll(const Class* obj)
+        {
+            for (auto&& it = DelegateArray.rbegin(); (bool)it; --it)
+            {
+                if (it->IsBoundToObject(obj))
                 {
                     if (LockCounter > 0)
                     {
@@ -198,6 +227,19 @@ namespace Engine
         inline bool IsBound() const
         {
             return DelegateArray.Size() > 0;
+        }
+
+        int32 GetBoundNum() const
+        {
+            int32 validBoundNum = 0;
+            for (auto&& delegate : DelegateArray)
+            {
+                if (delegate.IsBound())
+                {
+                    ++validBoundNum;
+                }
+            }
+            return validBoundNum;
         }
 
         void Broadcast(ArgTypes... args)
@@ -221,10 +263,33 @@ namespace Engine
         void AddLock() { ++LockCounter; }
 
         void RemoveLock() { --LockCounter; }
+
+        void CompactDelegateArray()
+        {
+            for (auto&& it = DelegateArray.rbegin(); (bool)it; --it)
+            {
+                if (!it->IsBound())
+                {
+                    DelegateArray.RemoveAtSwap(it.GetIndex());
+                }
+            }
+            //TODO: Shink array
+        }
     protected:
         int8 LockCounter{ 0 };
 
         DynamicArray<DelegateType> DelegateArray;
+    };
+
+    template <typename OwnerClass, typename RetType, typename... ArgTypes>
+    class EventDelegate : public MultiDelegate<RetType, ArgTypes...>
+    {
+        using Super = MultiDelegate<RetType, ArgTypes...>;
+
+        friend OwnerClass;
+    private:
+        using Super::Broadcast;
+        using Super::BroadcastIfBound;
     };
 
 
@@ -239,4 +304,8 @@ namespace Engine
     #define DECLARE_MULTI_DELEGATE(alias) using alias = MultiDelegate<void>
     #define DECLARE_MULTI_DELEGATE_ONE_PARAM(alias, type1) using alias = MultiDelegate<void, type1>
     #define DECLARE_MULTI_DELEGATE_TWO_PARAMS(alias, type1, type2) using alias = MultiDelegate<void, type1, type2>
+
+    #define DECLARE_EVENT(alias, ownerClass) using alias = EventDelegate<ownerClass, void>
+    #define DECLARE_EVENT_ONE_PARAM(alias, ownerClass, type1) using alias = EventDelegate<ownerClass, void, type1>
+    #define DECLARE_EVENT_TWO_PARAMS(alias, ownerClass, type1, type2) using alias = EventDelegate<ownerClass, void, type1, type2>
 }

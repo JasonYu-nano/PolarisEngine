@@ -28,6 +28,7 @@ namespace Engine
         virtual RetType Execute(ArgTypes&&... args) = 0;
         virtual bool IsSafeToExecute() const = 0;
         virtual DelegateHandle GetHandle() const  = 0;
+        virtual bool IsBoundToObject(const void* obj) const = 0;
     };
 
     template <typename FuncType, typename... VarTypes>
@@ -43,6 +44,11 @@ namespace Engine
         DelegateHandle GetHandle() const override
         {
             return Handle;
+        }
+
+        bool IsBoundToObject(const void* obj) const override
+        {
+            return false;
         }
 
     protected:
@@ -104,6 +110,11 @@ namespace Engine
             return true;
         }
 
+        bool IsBoundToObject(const void* obj) const override
+        {
+            return Obj == obj;
+        }
+
     private:
         Class* Obj;
 
@@ -133,6 +144,11 @@ namespace Engine
         virtual bool IsSafeToExecute() const
         {
             return !Obj.expired() && Fun != nullptr;
+        }
+
+        bool IsBoundToObject(const void* obj) const override
+        {
+            return !Obj.expired() && Obj.lock().get() == obj;
         }
 
     private:
