@@ -1,6 +1,6 @@
 set(target renderer)
 
-set(project_dir "${CMAKE_CURRENT_LIST_DIR}")
+set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
 
 file(GLOB_RECURSE project_files *.hpp *.cpp)
 
@@ -14,7 +14,7 @@ endif()
 target_compile_definitions(${target} PRIVATE RENDER_EXPORT)
 
 # include dir
-target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/render)
+target_include_directories(${target} PUBLIC ${project_dir}/include PRIVATE ${project_dir}/src)
 
 # dependency
 

@@ -1,6 +1,6 @@
 set(target core)
 
-set(project_dir "${CMAKE_CURRENT_LIST_DIR}")
+set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
 
 file(GLOB_RECURSE project_files *.hpp *.cpp)
 
@@ -27,8 +27,7 @@ endif()
 # target_precompile_headers(${target} PRIVATE precompiled_core.hpp)
 
 # include dir
-target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core)
-target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR}/source/core/global)
+target_include_directories(${target} PUBLIC ${project_dir}/include ${project_dir}/include/global PRIVATE ${project_dir}/src)
 
 
 # add 3rd dependency
