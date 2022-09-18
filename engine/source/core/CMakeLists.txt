@@ -69,3 +69,18 @@ set_target_properties(${target} PROPERTIES FOLDER "Engine")
 if(MSVC)
     target_compile_options(${target} PUBLIC /wd4251 /wd4624)
 endif()
+
+if (use_ispc)
+    include(${CMAKE_SOURCE_DIR}/cmake/ispc_compile.cmake)
+
+    file(GLOB_RECURSE ispc_files *.ispc)
+
+    set(ispc_output ${engine_generated_path}/core/ispc)
+    set(ispc_target core_ispc)
+    set(generated_objs "")
+    compile_ispc(${ispc_files} ${ispc_target} ${target} ${ispc_output} ${ISPC_EXECUTION_PATH} generated_objs)
+    add_dependencies(${target} ${ispc_target})
+    target_link_libraries(${target} ${generated_objs})
+
+    target_compile_definitions(${target} PUBLIC USE_ISPC=1)
+endif()

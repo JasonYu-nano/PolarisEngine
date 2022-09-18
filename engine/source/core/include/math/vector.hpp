@@ -4,6 +4,7 @@
 #include "memory/memory.hpp"
 #include "math/generic_math.hpp"
 #include <span>
+#include "cross_product.hpp"
 
 namespace Engine
 {
@@ -194,10 +195,17 @@ namespace Engine
          */
         Vector operator^ (const Vector& other)
         {
+#if USE_ISPC
+            float result[3];
+            Vector ret;
+            ispc::CrossProduct(Data, other.Data, ret.Data);
+            return ret;
+#else
             return Vector(
                 Y * other.Z - Z * other.Y,
                 Z * other.X - X * other.Z,
                 X * other.Y - Y * other.X);
+#endif
         }
 
         /**

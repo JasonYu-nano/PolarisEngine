@@ -13,6 +13,7 @@ option(shared "build with dynamic link" ON)
 option(unicode "build with unicode string" ON)
 option(with_test "build with unit test" ON)
 option(with_benchmark "build with benchmark" ON)
+option(use_ispc "use ispc compiler to generate simd code" OFF)
 
 if(shared)
     add_compile_definitions(PL_SHARED)
@@ -68,6 +69,10 @@ set(shader_target "shader_target")
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_cpu_architectures.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/add_dependency.cmake)
+
+if (use_ispc)
+    include(${CMAKE_SOURCE_DIR}/cmake/find_ispc.cmake)
+endif()
 
 add_subdirectory(shader)
 add_subdirectory(source)

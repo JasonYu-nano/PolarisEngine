@@ -15,5 +15,7 @@ namespace Engine
         EXPECT_TRUE(vec.IsNormalized());
 
         EXPECT_TRUE(vec * 2.5f / 2.5f == vec);
+
+        vec ^ Vector3f(5.2);
     }
 }
