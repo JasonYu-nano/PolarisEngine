@@ -2,6 +2,8 @@
 
 #include <bit>
 #include "definitions_core.hpp"
+#include "foundation/type_traits.hpp"
+#include <cmath>
 
 namespace Engine
 {
@@ -20,6 +22,34 @@ namespace Engine
         static T Min(const T a, const T b)
         {
             return (a <= b) ? a : b;
+        }
+
+        template <typename T>
+        static T Abs(const T val)
+        {
+            return std::abs(val);
+        }
+
+        template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+        static float Sqrt(const T val)
+        {
+            return std::sqrt(static_cast<float>(val));
+        }
+
+        static float Sqrt(const float val)
+        {
+            return std::sqrt(val);
+        }
+
+        static double Sqrt(const double val)
+        {
+            return std::sqrt(val);
+        }
+
+        template <typename T>
+        static bool Equals(const T lhs, const T rhs, float tolerance)
+        {
+            return Abs(lhs - rhs) <= tolerance;
         }
 
         template <typename T>
