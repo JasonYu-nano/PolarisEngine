@@ -11,9 +11,7 @@
 
 namespace Engine
 {
-    constexpr float VECTOR_NORMALIZED_THRESHOLD = 0.001f;
-
-    constexpr float VECTOR_EQUALS_DEFAULT_TOLERANCE = 0.0001f;
+    constexpr float VECTOR_NORMALIZED_THRESH = 0.001f;
 
     template <typename T, uint32 N>
     struct Vector
@@ -57,7 +55,7 @@ namespace Engine
         {
             for (uint32 i = 0; i < N; ++i)
             {
-                if (!Math::Equals(lhs[i], rhs[i], VECTOR_EQUALS_DEFAULT_TOLERANCE))
+                if (!Math::Equals(lhs[i], rhs[i], KINDA_SMALL_FLOAT))
                 {
                     return false;
                 }
@@ -69,7 +67,7 @@ namespace Engine
         {
             for (uint32 i = 0; i < N; ++i)
             {
-                if (!Math::Equals(lhs[i], rhs[i], VECTOR_EQUALS_DEFAULT_TOLERANCE))
+                if (!Math::Equals(lhs[i], rhs[i], KINDA_SMALL_FLOAT))
                 {
                     return true;
                 }
@@ -146,19 +144,12 @@ namespace Engine
 
         bool IsNormalized() const
         {
-            return (Math::Abs(1.0f - SizeSquared()) < VECTOR_NORMALIZED_THRESHOLD);
+            return (Math::Abs(1.0f - SizeSquared()) < VECTOR_NORMALIZED_THRESH);
         }
 
         bool IsZero(float tolerance = 0.0f) const
         {
             return (X == 0 && Y == 0 && Z == 0) || SizeSquared() < tolerance;
-        }
-
-        bool IsUnit() const
-        {
-            return (X == static_cast<T>(1) && Y == static_cast<T>(0) && Z == static_cast<T>(0)) ||
-                    (X == static_cast<T>(0) && Y == static_cast<T>(1) && Z == static_cast<T>(0)) ||
-                    (X == static_cast<T>(0) && Y == static_cast<T>(0) && Z == static_cast<T>(1));
         }
 
         float operator[] (int32 idx) const
@@ -179,16 +170,16 @@ namespace Engine
 
         friend bool operator== (const Vector& lhs, const Vector& rhs)
         {
-            return Math::Equals(lhs.X, rhs.X, VECTOR_EQUALS_DEFAULT_TOLERANCE) &&
-                    Math::Equals(lhs.Y, rhs.Y, VECTOR_EQUALS_DEFAULT_TOLERANCE) &&
-                    Math::Equals(lhs.Z, rhs.Z, VECTOR_EQUALS_DEFAULT_TOLERANCE);
+            return Math::Equals(lhs.X, rhs.X, KINDA_SMALL_FLOAT) &&
+                    Math::Equals(lhs.Y, rhs.Y, KINDA_SMALL_FLOAT) &&
+                    Math::Equals(lhs.Z, rhs.Z, KINDA_SMALL_FLOAT);
         }
 
         friend bool operator!= (const Vector& lhs, const Vector& rhs)
         {
-            return !Math::Equals(lhs.X, rhs.X, VECTOR_EQUALS_DEFAULT_TOLERANCE) ||
-                    !Math::Equals(lhs.Y, rhs.Y, VECTOR_EQUALS_DEFAULT_TOLERANCE) ||
-                    !Math::Equals(lhs.Z, rhs.Z, VECTOR_EQUALS_DEFAULT_TOLERANCE);
+            return !Math::Equals(lhs.X, rhs.X, KINDA_SMALL_FLOAT) ||
+                    !Math::Equals(lhs.Y, rhs.Y, KINDA_SMALL_FLOAT) ||
+                    !Math::Equals(lhs.Z, rhs.Z, KINDA_SMALL_FLOAT);
         }
 
         /**

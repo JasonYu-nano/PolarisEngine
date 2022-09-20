@@ -4,6 +4,9 @@
 
 #define INDEX_NONE (int32) -1
 
+#define SMALL_FLOAT (1.e-8f)
+#define KINDA_SMALL_FLOAT (1.e-4f)
+
 #ifdef COMPILER_MSVC
     #define LIKELY(expr)    expr
     #define UNLIKELY(expr)  expr
