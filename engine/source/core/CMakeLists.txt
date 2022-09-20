@@ -82,5 +82,5 @@ if (use_ispc)
     add_dependencies(${target} ${ispc_target})
     target_link_libraries(${target} ${generated_objs})
 
-    target_compile_definitions(${target} PUBLIC USE_ISPC=1)
+    target_compile_definitions(${target} PUBLIC WITH_ISPC=1)
 endif()
