@@ -69,6 +69,7 @@ set(shader_target "shader_target")
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_cpu_architectures.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/add_dependency.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/detect_feature.cmake)
 
 if (use_ispc)
     include(${CMAKE_SOURCE_DIR}/cmake/find_ispc.cmake)
@@ -76,6 +77,8 @@ endif()
 
 add_subdirectory(shader)
 add_subdirectory(source)
+# TODO: Only include in editor mode
+add_subdirectory(tools)
 
 if(with_test)
     add_subdirectory(test)
