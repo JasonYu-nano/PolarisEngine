@@ -7,8 +7,6 @@ try_run(
         CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
 )
 
-message(${features})
-
 string(REGEX MATCH "SSE=TRUE" contain_sse_string "${features}")
 if (contain_sse_string)
     set(support_sse TRUE)
