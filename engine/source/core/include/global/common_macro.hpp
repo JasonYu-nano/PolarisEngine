@@ -17,9 +17,3 @@
     #define LIKELY(expr)    expr
     #define UNLIKELY(expr)  expr
 #endif
-
-#ifdef COMPILER_MSVC
-    #define ALIGN(n) __declspec(align(n))
-#else
-    #define ALIGN(n) __attribute__((aligned(n)))
-#endif

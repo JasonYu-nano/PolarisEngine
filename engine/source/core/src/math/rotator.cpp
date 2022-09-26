@@ -23,8 +23,7 @@ namespace Engine
 
     Vector3f Rotator::ToEuler() const
     {
-        // TODO: Clamp
-        return Vector3f(Roll, Pitch, Yaw);
+        return Vector3f(ClampAxis(Roll), ClampAxis(Pitch), ClampAxis(Yaw));
     }
 
     Vector3f Rotator::RotateVector(const Vector3f& v) const

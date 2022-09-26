@@ -7,9 +7,9 @@ namespace Engine
 {
     struct CORE_API Rotator
     {
-        Rotator(float val) : Roll(val), Pitch(val), Yaw(val) {}
+        Rotator(float val) : Pitch(val), Yaw(val), Roll(val) {}
 
-        Rotator(float roll, float pitch, float yaw) : Roll(roll), Pitch(pitch), Yaw(yaw) {}
+        Rotator(float pitch, float yaw, float roll) : Pitch(pitch), Yaw(yaw), Roll(roll) {}
 
         bool IsZero(float tolerance = KINDA_SMALL_FLOAT) const;
 
@@ -45,8 +45,8 @@ namespace Engine
 
         static const Rotator Zero;
 
-        float Roll;
         float Pitch;
         float Yaw;
+        float Roll;
     };
 }
