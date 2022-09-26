@@ -46,6 +46,11 @@ namespace Engine
             return std::sqrt(val);
         }
 
+        static float FMod(float a, float b)
+        {
+            return std::fmodf(a, b);
+        }
+
         template <typename T>
         static bool Equals(const T lhs, const T rhs, float tolerance)
         {

@@ -142,6 +142,13 @@ namespace Engine
             Z *= scale;
         }
 
+        Vector GetNormalized() const
+        {
+            Vector ret = *this;
+            ret.Normalize();
+            return ret;
+        }
+
         bool IsNormalized() const
         {
             return (Math::Abs(1.0f - SizeSquared()) < VECTOR_NORMALIZED_THRESH);
@@ -150,6 +157,13 @@ namespace Engine
         bool IsZero(float tolerance = 0.0f) const
         {
             return (X == 0 && Y == 0 && Z == 0) || SizeSquared() < tolerance;
+        }
+
+        bool Equals(const Vector& other, float tolerance = KINDA_SMALL_FLOAT)
+        {
+            return Math::Equals(X, other.X, tolerance) &&
+                   Math::Equals(Y, other.Y, tolerance) &&
+                   Math::Equals(Z, other.Z, tolerance);
         }
 
         float operator[] (int32 idx) const
