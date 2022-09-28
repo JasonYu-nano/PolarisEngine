@@ -201,10 +201,9 @@ namespace Engine
          * @param other
          * @return
          */
-        Vector operator^ (const Vector& other)
+        Vector operator^ (const Vector& other) const
         {
 #if WITH_ISPC
-            float result[3];
             Vector ret;
             ispc::CrossProduct(Data, other.Data, ret.Data);
             return ret;
@@ -221,7 +220,7 @@ namespace Engine
          * @param other
          * @return
          */
-        T operator| (const Vector& other)
+        T operator| (const Vector& other) const
         {
             return X * other.X + Y * other.Y + Z * other.Z;
         }

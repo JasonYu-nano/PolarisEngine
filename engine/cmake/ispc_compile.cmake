@@ -29,6 +29,11 @@ function(compile_ispc ISPC_FILES TARGET_NAME OWNER_TARGET GENERATED_DIR ISPC_BIN
     set(ALL_GENERATED_ISPC_FILES "")
 
     set(COMPILE_TARGET host)
+    if (support_sse42 OR support_sse41)
+        set(COMPILE_TARGET sse4-i32x4)
+    elseif(support_sse2)
+        set(COMPILE_TARGET sse2-i32x4)
+    endif()
 
     foreach(ISPC ${ISPC_FILES})
         get_filename_component(FILE_NAME ${ISPC} NAME_WLE)
@@ -38,7 +43,7 @@ function(compile_ispc ISPC_FILES TARGET_NAME OWNER_TARGET GENERATED_DIR ISPC_BIN
 
         add_custom_command(
             OUTPUT ${OUTPUT_OBJ}
-            COMMAND ${ISPC_BIN} -o ${OUTPUT_OBJ} -h ${ISPC_INCLUDE} ${ISPC} --arch=x86-64 --target=${COMPILE_TARGET}
+            COMMAND ${ISPC_BIN} -o ${OUTPUT_OBJ} -h ${ISPC_INCLUDE} ${ISPC} --arch=x86-64 --target=${COMPILE_TARGET} -O1
             DEPENDS ${ISPC}
         )
 

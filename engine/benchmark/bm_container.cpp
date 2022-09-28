@@ -2,10 +2,10 @@
 #include "foundation/dynamic_array.hpp"
 #include "foundation/set.hpp"
 #include "foundation/ustring.hpp"
+#include "math/quaternion.hpp"
 #include <vector>
 #include <set>
 #include <unordered_set>
-#include <iostream>
 
 using namespace Engine;
 
@@ -270,14 +270,32 @@ static void BM_UStringFromLatin1(benchmark::State& state)
     }
 }
 
-BENCHMARK(BM_DyanmicArrayAdd);
-BENCHMARK(BM_VectorAdd);
+static void BM_RotatorToQuat(benchmark::State& state)
+{
+    Rotator rotator(10, 60, 10);
+    for (auto _ : state)
+    {
+        rotator.ToQuaternion();
+    }
+}
 
-BENCHMARK(BM_DyanmicArrayRemove);
-BENCHMARK(BM_VectorRemove);
+static void BM_VectorCross(benchmark::State& state)
+{
+    Vector3f vec(5, 6.2, 7.1);
+    for (auto _ : state)
+    {
+        Vector3f::Cross(vec, vec);
+    }
+}
 
-BENCHMARK(BM_DyanmicArrayLoop);
-BENCHMARK(BM_VectorLoop);
+//BENCHMARK(BM_DyanmicArrayAdd);
+//BENCHMARK(BM_VectorAdd);
+//
+//BENCHMARK(BM_DyanmicArrayRemove);
+//BENCHMARK(BM_VectorRemove);
+//
+//BENCHMARK(BM_DyanmicArrayLoop);
+//BENCHMARK(BM_VectorLoop);
 
 //BENCHMARK(BM_SetAdd);
 //BENCHMARK(BM_StlHashSetAdd);
@@ -287,13 +305,16 @@ BENCHMARK(BM_VectorLoop);
 //BENCHMARK(BM_StlHashSetLoop);
 //BENCHMARK(BM_StlSetLoop);
 
-BENCHMARK(BM_StdString);
-BENCHMARK(BM_UString);
+//BENCHMARK(BM_StdString);
+//BENCHMARK(BM_UString);
+//
+//BENCHMARK(BM_StdStringAppend);
+//BENCHMARK(BM_UStringAppend);
+//
+//BENCHMARK(BM_UStringFromUtf8);
+//BENCHMARK(BM_UStringFromLatin1);
 
-BENCHMARK(BM_StdStringAppend);
-BENCHMARK(BM_UStringAppend);
-
-BENCHMARK(BM_UStringFromUtf8);
-BENCHMARK(BM_UStringFromLatin1);
+BENCHMARK(BM_RotatorToQuat);
+BENCHMARK(BM_VectorCross);
 
 BENCHMARK_MAIN();

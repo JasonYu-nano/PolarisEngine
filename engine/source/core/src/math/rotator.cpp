@@ -99,9 +99,9 @@ namespace Engine
     Quat Rotator::ToQuaternion() const
     {
 #if WITH_ISPC
-        std::array<float, 4> components {0.0f};
-        ispc::RotatorToQuat(&Pitch, components.data());
-        return Quat(components);
+        Quat ret;
+        ispc::RotatorToQuat(&Pitch, &ret.X);
+        return ret;
 #else
         const float degToRad = PI / 180.f;
         const float radDiv2 = degToRad / 2;

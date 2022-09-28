@@ -3,12 +3,9 @@ export void RotatorToQuat(const uniform float rotator[3], uniform float quat[4])
     uniform float compSin[3]; // Store as pitch yaw roll
     uniform float compCos[3]; // Store as pitch yaw roll
 
-    foreach (index = 0 ... 3)
+    for (uniform int index = 0; index < 3; ++index)
     {
-        float sin, cos;
-        sincos(rotator[index] * PI / 360.f, &sin, &cos);
-        compSin[index] = sin;
-        compCos[index] = cos;
+        sincos(rotator[index] * PI / 360.f, &compSin[index], &compCos[index]);
     }
 
     quat[0] = compCos[2] * compSin[0] * compSin[1] - compSin[2] * compCos[0] * compCos[1];
