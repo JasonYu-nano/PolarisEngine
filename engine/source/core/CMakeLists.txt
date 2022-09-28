@@ -78,7 +78,7 @@ if (use_ispc)
     set(ispc_output ${engine_generated_path}/core/ispc)
     set(ispc_target core_ispc)
     set(generated_objs "")
-    compile_ispc(${ispc_files} ${ispc_target} ${target} ${ispc_output} ${ISPC_EXECUTION_PATH} generated_objs)
+    compile_ispc("${ispc_files}" ${ispc_target} ${target} ${ispc_output} ${ISPC_EXECUTION_PATH} generated_objs)
     add_dependencies(${target} ${ispc_target})
     target_link_libraries(${target} ${generated_objs})
 

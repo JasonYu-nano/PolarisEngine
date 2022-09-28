@@ -12,7 +12,7 @@ function(compile_ispc ISPC_FILES TARGET_NAME OWNER_TARGET GENERATED_DIR ISPC_BIN
     endif()
 
     set(OUTPUT_BIN_PATH "${GENERATED_DIR}/bin")
-    set(OUTPUT_INCLUDE_PATH "${GENERATED_DIR}/include")
+    set(OUTPUT_INCLUDE_PATH "${GENERATED_DIR}/include/ispc")
 
     if (NOT EXISTS ${GENERATED_DIR})
         file(MAKE_DIRECTORY ${GENERATED_DIR})
@@ -29,11 +29,6 @@ function(compile_ispc ISPC_FILES TARGET_NAME OWNER_TARGET GENERATED_DIR ISPC_BIN
     set(ALL_GENERATED_ISPC_FILES "")
 
     set(COMPILE_TARGET host)
-    if (support_sse42 OR support_sse41)
-        set(COMPILE_TARGET sse4)
-    elseif(support_sse2)
-        set(COMPILE_TARGET sse2)
-    endif()
 
     foreach(ISPC ${ISPC_FILES})
         get_filename_component(FILE_NAME ${ISPC} NAME_WLE)
@@ -43,7 +38,7 @@ function(compile_ispc ISPC_FILES TARGET_NAME OWNER_TARGET GENERATED_DIR ISPC_BIN
 
         add_custom_command(
             OUTPUT ${OUTPUT_OBJ}
-            COMMAND ${ISPC_BIN} -o ${OUTPUT_OBJ} -h ${ISPC_INCLUDE} ${ISPC} --arch=x64 --target=COMPILE_TARGET
+            COMMAND ${ISPC_BIN} -o ${OUTPUT_OBJ} -h ${ISPC_INCLUDE} ${ISPC} --arch=x86-64 --target=${COMPILE_TARGET}
             DEPENDS ${ISPC}
         )
 
@@ -51,7 +46,7 @@ function(compile_ispc ISPC_FILES TARGET_NAME OWNER_TARGET GENERATED_DIR ISPC_BIN
     endforeach()
 
     add_custom_target(${TARGET_NAME} DEPENDS ${ALL_GENERATED_ISPC_FILES})
-    target_include_directories(${OWNER_TARGET} PUBLIC ${OUTPUT_INCLUDE_PATH})
+    target_include_directories(${OWNER_TARGET} PUBLIC ${GENERATED_DIR}/include)
 
     set(${GENERATED_OBJS} ${ALL_GENERATED_ISPC_FILES} PARENT_SCOPE)
 
