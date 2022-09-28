@@ -6,7 +6,7 @@
 #include <span>
 
 #if WITH_ISPC
-#include "cross_product.hpp"
+#include "ispc/cross_product.hpp"
 #endif
 
 namespace Engine

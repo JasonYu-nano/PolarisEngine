@@ -7,6 +7,8 @@
 
 namespace Engine
 {
+    constexpr float PI = 3.1415926535897932f;
+
     class CORE_API Math
     {
     public:
@@ -55,6 +57,21 @@ namespace Engine
         static bool Equals(const T lhs, const T rhs, float tolerance)
         {
             return Abs(lhs - rhs) <= tolerance;
+        }
+
+        static float ToRadians(float degrees)
+        {
+            return FMod(degrees, 360.0f) * PI / 180.0f;
+        }
+
+        static float Sin(float radians)
+        {
+            return std::sin(radians);
+        }
+
+        static float Cos(float radians)
+        {
+            return std::cos(radians);
         }
 
         template <typename T>

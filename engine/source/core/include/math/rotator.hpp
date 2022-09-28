@@ -19,6 +19,8 @@ namespace Engine
 
         Vector3f ToEuler() const;
 
+        struct Quat ToQuaternion() const;
+
         Vector3f RotateVector(const Vector3f& v) const;
 
         Vector3f UnrotateVector(const Vector3f& v) const;
