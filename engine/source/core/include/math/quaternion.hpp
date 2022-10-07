@@ -20,6 +20,16 @@ namespace Engine
 
         Quat(const Rotator& rotator);
 
+        void Normalize();
+
+        bool Equals(const Quat& other, float tolerance = KINDA_SMALL_FLOAT) const;
+
+        friend bool operator== (const Quat& lhs, const Quat& rhs);
+
+        friend bool operator!= (const Quat& lhs, const Quat& rhs);
+
+        Quat operator* (const Quat& other);
+
         static const Quat Identity;
 
         float X = 0.0f;

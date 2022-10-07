@@ -288,6 +288,15 @@ static void BM_VectorCross(benchmark::State& state)
     }
 }
 
+static void BM_QuatNormalize(benchmark::State& state)
+{
+    Quat quat({5, 4, 3, 1});
+    for (auto _ : state)
+    {
+        quat.Normalize();
+    }
+}
+
 //BENCHMARK(BM_DyanmicArrayAdd);
 //BENCHMARK(BM_VectorAdd);
 //
@@ -316,5 +325,6 @@ static void BM_VectorCross(benchmark::State& state)
 
 BENCHMARK(BM_RotatorToQuat);
 BENCHMARK(BM_VectorCross);
+BENCHMARK(BM_QuatNormalize);
 
 BENCHMARK_MAIN();

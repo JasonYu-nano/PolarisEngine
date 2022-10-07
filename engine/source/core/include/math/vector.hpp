@@ -6,6 +6,7 @@
 #include <span>
 
 #if WITH_ISPC
+#include "ispc/float_normalize.hpp"
 #include "ispc/cross_product.hpp"
 #endif
 
@@ -34,6 +35,20 @@ namespace Engine
                 ret += Data[i] * Data[i];
             }
             return ret;
+        }
+
+        void Normalize()
+        {
+            EXPECT(SizeSquared() > static_cast<T>(0));
+#if WITH_ISPC
+            ispc::FloatNormalizeFast(Data, N);
+#else
+            float scale = 1.0f / Size();
+            for (uint32 index = 0; index < N; ++index)
+            {
+                Data[index] *= scale;
+            }
+#endif
         }
 
         bool IsZero(float tolerance = 0.0f) const
@@ -136,10 +151,14 @@ namespace Engine
         void Normalize()
         {
             EXPECT(SizeSquared() > static_cast<T>(0));
+#if WITH_ISPC
+            ispc::FloatNormalizeFast(&X, 3);
+#else
             float scale = 1.0f / Size();
             X *= scale;
             Y *= scale;
             Z *= scale;
+#endif
         }
 
         Vector GetNormalized() const

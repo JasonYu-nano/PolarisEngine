@@ -28,6 +28,7 @@ namespace Engine
     {
         Rotator rotation(10.0f, 60.0f, 10.0f);
         Quat quat = rotation.ToQuaternion();
+        quat.Normalize();
         quat = Quat::Identity;
     }
 }
