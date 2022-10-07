@@ -29,19 +29,3 @@ export void FloatNormalizeFast(uniform float* uniform sequence, uniform int size
         sequence[index] = sequence[index] * scale;
     }
 }
-
-// export void FloatNormalizeTest(uniform float* uniform sequence, uniform int size, float* uniform outSq)
-// {
-//     float sq = 0.0f;
-//     foreach (index = 0 ... size)
-//     {
-//         sq = sq + sequence[index] * sequence[index];
-//     }
-//     *outSq = sq;
-//     float scale = rsqrt(sq);
-
-//     foreach (index = 0 ... size)
-//     {
-//         sequence[index] = sequence[index] * scale;
-//     }
-// }
