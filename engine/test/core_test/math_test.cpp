@@ -21,7 +21,7 @@ namespace Engine
 
         EXPECT_TRUE(vec * 2.5f / 2.5f == vec);
 
-        vec ^ Vector3f(5.2);
+        vec ^ Vector3f(5.2f);
     }
 
     TEST(RotatorTest, Base)

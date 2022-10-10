@@ -24,11 +24,37 @@ namespace Engine
 
         bool Equals(const Quat& other, float tolerance = KINDA_SMALL_FLOAT) const;
 
+        float Size() const;
+
+        Quat Conjugate() const;
+
+        Quat Inverse() const;
+
+        Quat operator* (const Quat& other) const;
+
+        Quat operator*= (const Quat& other);
+
+        Quat operator* (float scale) const;
+
+        Quat operator*= (float scale);
+
+        Quat operator/ (float scale) const;
+
+        Quat operator/= (float scale);
+
+        Quat operator+ (const Quat& other) const;
+
+        Quat operator+= (const Quat& other);
+
+        Quat operator- (const Quat& other) const;
+
+        Quat operator-= (const Quat& other);
+
         friend bool operator== (const Quat& lhs, const Quat& rhs);
 
         friend bool operator!= (const Quat& lhs, const Quat& rhs);
 
-        Quat operator* (const Quat& other);
+        static Quat Slerp(const Quat& src, const Quat& dest, float slerp);
 
         static const Quat Identity;
 
