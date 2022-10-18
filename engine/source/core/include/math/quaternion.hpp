@@ -5,6 +5,9 @@
 
 namespace Engine
 {
+    /**
+     * https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
+     */
     struct alignas(16) CORE_API Quat
     {
         Quat() = default;
