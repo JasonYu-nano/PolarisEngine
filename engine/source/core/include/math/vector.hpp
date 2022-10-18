@@ -197,7 +197,7 @@ namespace Engine
 
         Vector& operator= (const Vector& other)
         {
-            Data = other.Data;
+            Memory::Memcpy(Data, const_cast<T*>(other.Data), sizeof(T) * 3);
             return *this;
         }
 
@@ -260,6 +260,14 @@ namespace Engine
             return Vector(X * other.X, Y * other.Y, Z * other.Z);
         }
 
+        Vector operator*= (const Vector& other)
+        {
+            X *= other.X;
+            Y *= other.Y;
+            Z *= other.Z;
+            return *this;
+        }
+
         Vector operator*= (const Vector& other) const
         {
             *this = *this * other;
@@ -289,6 +297,17 @@ namespace Engine
             return *this;
         }
 
+        Vector operator+ (const Vector& other) const
+        {
+            return Vector(X + other.X, Y + other.Y, Z + other.Z);
+        }
+
+        Vector operator+= (const Vector& other) const
+        {
+            *this = *this + other;
+            return *this;
+        }
+
         union
         {
             struct
@@ -301,6 +320,12 @@ namespace Engine
             T Data[3];
         };
     };
+
+    template <typename T, uint32 N>
+    Vector<T, N> operator*(float scale, const Vector<T, N>& v)
+    {
+        return v.operator*(scale);
+    }
 
     template <typename T>
     const Vector<T, 3> Vector<T, 3>::Zero = Vector<T, 3>(static_cast<T>(0), static_cast<T>(0), static_cast<T>(0));

@@ -74,6 +74,11 @@ namespace Engine
             return std::cos(radians);
         }
 
+        static float Acos(float cos)
+        {
+            return std::acos(cos);
+        }
+
         template <typename T>
         static T DivideAndRoundNearest(T a, T b)
         {

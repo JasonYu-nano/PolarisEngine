@@ -30,9 +30,15 @@ namespace Engine
 
         Quat Inverse() const;
 
+        Vector3f RotateVector(const Vector3f& v) const;
+
+        Vector3f UnrotateVector(const Vector3f& v) const;
+
         Quat operator* (const Quat& other) const;
 
         Quat operator*= (const Quat& other);
+
+        Vector3f operator* (const Vector3f v) const;
 
         Quat operator* (float scale) const;
 

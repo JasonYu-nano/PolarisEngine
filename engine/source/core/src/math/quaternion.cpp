@@ -50,6 +50,22 @@ namespace Engine
         return Conjugate() / Size();
     }
 
+    Vector3f Quat::RotateVector(const Vector3f& v) const
+    {
+        const Vector3f q(X, Y, Z);
+        const Vector3f t = 2.0f * (q ^ v);
+        const Vector3f result = v + (W * t) + (q ^ t);
+        return result;
+    }
+
+    Vector3f Quat::UnrotateVector(const Vector3f& v) const
+    {
+        const Vector3f q(-X, -Y, -Z);
+        const Vector3f t = 2.0f * (q ^ v);
+        const Vector3f result = v + (W * t) + (q ^ t);
+        return result;
+    }
+
     Quat Quat::operator*(const Quat& other) const
     {
         return Quat(
@@ -67,6 +83,11 @@ namespace Engine
         Z = W * other.Z + Z * other.W + Y * other.X - X * other.Y;
         W = W * other.W - X * other.X - Y * other.Y - Z * other.Z;
         return *this;
+    }
+
+    Vector3f Quat::operator*(const Vector3f v) const
+    {
+        return RotateVector(v);
     }
 
     Quat Quat::operator*(float scale) const
@@ -139,6 +160,41 @@ namespace Engine
 
     Quat Quat::Slerp(const Quat& src, const Quat& dest, float slerp)
     {
-        return Quat();
+        // Get cosine of angle between quats.
+        const float rawCosine =
+                src.X * dest.X +
+                src.Y * dest.Y +
+                src.Z * dest.Z +
+                src.W * dest.W;
+        // Unaligned quats - compensate, results in taking shorter route.
+        const float cosine = rawCosine >= 0.0f ? rawCosine : -rawCosine;
+
+        float scale0, scale1;
+
+        if(cosine < 0.9999f )
+        {
+            const float omega = Math::Acos(cosine);
+            const float invSin = 1.0f / Math::Sin(omega);
+            scale0 = Math::Sin((1.0f - slerp) * omega ) * invSin;
+            scale1 = Math::Sin(slerp * omega) * invSin;
+        }
+        else
+        {
+            // Use linear interpolation.
+            scale0 = 1.0f - slerp;
+            scale1 = slerp;
+        }
+
+        // In keeping with our flipped cosine:
+        scale1 = rawCosine >= 0.0f ? scale1 : -scale1;
+
+        Quat result;
+        result.X = scale0 * src.X + scale1 * dest.X;
+        result.Y = scale0 * src.Y + scale1 * dest.Y;
+        result.Z = scale0 * src.Z + scale1 * dest.Z;
+        result.W = scale0 * src.W + scale1 * dest.W;
+        result.Normalize();
+
+        return result;
     }
 }

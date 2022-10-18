@@ -84,3 +84,33 @@ if (use_ispc)
 
     target_compile_definitions(${target} PUBLIC WITH_ISPC=1)
 endif()
+
+if (support_sse)
+    target_compile_definitions(${target} PUBLIC SUPPORT_SSE=1)
+    target_compile_definitions(${target} PUBLIC SSE_LEVEL=1)
+endif()
+
+if (support_sse2)
+    target_compile_definitions(${target} PUBLIC SUPPORT_SSE2=1)
+    target_compile_definitions(${target} PUBLIC SSE_LEVEL=2)
+endif()
+
+if (support_sse3)
+    target_compile_definitions(${target} PUBLIC SUPPORT_SSE3=1)
+    target_compile_definitions(${target} PUBLIC SSE_LEVEL=3)
+endif()
+
+if (support_ssse3)
+    target_compile_definitions(${target} PUBLIC SUPPORT_SSSE3=1)
+    target_compile_definitions(${target} PUBLIC SSE_LEVEL=4)
+endif()
+
+if (support_sse41)
+    target_compile_definitions(${target} PUBLIC SUPPORT_SSE41=1)
+    target_compile_definitions(${target} PUBLIC SSE_LEVEL=5)
+endif()
+
+if (support_sse42)
+    target_compile_definitions(${target} PUBLIC SUPPORT_SSE42=1)
+    target_compile_definitions(${target} PUBLIC SSE_LEVEL=6)
+endif()
