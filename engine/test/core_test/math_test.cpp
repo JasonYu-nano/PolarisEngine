@@ -2,6 +2,8 @@
 #include "math/vector.hpp"
 #include "math/rotator.hpp"
 #include "math/quaternion.hpp"
+#include "math/matrix.hpp"
+#include "log/logger.hpp"
 
 namespace Engine
 {
@@ -30,5 +32,21 @@ namespace Engine
         Quat quat = rotation.ToQuaternion();
         quat.Normalize();
         quat = Quat::Identity;
+    }
+
+    TEST(MatrixTest, Base)
+    {
+        Matrix M;
+        Matrix N;
+        for (int32 i = 0; i < 4; ++i)
+        {
+            for (int32 j = 0; j < 4; ++j)
+            {
+                M.M[i][j] = i + j;
+                N.M[i][j] = i - j;
+            }
+        }
+
+        M = M * N;
     }
 }

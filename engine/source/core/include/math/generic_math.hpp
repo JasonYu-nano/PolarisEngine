@@ -8,6 +8,8 @@
 namespace Engine
 {
     constexpr float PI = 3.1415926535897932f;
+    constexpr float INV_PI = 0.31830988618f;
+    constexpr float HALF_PI = 1.57079632679f;
 
     class CORE_API Math
     {
@@ -73,6 +75,9 @@ namespace Engine
         {
             return std::cos(radians);
         }
+
+        static void SinCos(float value, float& sin, float& cos);
+
 
         static float Acos(float cos)
         {

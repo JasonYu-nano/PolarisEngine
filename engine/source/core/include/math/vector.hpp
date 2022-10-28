@@ -94,9 +94,8 @@ namespace Engine
     };
 
     template <typename T>
-    class Vector<T, 3>
+    struct Vector<T, 3>
     {
-    public:
         Vector() = default;
 
         Vector(const Vector& other) = default;
@@ -175,7 +174,7 @@ namespace Engine
 
         bool IsZero(float tolerance = 0.0f) const
         {
-            return (X == 0 && Y == 0 && Z == 0) || SizeSquared() < tolerance;
+            return (X == 0.0f && Y == 0.0f && Z == 0.0f) || SizeSquared() < tolerance;
         }
 
         bool Equals(const Vector& other, float tolerance = KINDA_SMALL_FLOAT)
@@ -249,7 +248,7 @@ namespace Engine
             return Vector(X * scale, Y * scale, Z * scale);
         }
 
-        Vector operator*= (T scale) const
+        Vector operator*= (T scale)
         {
             *this = *this * scale;
             return *this;
@@ -262,14 +261,6 @@ namespace Engine
 
         Vector operator*= (const Vector& other)
         {
-            X *= other.X;
-            Y *= other.Y;
-            Z *= other.Z;
-            return *this;
-        }
-
-        Vector operator*= (const Vector& other) const
-        {
             *this = *this * other;
             return *this;
         }
@@ -280,7 +271,7 @@ namespace Engine
             return Vector(X * inverseScale, Y * inverseScale, Z * inverseScale);
         }
 
-        Vector operator/= (T scale) const
+        Vector operator/= (T scale)
         {
             *this = *this / scale;
             return *this;
@@ -291,7 +282,7 @@ namespace Engine
             return Vector(X / other.X, Y / other.Y, Z / other.Z);
         }
 
-        Vector operator/= (const Vector& other) const
+        Vector operator/= (const Vector& other)
         {
             *this = *this / other;
             return *this;
@@ -302,7 +293,7 @@ namespace Engine
             return Vector(X + other.X, Y + other.Y, Z + other.Z);
         }
 
-        Vector operator+= (const Vector& other) const
+        Vector operator+= (const Vector& other)
         {
             *this = *this + other;
             return *this;
@@ -318,6 +309,187 @@ namespace Engine
             };
 
             T Data[3];
+        };
+    };
+
+    template <typename T>
+    struct Vector<T, 4>
+    {
+        Vector() = default;
+
+        Vector(const Vector& other) = default;
+
+        Vector(float val) : X(val), Y(val), Z(val), W(val) {}
+
+        Vector(float x, float y, float z, float w) : X(x), Y(y), Z(z), W(w) {}
+
+        Vector(std::span<T, 4> view)
+        {
+            Memory::Memcpy(Data, view.data(), 4);
+        }
+
+        static const Vector Zero;
+
+        static const Vector XAxis;
+
+        static const Vector YAxis;
+
+        static const Vector ZAxis;
+
+        static const Vector WAxis;
+
+        T Size() const
+        {
+            return Math::Sqrt(SizeSquared());
+        }
+
+        T SizeSquared() const
+        {
+            return X * X + Y * Y + Z * Z + W * W;
+        }
+
+        void Normalize()
+        {
+            EXPECT(SizeSquared() > static_cast<T>(0));
+            float scale = 1.0f / Size();
+            X *= scale;
+            Y *= scale;
+            Z *= scale;
+            W *= scale;
+        }
+
+        Vector GetNormalized() const
+        {
+            Vector ret = *this;
+            ret.Normalize();
+            return ret;
+        }
+
+        bool IsNormalized() const
+        {
+            return (Math::Abs(1.0f - SizeSquared()) < VECTOR_NORMALIZED_THRESH);
+        }
+
+        bool IsZero(float tolerance = 0.0f) const
+        {
+            return (X == 0.0f && Y == 0.0f && Z == 0.0f && Z == 0.0f) || SizeSquared() < tolerance;
+        }
+
+        bool Equals(const Vector& other, float tolerance = KINDA_SMALL_FLOAT)
+        {
+            return Math::Equals(X, other.X, tolerance) &&
+                   Math::Equals(Y, other.Y, tolerance) &&
+                   Math::Equals(Z, other.Z, tolerance) &&
+                   Math::Equals(W, other.W, tolerance);
+        }
+
+        float operator[] (int32 idx) const
+        {
+            return Data[idx];
+        }
+
+        float& operator[] (int32 idx)
+        {
+            return Data[idx];
+        }
+
+        Vector& operator= (const Vector& other)
+        {
+            Memory::Memcpy(Data, const_cast<T*>(other.Data), sizeof(T) * 3);
+            return *this;
+        }
+
+        friend bool operator== (const Vector& lhs, const Vector& rhs)
+        {
+            return Math::Equals(lhs.X, rhs.X, KINDA_SMALL_FLOAT) &&
+                   Math::Equals(lhs.Y, rhs.Y, KINDA_SMALL_FLOAT) &&
+                   Math::Equals(lhs.Z, rhs.Z, KINDA_SMALL_FLOAT) &&
+                   Math::Equals(lhs.W, rhs.W, KINDA_SMALL_FLOAT);
+        }
+
+        friend bool operator!= (const Vector& lhs, const Vector& rhs)
+        {
+            return !Math::Equals(lhs.X, rhs.X, KINDA_SMALL_FLOAT) ||
+                   !Math::Equals(lhs.Y, rhs.Y, KINDA_SMALL_FLOAT) ||
+                   !Math::Equals(lhs.Z, rhs.Z, KINDA_SMALL_FLOAT) ||
+                   !Math::Equals(lhs.W, rhs.W, KINDA_SMALL_FLOAT);
+        }
+
+        Vector operator* (T scale) const
+        {
+            return Vector(X * scale, Y * scale, Z * scale, W * scale);
+        }
+
+        Vector operator*= (T scale)
+        {
+            *this = *this * scale;
+            return *this;
+        }
+
+        Vector operator* (const Vector& other) const
+        {
+            return Vector(X * other.X, Y * other.Y, Z * other.Z, W * other.W);
+        }
+
+        Vector operator*= (const Vector& other)
+        {
+            *this = *this * other;
+            return *this;
+        }
+
+        Vector operator/ (T scale) const
+        {
+            T inverseScale = 1.0f / scale;
+            return Vector(X * inverseScale, Y * inverseScale, Z * inverseScale);
+        }
+
+        Vector operator/= (T scale)
+        {
+            *this = *this / scale;
+            return *this;
+        }
+
+        Vector operator/ (const Vector& other) const
+        {
+            return Vector(X / other.X, Y / other.Y, Z / other.Z, W / other.W);
+        }
+
+        Vector operator/= (const Vector& other)
+        {
+            *this = *this / other;
+            return *this;
+        }
+
+        Vector operator+ (const Vector& other) const
+        {
+            return Vector(X + other.X, Y + other.Y, Z + other.Z);
+        }
+
+        Vector operator+= (const Vector& other)
+        {
+            *this = *this + other;
+            return *this;
+        }
+
+        union
+        {
+            struct
+            {
+                T X;
+                T Y;
+                T Z;
+                T W;
+            };
+
+            struct
+            {
+                T R;
+                T G;
+                T B;
+                T A;
+            };
+
+            T Data[4];
         };
     };
 
@@ -340,4 +512,6 @@ namespace Engine
     const Vector<T, 3> Vector<T, 3>::ZAxis = Vector<T, 3>(static_cast<T>(0), static_cast<T>(0), static_cast<T>(1));
 
     using Vector3f = Vector<float, 3>;
+
+    using Vector4f = Vector<float, 4>;
 }

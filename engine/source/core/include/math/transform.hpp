@@ -12,25 +12,25 @@ namespace Engine
     {
         Transform()
             : Rotation(0, 0, 0, 1)
-            , Location(0, 0, 0)
+            , Translation(0, 0, 0)
             , Scale(1, 1, 1)
         {}
 
         explicit Transform(const Quat& rotation)
             : Rotation(rotation)
-            , Location(0, 0, 0)
+            , Translation(0, 0, 0)
             , Scale(1, 1, 1)
         {}
 
         explicit Transform(const Vector3f& location)
             : Rotation(0, 0, 0, 1)
-            , Location(location)
+            , Translation(location)
             , Scale(1, 1, 1)
         {}
 
         Transform(const Quat& rotation, const Vector3f location, const Vector3f& scale)
             : Rotation(rotation)
-            , Location(location)
+            , Translation(location)
             , Scale(scale)
         {}
 
@@ -41,12 +41,12 @@ namespace Engine
         Transform operator*= (const Transform& other);
 
         Quat Rotation;
-        Vector3f Location;
+        Vector3f Translation;
         Vector3f Scale;
 
 #if ENABLE_TRANSFORM_INTRINSICS
         VectorRegister Rotation;
-        VectorRegister Location;
+        VectorRegister Translation;
         VectorRegister Scale;
 #endif
     };

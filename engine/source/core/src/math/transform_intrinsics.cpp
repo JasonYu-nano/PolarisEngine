@@ -9,7 +9,7 @@ namespace Engine
 
     Engine::Transform::Transform()
         : Rotation(VectorSetW(VectorZero(), 1.0f))
-        , Location(VectorZero())
+        , Translation(VectorZero())
         , Scale(VectorSetW(MakeVectorRegister(1.0f), 0.0f))
     {}
 }

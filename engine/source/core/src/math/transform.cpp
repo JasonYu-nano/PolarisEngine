@@ -11,7 +11,7 @@ namespace Engine
 
         result.Rotation = a.Rotation * b.Rotation;
         result.Scale = a.Scale * b.Scale;
-        result.Location = rotationB * (scaleB * a.Location) + b.Location;
+        result.Translation = rotationB * (scaleB * a.Translation) + b.Translation;
     }
 
     Transform Transform::operator*(const Transform& other) const

@@ -1,6 +1,7 @@
 #include <array>
 #include "math/rotator.hpp"
 #include "math/quaternion.hpp"
+#include "math/matrix.hpp"
 
 #if WITH_ISPC
 #include "ispc/rotator_to_quaternion.hpp"
@@ -112,12 +113,9 @@ namespace Engine
         const float yawNoWinding = Math::FMod(Yaw, 360.0f);
         const float rollNoWinding = Math::FMod(Roll, 360.0f);
 
-        sp = Math::Sin(pitchNoWinding * radDiv2);
-        sy = Math::Sin(yawNoWinding * radDiv2);
-        sr = Math::Sin(rollNoWinding * radDiv2);
-        cp = Math::Cos(pitchNoWinding * radDiv2);
-        cy = Math::Cos(yawNoWinding * radDiv2);
-        cr = Math::Cos(rollNoWinding * radDiv2);
+        Math::SinCos(pitchNoWinding * radDiv2, sp, cp);
+        Math::SinCos(yawNoWinding * radDiv2, sy, cy);
+        Math::SinCos(rollNoWinding * radDiv2, sr, cr);
 
         Quat rotation;
         rotation.X = cr * sp * sy - sr * cp * cy;
@@ -126,5 +124,37 @@ namespace Engine
         rotation.W = cr * cp * cy + sr * sp * sy;
         return rotation;
 #endif
+    }
+
+    Matrix Rotator::ToMatrix() const
+    {
+        Matrix m;
+
+        float sp, sy, sr;
+        float cp, cy, cr;
+        Math::SinCos(Math::ToRadians(Pitch), sp, cp);
+        Math::SinCos(Math::ToRadians(Yaw), sy, cy);
+        Math::SinCos(Math::ToRadians(Roll), sr, cr);
+
+        m.M[0][0] = cp * cy;
+        m.M[0][1] = cp * sy;
+        m.M[0][2] = sp;
+        m.M[0][3] = 0.0f;
+
+        m.M[1][0] = sr * sp * cy - cr * sy;
+        m.M[1][1] = sr * sp * sy + cr * cy;
+        m.M[1][2] = - sr * cp;
+        m.M[1][3] = 0.0f;
+
+        m.M[2][0] = -(cr * sp * cy + sr * sy );
+        m.M[2][1] = cy * sr - cr * sp * sy;
+        m.M[2][2] = cr * cp;
+        m.M[2][3] = 0.0f;
+
+        m.M[3][0] = 0.0f;
+        m.M[3][1] = 0.0f;
+        m.M[3][2] = 0.0f;
+        m.M[3][3] = 1.f;
+        return m;
     }
 }
