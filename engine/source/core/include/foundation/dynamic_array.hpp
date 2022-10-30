@@ -314,6 +314,50 @@ namespace Engine
             return Data()[ArraySize - 1];
         }
 
+        bool AddUnique(const ElementType& element)
+        {
+            bool isUnique = true;
+            const ElementType* data = Data();
+
+            for (SizeType idx = 0; idx < ArraySize; ++idx)
+            {
+                if (data[idx] == element)
+                {
+                    isUnique = false;
+                    break;
+                }
+            }
+
+            if (isUnique)
+            {
+                Add(element);
+            }
+
+            return isUnique;
+        }
+
+        bool AddUnique(ElementType&& element)
+        {
+            bool isUnique = true;
+            const ElementType* data = Data();
+
+            for (SizeType idx = 0; idx < ArraySize; ++idx)
+            {
+                if (data[idx] == element)
+                {
+                    isUnique = false;
+                    break;
+                }
+            }
+
+            if (isUnique)
+            {
+                Add(Forward<ElementType>(element));
+            }
+
+            return isUnique;
+        }
+
         void Push(const ElementType& element)
         {
             Add(element);

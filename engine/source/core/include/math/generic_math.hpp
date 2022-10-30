@@ -78,7 +78,6 @@ namespace Engine
 
         static void SinCos(float value, float& sin, float& cos);
 
-
         static float Acos(float cos)
         {
             return std::acos(cos);

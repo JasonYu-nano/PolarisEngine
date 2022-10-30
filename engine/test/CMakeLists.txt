@@ -14,3 +14,4 @@ conan_cmake_install(PATH_OR_REFERENCE .
 find_package(GTest)
 
 add_subdirectory(core_test)
+add_subdirectory(taskflow_test)
