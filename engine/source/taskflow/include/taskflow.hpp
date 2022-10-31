@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Graph.hpp"
-#include "Task.hpp"
+#include "graph.hpp"
+#include "task.hpp"
 
 namespace Engine
 {
@@ -17,7 +17,7 @@ namespace Engine
         }
 
     private:
-        //TODO: Cache graph per thread
+        //TODO: Cache Graph per thread
         Graph TaskGraph;
     };
 }

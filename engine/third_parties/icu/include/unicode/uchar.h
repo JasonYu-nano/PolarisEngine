@@ -126,7 +126,7 @@ U_CDECL_BEGIN
  * - space:     u_isUWhiteSpace(c) or u_hasBinaryProperty(c, UCHAR_WHITE_SPACE)
  * - blank:     u_isblank(c) or u_hasBinaryProperty(c, UCHAR_POSIX_BLANK)
  * - cntrl:     u_charType(c)==U_CONTROL_CHAR
- * - graph:     u_hasBinaryProperty(c, UCHAR_POSIX_GRAPH)
+ * - Graph:     u_hasBinaryProperty(c, UCHAR_POSIX_GRAPH)
  * - print:     u_hasBinaryProperty(c, UCHAR_POSIX_PRINT)
  *
  * Note: Some of the u_isxyz() functions in uchar.h predate, and do not match,
@@ -135,7 +135,7 @@ U_CDECL_BEGIN
  *
  * \htmlonly
  * The C/POSIX character classes are also available in UnicodeSet patterns,
- * using patterns like [:graph:] or \p{graph}.
+ * using patterns like [:Graph:] or \p{Graph}.
  * \endhtmlonly
  *
  * Note: There are several ICU whitespace functions.
@@ -400,7 +400,7 @@ typedef enum UProperty {
         See the uchar.h file documentation.
         @stable ICU 3.4 */
     UCHAR_POSIX_BLANK=45,
-    /** Binary property graph (a C/POSIX character class).
+    /** Binary property Graph (a C/POSIX character class).
         Implemented according to the UTS #18 Annex C Standard Recommendation.
         See the uchar.h file documentation.
         @stable ICU 3.4 */

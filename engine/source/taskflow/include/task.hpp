@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GraphNode.hpp"
+#include "graph_node.hpp"
 
 namespace Engine
 {
