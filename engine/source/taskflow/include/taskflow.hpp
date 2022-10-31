@@ -16,6 +16,8 @@ namespace Engine
             return *task;
         }
 
+        const Graph& GetGraph() const { return TaskGraph; }
+
     private:
         //TODO: Cache Graph per thread
         Graph TaskGraph;

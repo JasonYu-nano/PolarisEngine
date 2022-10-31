@@ -11,6 +11,8 @@ namespace Engine
 
         void Precede(GraphNode* node);
 
+        int32 DependencyNum() const { return Dependencies.Size(); }
+
         GraphNode& operator-- ()
         {
             return *this;
