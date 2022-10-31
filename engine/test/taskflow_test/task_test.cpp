@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "taskflow.hpp"
+#include "task_executor.hpp"
 
 namespace Engine
 {
@@ -7,6 +7,7 @@ namespace Engine
     {
         Taskflow taskflow;
         auto lambda = [](){};
-        auto task = taskflow.Add(lambda);
+        auto& task = taskflow.Add(lambda);
+        GExecutor.Execute(taskflow);
     }
 }

@@ -10,6 +10,11 @@ namespace Engine
         using NodeIterator = DynamicArray<GraphNode*>::Iterator;
         using ConstNodeIterator = DynamicArray<GraphNode*>::ConstIterator;
 
+        ~Graph()
+        {
+            Clear();
+        }
+
         void Add(GraphNode* newNode)
         {
             Nodes.Add(newNode);

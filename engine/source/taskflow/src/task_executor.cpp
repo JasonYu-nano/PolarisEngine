@@ -2,6 +2,7 @@
 
 namespace Engine
 {
+    TaskExecutor GExecutor(std::thread::hardware_concurrency());
 
     void TaskExecutor::Execute(const Taskflow& tf)
     {
@@ -13,5 +14,11 @@ namespace Engine
                 IndependentTasks.Add(const_cast<GraphNode*>(node));
             }
         }
+    }
+
+    TaskExecutor::TaskExecutor(uint32 threadNum)
+    {
+        Worker = MakeUnique<ThreadPool>(threadNum);
+        Worker->Setup();
     }
 }
