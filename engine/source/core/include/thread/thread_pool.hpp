@@ -6,20 +6,49 @@
 #include <future>
 #include "foundation/dynamic_array.hpp"
 #include "definitions_core.hpp"
+#include "foundation/smart_ptr.hpp"
 
 namespace Engine
 {
+    class CORE_API IWorkThreadTask
+    {
+    public:
+        virtual ~IWorkThreadTask() = default;
+
+        virtual void Run() = 0;
+    };
+
+    class PooledThread
+    {
+    public:
+        PooledThread();
+
+        PooledThread(PooledThread&& other) noexcept ;
+
+        void operator()();
+
+    private:
+        IWorkThreadTask* Task{ nullptr };
+        std::jthread Thread;
+        std::mutex Mutex;
+        std::condition_variable Condition;
+        std::atomic<bool> Stop;
+    };
+
     class CORE_API ThreadPool
     {
     public:
-        ThreadPool(int32 threadNum);
+        ThreadPool() = default;
 
-        void Setup();
+        virtual ~ThreadPool() { Destroy(); }
+
+        void Create(int32 threadNum);
+
+        void Destroy();
+
+        virtual void AddTask(const SharedPtr<IWorkThreadTask>& task);
     private:
-        std::atomic<bool> Terminated;
-        std::condition_variable Event;
-        std::mutex Mutex;
-        DynamicArray<std::jthread> Workers;
-        std::queue<std::packaged_task<void()>> TaskQueue;
+        DynamicArray<PooledThread> Workers;
+        std::queue<SharedPtr<IWorkThreadTask>> TaskQueue;
     };
 }

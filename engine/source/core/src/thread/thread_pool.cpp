@@ -2,7 +2,30 @@
 
 namespace Engine
 {
-    ThreadPool::ThreadPool(int32 threadNum)
+    void PooledThread::operator()()
+    {
+
+    }
+
+    PooledThread::PooledThread()
+    {
+        Thread = std::jthread([this]{
+            while (!Stop)
+            {
+                std::unique_lock<std::mutex> lock(Mutex);
+                Condition.wait(lock, [this] { return Task != nullptr; });
+
+                Task->Run();
+            }
+        });
+    }
+
+    PooledThread::PooledThread(PooledThread&& other) noexcept
+        : Task(other.Task)
+        , Thread(MoveTemp(other.Thread))
+    {}
+
+    void ThreadPool::Create(int32 threadNum)
     {
         if (threadNum <= 0)
         {
@@ -10,29 +33,21 @@ namespace Engine
         }
 
         Workers.Reserve(threadNum);
-    }
 
-    void ThreadPool::Setup()
-    {
-        for (int32 idx = 0; idx < Workers.Capacity(); ++idx)
+        for (int32 idx = 0; idx < threadNum; ++idx)
         {
             //TODO: Name thread
-            Workers.Add(std::jthread([this]() {
-                while (true)
-                {
-                    std::packaged_task<void()> task;
-                    {
-                        std::unique_lock<std::mutex> lock(Mutex);
-                        Event.wait(lock, [this]{
-                            return !TaskQueue.empty();
-                        });
-
-                        task = MoveTemp(TaskQueue.front());
-                        TaskQueue.pop();
-                    }
-                    task();
-                }
-            }));
+            Workers.Add(PooledThread());
         }
+    }
+
+    void ThreadPool::Destroy()
+    {
+        Workers.Clear();
+    }
+
+    void ThreadPool::AddTask(const SharedPtr<IWorkThreadTask>& task)
+    {
+        TaskQueue.push(task);
     }
 }

@@ -6,18 +6,25 @@
 
 namespace Engine
 {
+    struct ThreadPoolInitializer
+    {
+        ThreadPoolInitializer();
+    };
+
     class TASKFLOW_API TaskExecutor
     {
     public:
-        explicit TaskExecutor(uint32 threadNum);
+        TaskExecutor() = default;
 
         void Execute(const Taskflow& tf);
 
     private:
-        UniquePtr<ThreadPool> Worker;
+        static ThreadPoolInitializer Initializer;
         //TODO: Change to queue
         DynamicArray<GraphNode*> IndependentTasks;
     };
 
     extern TASKFLOW_API TaskExecutor GExecutor;
+
+    extern UniquePtr<ThreadPool> GTaskflowThreadPool;
 }
