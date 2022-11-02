@@ -15,12 +15,11 @@ namespace Engine
 
     void TaskExecutor::Execute(const Taskflow& tf)
     {
-        const Graph& graph = tf.GetGraph();
-        for (const GraphNode* node : graph)
+        for (const GraphTaskBase* task : tf)
         {
-            if (node->DependencyNum() <= 0)
+            if (task->DependencyNum() <= 0)
             {
-                IndependentTasks.Add(const_cast<GraphNode*>(node));
+                task->ConditionDispatch();
             }
         }
     }

@@ -7,7 +7,7 @@ namespace Engine
     {
         Taskflow taskflow;
         auto lambda = [](){};
-        auto& task = taskflow.Add(lambda);
+        auto& task = taskflow.Add<decltype(lambda)>(lambda);
         GExecutor.Execute(taskflow);
     }
 }

@@ -8,8 +8,9 @@ namespace Engine
     class TASKFLOW_API GraphNode
     {
     public:
+        virtual ~GraphNode() = default;
 
-        void Precede(GraphNode* node);
+        virtual void Precede(GraphNode* node);
 
         int32 DependencyNum() const { return Dependencies.Size(); }
 
@@ -30,7 +31,7 @@ namespace Engine
             return *this;
         }
 
-    private:
+    protected:
         DynamicArray<GraphNode*> Successors;
         DynamicArray<GraphNode*> Dependencies;
     };

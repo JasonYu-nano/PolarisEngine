@@ -20,8 +20,6 @@ namespace Engine
 
     private:
         static ThreadPoolInitializer Initializer;
-        //TODO: Change to queue
-        DynamicArray<GraphNode*> IndependentTasks;
     };
 
     extern TASKFLOW_API TaskExecutor GExecutor;

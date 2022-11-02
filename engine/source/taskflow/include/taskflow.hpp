@@ -1,25 +1,63 @@
 #pragma once
 
 #include "graph.hpp"
-#include "task.hpp"
+#include "graph_task.hpp"
 
 namespace Engine
 {
     class TASKFLOW_API Taskflow
     {
     public:
-        template <ConceptCallable Callable>
-        Task<Callable>& Add(const Callable& callable)
+    public:
+        using NodeIterator = DynamicArray<GraphTaskBase*>::Iterator;
+        using ConstNodeIterator = DynamicArray<GraphTaskBase*>::ConstIterator;
+
+        ~Taskflow()
         {
-            Task<Callable>* task = new Task<Callable>(callable);
-            TaskGraph.Add(task);
+            Clear();
+        }
+
+        template <ConceptCallable Callable, typename... ArgTypes>
+        GraphTask<Callable>& Add(ArgTypes&&... args)
+        {
+            GraphTask<Callable>* task = new GraphTask<Callable>(Forward<ArgTypes>(args)...);
+            Add(task);
             return *task;
         }
 
-        const Graph& GetGraph() const { return TaskGraph; }
+        void Add(GraphTaskBase* newNode)
+        {
+            Tasks.Add(newNode);
+        }
+
+        void Clear()
+        {
+            for (GraphTaskBase* node : Tasks)
+            {
+                delete node;
+            }
+            Tasks.Clear();
+        }
+
+        bool Empty() const
+        {
+            return Tasks.IsEmpty();
+        }
+
+        int32 Size() const
+        {
+            return Tasks.Size();
+        }
+
+        NodeIterator begin() { return Tasks.begin(); }
+
+        ConstNodeIterator begin() const { return Tasks.begin(); }
+
+        NodeIterator end() { return Tasks.end(); }
+
+        ConstNodeIterator end() const { return Tasks.end(); }
 
     private:
-        //TODO: Cache Graph per thread
-        Graph TaskGraph;
+        DynamicArray<GraphTaskBase*> Tasks;
     };
 }
