@@ -11,13 +11,20 @@ namespace Engine
         ThreadPoolInitializer();
     };
 
-    class TASKFLOW_API TaskExecutor
+    class TaskExecutor
     {
     public:
+        static TaskExecutor& Get()
+        {
+            static TaskExecutor executor;
+            return executor;
+        }
+
         TaskExecutor() = default;
 
-        void Execute(const Taskflow& tf);
+        void Execute(Taskflow& tf);
 
+        void DispatchTask(GraphTaskBase* task);
     private:
         static ThreadPoolInitializer Initializer;
     };

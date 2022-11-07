@@ -11,6 +11,8 @@ namespace Engine
     public:
         using FuncType = RetType(ArgTypes...);
 
+        Delegate() = default;
+
         Delegate(const Delegate& other) = delete;
 
         Delegate(Delegate&& other) noexcept : Instance(MoveTemp(other.Instance)) {}

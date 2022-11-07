@@ -1,50 +1,45 @@
 #pragma once
 
-#include "graph_node.hpp"
+#include "thread/thread_pool.hpp"
+#include "definitions_taskflow.hpp"
 
 namespace Engine
 {
-    class GraphTaskBase
+    class TASKFLOW_API GraphTaskBase : public IWorkThreadTask
     {
     public:
-        virtual ~GraphTaskBase() = default;
+        ~GraphTaskBase() override = default;
 
-        virtual void Precede(GraphTaskBase* node)
-        {
-            if (node != this)
-            {
-                Prerequisites.AddUnique(node);
-                node->Dependencies.Add(this);
-                ++WaitingPrerequisites;
-            }
-        }
+        virtual void Precede(GraphTaskBase* node);
 
-        int32 DependencyNum() const { return Dependencies.Size(); }
+        int32 DependencyNum() const { return Prerequisites.Size(); }
 
-        virtual void ConditionDispatch() const = 0;
+        virtual void ConditionDispatch();
 
-        GraphTaskBase& operator-- ()
-        {
-            return *this;
-        }
-
-        GraphTaskBase& operator> (GraphTaskBase* node)
-        {
-            node->Precede(this);
-            return *this;
-        }
-
-        GraphTaskBase& operator< (GraphTaskBase* node)
-        {
-            Precede(node);
-            return *this;
-        }
+        void Run() override = 0;
 
     protected:
         std::atomic<int32> WaitingPrerequisites;
         DynamicArray<GraphTaskBase*> Prerequisites;
-        DynamicArray<GraphTaskBase*> Dependencies;
+        DynamicArray<GraphTaskBase*> Subsequences;
     };
+
+    TASKFLOW_API inline GraphTaskBase& operator --(GraphTaskBase& task, int)
+    {
+        return task;
+    }
+
+    TASKFLOW_API inline GraphTaskBase& operator> (GraphTaskBase& pre, GraphTaskBase& depend)
+    {
+        depend.Precede(&pre);
+        return depend;
+    }
+
+    TASKFLOW_API inline GraphTaskBase& operator< (GraphTaskBase& depend, GraphTaskBase& pre)
+    {
+        depend.Precede(&pre);
+        return pre;
+    }
 
     template <typename T>
     concept ConceptCallable = requires(T a)
@@ -55,7 +50,7 @@ namespace Engine
     template <ConceptCallable CallableType>
     class GraphTask : public GraphTaskBase
     {
-        using Super = GraphNode;
+        using Super = GraphTaskBase;
         friend class Taskflow;
     public:
         template <typename... ArgTypes>
@@ -63,20 +58,11 @@ namespace Engine
             : Callable(CallableType(Forward<ArgTypes>(args)...))
         {}
 
-        void ConditionDispatch() const override
-        {
-            if (WaitingPrerequisites > 0)
-            {
-                return;
-            }
-            // TODO: Dispatch task
-        }
-
-        void Run()
+        void Run() override
         {
             Callable();
 
-            for (GraphTaskBase* child : Dependencies)
+            for (GraphTaskBase* child : Subsequences)
             {
                 child->ConditionDispatch();
             }
@@ -85,5 +71,24 @@ namespace Engine
     private:
         explicit GraphTask(const CallableType& callable) : Callable(callable) {}
         CallableType Callable;
+    };
+
+    class TASKFLOW_API LambdaTask : public GraphTaskBase
+    {
+    public:
+        explicit LambdaTask(std::function<void()> lambda) : Lambda(MoveTemp(lambda)) {}
+
+        void Run() override
+        {
+            Lambda();
+
+            for (GraphTaskBase* child : Subsequences)
+            {
+                child->ConditionDispatch();
+            }
+        }
+
+    private:
+        std::function<void()> Lambda;
     };
 }

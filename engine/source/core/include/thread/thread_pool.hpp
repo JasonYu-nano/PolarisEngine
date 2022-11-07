@@ -10,6 +10,8 @@
 
 namespace Engine
 {
+    class ThreadPool;
+
     class CORE_API IWorkThreadTask
     {
     public:
@@ -18,19 +20,20 @@ namespace Engine
         virtual void Run() = 0;
     };
 
-    class PooledThread
+    class WorkThread
     {
+        friend class ThreadPool;
     public:
-        PooledThread();
+        WorkThread(ThreadPool& owner);
 
-        PooledThread(PooledThread&& other) noexcept ;
+        WorkThread(WorkThread&& other) noexcept ;
 
         void operator()();
 
     private:
-        IWorkThreadTask* Task{ nullptr };
+        ThreadPool& Owner;
+        IWorkThreadTask* volatile Task{ nullptr };
         std::jthread Thread;
-        std::mutex Mutex;
         std::condition_variable Condition;
         std::atomic<bool> Stop;
     };
@@ -46,9 +49,15 @@ namespace Engine
 
         void Destroy();
 
-        virtual void AddTask(const SharedPtr<IWorkThreadTask>& task);
+        virtual void AddTask(IWorkThreadTask* task);
+
+        virtual IWorkThreadTask* GetNextTask(WorkThread& worker);
     private:
-        DynamicArray<PooledThread> Workers;
-        std::queue<SharedPtr<IWorkThreadTask>> TaskQueue;
+        DynamicArray<WorkThread*> AllWorkers;
+        DynamicArray<WorkThread> TestAllWorkers;
+        std::queue<IWorkThreadTask*> TaskQueue;
+        std::queue<WorkThread*> IdleWorkers;
+        std::mutex TaskQueueMutex;
+        std::mutex WorkerQueueMutex;
     };
 }

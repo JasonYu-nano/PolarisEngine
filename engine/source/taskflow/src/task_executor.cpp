@@ -8,19 +8,26 @@ namespace Engine
 
     ThreadPoolInitializer::ThreadPoolInitializer()
     {
-        GTaskflowThreadPool->Create(static_cast<int32>(std::thread::hardware_concurrency()));
+        //GTaskflowThreadPool->Create(static_cast<int32>(std::thread::hardware_concurrency()));
+        GTaskflowThreadPool->Create(1);
     }
 
     ThreadPoolInitializer TaskExecutor::Initializer = ThreadPoolInitializer();
 
-    void TaskExecutor::Execute(const Taskflow& tf)
+    void TaskExecutor::Execute(Taskflow& tf)
     {
-        for (const GraphTaskBase* task : tf)
+        for (GraphTaskBase* task : tf)
         {
             if (task->DependencyNum() <= 0)
             {
                 task->ConditionDispatch();
             }
         }
+    }
+
+    void TaskExecutor::DispatchTask(GraphTaskBase* task)
+    {
+        ENSURE(task);
+        GTaskflowThreadPool->AddTask(task);
     }
 }

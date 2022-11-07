@@ -1,13 +1,14 @@
 #include "gtest/gtest.h"
-#include "task_executor.hpp"
+#include "../../source/taskflow/src/task_executor.hpp"
 
 namespace Engine
 {
     TEST(TaskTest, Base)
     {
         Taskflow taskflow;
-        auto lambda = [](){};
-        auto& task = taskflow.Add<decltype(lambda)>(lambda);
-        GExecutor.Execute(taskflow);
+        auto& task = taskflow.Add([](){
+            std::cout<<"11111"<<std::endl;
+        });
+        taskflow.Execute();
     }
 }

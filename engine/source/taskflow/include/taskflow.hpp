@@ -1,6 +1,5 @@
 #pragma once
 
-#include "graph.hpp"
 #include "graph_task.hpp"
 
 namespace Engine
@@ -8,12 +7,12 @@ namespace Engine
     class TASKFLOW_API Taskflow
     {
     public:
-    public:
         using NodeIterator = DynamicArray<GraphTaskBase*>::Iterator;
         using ConstNodeIterator = DynamicArray<GraphTaskBase*>::ConstIterator;
 
         ~Taskflow()
         {
+            Wait();
             Clear();
         }
 
@@ -25,9 +24,11 @@ namespace Engine
             return *task;
         }
 
-        void Add(GraphTaskBase* newNode)
+        LambdaTask& Add(std::function<void()> lambda)
         {
-            Tasks.Add(newNode);
+            LambdaTask* task = new LambdaTask(MoveTemp(lambda));
+            Add(task);
+            return *task;
         }
 
         void Clear()
@@ -49,6 +50,14 @@ namespace Engine
             return Tasks.Size();
         }
 
+        void Execute();
+
+        /**
+         * Block current thread until taskflow completed. It's thread unsafe
+         * Can only block once
+         */
+        void Wait();
+
         NodeIterator begin() { return Tasks.begin(); }
 
         ConstNodeIterator begin() const { return Tasks.begin(); }
@@ -58,6 +67,19 @@ namespace Engine
         ConstNodeIterator end() const { return Tasks.end(); }
 
     private:
+        void Add(GraphTaskBase* newNode)
+        {
+            Tasks.Add(newNode);
+        }
+
+        void OnLastTaskCompleted()
+        {
+            Promise.set_value();
+        }
+
+    private:
+        bool PromiseRetrieved{ false };
+        std::promise<void> Promise;
         DynamicArray<GraphTaskBase*> Tasks;
     };
 }
