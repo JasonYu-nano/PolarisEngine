@@ -14,7 +14,7 @@ namespace Engine
     class TaskExecutor
     {
     public:
-        static TaskExecutor& Get()
+        static inline TaskExecutor& Get()
         {
             static TaskExecutor executor;
             return executor;
@@ -29,5 +29,5 @@ namespace Engine
         static ThreadPoolInitializer Initializer;
     };
 
-    extern UniquePtr<ThreadPool> GTaskflowThreadPool;
+    extern UniquePtr<IThreadPool> GTaskflowThreadPool;
 }

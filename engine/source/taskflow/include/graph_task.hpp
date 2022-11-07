@@ -31,20 +31,14 @@ namespace Engine
 
     TASKFLOW_API inline GraphTaskBase& operator> (GraphTaskBase& pre, GraphTaskBase& depend)
     {
-        depend.Precede(&pre);
+        pre.Precede(&depend);
         return depend;
-    }
-
-    TASKFLOW_API inline GraphTaskBase& operator< (GraphTaskBase& depend, GraphTaskBase& pre)
-    {
-        depend.Precede(&pre);
-        return pre;
     }
 
     template <typename T>
     concept ConceptCallable = requires(T a)
     {
-        T();
+        a();
     };
 
     template <ConceptCallable CallableType>

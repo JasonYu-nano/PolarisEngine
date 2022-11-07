@@ -6,6 +6,8 @@ namespace Engine
 {
     void Taskflow::Execute()
     {
+        ENSURE(!Executed);
+        Executed = true;
         CompletedGraphTask* lastTask = new CompletedGraphTask();
         lastTask->OnTaskCompleted.BindRaw(this, &Taskflow::OnLastTaskCompleted);
 
@@ -25,5 +27,14 @@ namespace Engine
             PromiseRetrieved = true;
             Promise.get_future().wait();
         }
+    }
+
+    void Taskflow::Clear()
+    {
+        for (GraphTaskBase* node : Tasks)
+        {
+            delete node;
+        }
+        Tasks.Clear();
     }
 }

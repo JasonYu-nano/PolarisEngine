@@ -2,7 +2,7 @@
 
 namespace Engine
 {
-    UniquePtr<ThreadPool> GTaskflowThreadPool = MakeUnique<ThreadPool>();
+    UniquePtr<IThreadPool> GTaskflowThreadPool = MakeUnique<BuiltInThreadPool>();
 
     ThreadPoolInitializer::ThreadPoolInitializer()
     {

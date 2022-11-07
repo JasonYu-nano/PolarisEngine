@@ -31,15 +31,6 @@ namespace Engine
             return *task;
         }
 
-        void Clear()
-        {
-            for (GraphTaskBase* node : Tasks)
-            {
-                delete node;
-            }
-            Tasks.Clear();
-        }
-
         bool Empty() const
         {
             return Tasks.IsEmpty();
@@ -50,11 +41,15 @@ namespace Engine
             return Tasks.Size();
         }
 
+        /**
+         * Execute taskflow in multi thread.
+         * One task flow can only execute once.
+         */
         void Execute();
 
         /**
          * Block current thread until taskflow completed. It's thread unsafe
-         * Can only block once
+         * Can only block once.
          */
         void Wait();
 
@@ -72,6 +67,8 @@ namespace Engine
             Tasks.Add(newNode);
         }
 
+        void Clear();
+
         void OnLastTaskCompleted()
         {
             Promise.set_value();
@@ -79,6 +76,7 @@ namespace Engine
 
     private:
         bool PromiseRetrieved{ false };
+        std::atomic<bool> Executed{ false };
         std::promise<void> Promise;
         DynamicArray<GraphTaskBase*> Tasks;
     };

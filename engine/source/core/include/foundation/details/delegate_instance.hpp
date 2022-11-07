@@ -70,12 +70,12 @@ namespace Engine
             : Super(Forward<VarTypes>(vars)...), Fun(fun)
         {}
 
-        virtual RetType Execute(ArgTypes&&... args)
+        RetType Execute(ArgTypes&&... args) override
         {
             return this->Variables.ApplyAfter(Fun, Forward<ArgTypes>(args)...);
         }
 
-        virtual bool IsSafeToExecute() const
+        bool IsSafeToExecute() const override
         {
             return true;
         }
@@ -99,13 +99,13 @@ namespace Engine
             : Super(Forward<VarTypes>(vars)...), Obj(obj), Fun(fun)
         {}
 
-        virtual RetType Execute(ArgTypes&&... args)
+        RetType Execute(ArgTypes&&... args) override
         {
             ENSURE(Obj != nullptr && Fun != nullptr);
             return this->Variables.ApplyAfter(Fun, Obj, Forward<ArgTypes>(args)...);
         }
 
-        virtual bool IsSafeToExecute() const
+        bool IsSafeToExecute() const override
         {
             return true;
         }
@@ -135,13 +135,13 @@ namespace Engine
             : Super(Forward<VarTypes>(vars)...), Obj(obj), Fun(fun)
         {}
 
-        virtual RetType Execute(ArgTypes&&... args)
+        RetType Execute(ArgTypes&&... args) override
         {
             ENSURE(!Obj.expired() && Fun != nullptr);
             return this->Variables.ApplyAfter(Fun, Obj.lock().get(), Forward<ArgTypes>(args)...);
         }
 
-        virtual bool IsSafeToExecute() const
+        bool IsSafeToExecute() const override
         {
             return !Obj.expired() && Fun != nullptr;
         }

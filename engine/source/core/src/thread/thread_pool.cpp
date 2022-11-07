@@ -1,14 +1,8 @@
-#include <iostream>
 #include "thread/thread_pool.hpp"
 
 namespace Engine
 {
-    void WorkThread::operator()()
-    {
-
-    }
-
-    WorkThread::WorkThread(ThreadPool& owner)
+    WorkThread::WorkThread(IThreadPool* owner)
         : Owner(owner)
     {
         Thread = std::jthread([this]{
@@ -24,7 +18,7 @@ namespace Engine
                 while (localTask)
                 {
                     localTask->Run();
-                    localTask = Owner.GetNextTask(*this);
+                    localTask = Owner->GetNextTask(*this);
                 }
             }
         });
@@ -36,7 +30,7 @@ namespace Engine
         , Thread(MoveTemp(other.Thread))
     {}
 
-    void ThreadPool::Create(int32 threadNum)
+    void BuiltInThreadPool::Create(int32 threadNum)
     {
         if (threadNum <= 0)
         {
@@ -48,22 +42,13 @@ namespace Engine
         for (int32 idx = 0; idx < threadNum; ++idx)
         {
             //TODO: Name thread
-            WorkThread* thread = new WorkThread(*this);
+            WorkThread* thread = new WorkThread(this);
             AllWorkers.Add(thread);
             IdleWorkers.push(thread);
         }
     }
 
-    void ThreadPool::Destroy()
-    {
-        for (auto&& worker : AllWorkers)
-        {
-            worker->Stop = true;
-        }
-        AllWorkers.Clear();
-    }
-
-    void ThreadPool::AddTask(IWorkThreadTask* task)
+    void BuiltInThreadPool::AddTask(IWorkThreadTask* task)
     {
         ENSURE(task);
 
@@ -89,7 +74,7 @@ namespace Engine
         }
     }
 
-    IWorkThreadTask* ThreadPool::GetNextTask(WorkThread& worker)
+    IWorkThreadTask* BuiltInThreadPool::GetNextTask(WorkThread& worker)
     {
         {
             std::scoped_lock lock(TaskQueueMutex);
@@ -107,5 +92,15 @@ namespace Engine
         }
 
         return nullptr;
+    }
+
+    void BuiltInThreadPool::DestroyInternal()
+    {
+        for (auto&& worker : AllWorkers)
+        {
+            worker->Stop = true;
+            delete worker;
+        }
+        AllWorkers.Clear();
     }
 }

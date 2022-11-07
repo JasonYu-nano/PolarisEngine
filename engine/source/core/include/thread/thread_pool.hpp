@@ -10,7 +10,7 @@
 
 namespace Engine
 {
-    class ThreadPool;
+    class IThreadPool;
 
     class CORE_API IWorkThreadTask
     {
@@ -22,37 +22,57 @@ namespace Engine
 
     class WorkThread
     {
-        friend class ThreadPool;
     public:
-        WorkThread(ThreadPool& owner);
+        explicit WorkThread(IThreadPool* owner);
 
-        WorkThread(WorkThread&& other) noexcept ;
+        WorkThread(WorkThread&& other) noexcept;
 
-        void operator()();
+    public:
+        std::atomic<bool> Stop;
+        IWorkThreadTask* volatile Task{ nullptr };
+        std::condition_variable Condition;
 
     private:
-        ThreadPool& Owner;
-        IWorkThreadTask* volatile Task{ nullptr };
+        IThreadPool* Owner;
         std::jthread Thread;
-        std::condition_variable Condition;
-        std::atomic<bool> Stop;
     };
 
-    class CORE_API ThreadPool
+    class CORE_API IThreadPool
     {
     public:
-        ThreadPool() = default;
+        IThreadPool() = default;
 
-        virtual ~ThreadPool() { Destroy(); }
+        virtual ~IThreadPool() = default;
 
-        void Create(int32 threadNum);
+        virtual void Create(int32 threadNum) = 0;
 
-        void Destroy();
+        virtual void Destroy() = 0;
 
-        virtual void AddTask(IWorkThreadTask* task);
+        virtual void AddTask(IWorkThreadTask* task) = 0;
 
-        virtual IWorkThreadTask* GetNextTask(WorkThread& worker);
+        virtual IWorkThreadTask* GetNextTask(WorkThread& worker) = 0;
+    };
+
+    class CORE_API BuiltInThreadPool : public IThreadPool
+    {
+    public:
+        BuiltInThreadPool() = default;
+
+        ~BuiltInThreadPool() override { DestroyInternal(); }
+
+        void Create(int32 threadNum) override;
+
+        void Destroy() override
+        {
+            DestroyInternal();
+        }
+
+        void AddTask(IWorkThreadTask* task) override;
+
+        IWorkThreadTask* GetNextTask(WorkThread& worker) override;
     private:
+        void DestroyInternal();
+
         DynamicArray<WorkThread*> AllWorkers;
         DynamicArray<WorkThread> TestAllWorkers;
         std::queue<IWorkThreadTask*> TaskQueue;
