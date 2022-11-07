@@ -2,14 +2,11 @@
 
 namespace Engine
 {
-    TaskExecutor GExecutor = TaskExecutor();
-
     UniquePtr<ThreadPool> GTaskflowThreadPool = MakeUnique<ThreadPool>();
 
     ThreadPoolInitializer::ThreadPoolInitializer()
     {
-        //GTaskflowThreadPool->Create(static_cast<int32>(std::thread::hardware_concurrency()));
-        GTaskflowThreadPool->Create(1);
+        GTaskflowThreadPool->Create(static_cast<int32>(std::thread::hardware_concurrency()));
     }
 
     ThreadPoolInitializer TaskExecutor::Initializer = ThreadPoolInitializer();

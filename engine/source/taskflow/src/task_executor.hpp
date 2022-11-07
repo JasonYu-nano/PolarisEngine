@@ -29,7 +29,5 @@ namespace Engine
         static ThreadPoolInitializer Initializer;
     };
 
-    extern TASKFLOW_API TaskExecutor GExecutor;
-
     extern UniquePtr<ThreadPool> GTaskflowThreadPool;
 }
