@@ -45,7 +45,7 @@ namespace Engine
         EXPECT_TRUE(array[0] == 10);
 
         array.RemoveAt(0);
-        EXPECT_TRUE(array.IsEmpty());
+        EXPECT_TRUE(array.Empty());
 
         int& item = array.AddDefault();
         item = 10;
@@ -60,10 +60,10 @@ namespace Engine
         array.RemoveMatch([](const int& item){
            return item > 0;
         });
-        EXPECT_TRUE(array.IsEmpty());
+        EXPECT_TRUE(array.Empty());
 
         array.Clear(1);
-        EXPECT_TRUE(array.IsEmpty() && array.Capacity() == 1);
+        EXPECT_TRUE(array.Empty() && array.Capacity() == 1);
 
 
         DynamicArray<ListTestStruct> listOfStruct(8);

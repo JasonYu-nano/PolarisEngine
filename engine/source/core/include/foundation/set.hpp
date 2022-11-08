@@ -322,7 +322,7 @@ namespace Engine
             return Elements.Size();
         }
 
-        bool IsEmpty() const
+        bool Empty() const
         {
             return Size() == 0;
         }

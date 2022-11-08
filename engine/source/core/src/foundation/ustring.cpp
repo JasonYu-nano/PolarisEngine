@@ -193,7 +193,7 @@ namespace Engine
         return Source.Size() == 0;
     }
 
-    bool UString::IsEmpty() const
+    bool UString::Empty() const
     {
         return Source.Size() <= 1;
     }
@@ -545,7 +545,7 @@ namespace Engine
 
     UString UString::Repeated(int32 times) const
     {
-        if (IsEmpty() || times == 1)
+        if (Empty() || times == 1)
         {
             return *this;
         }

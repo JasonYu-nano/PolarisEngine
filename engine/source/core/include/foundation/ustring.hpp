@@ -118,7 +118,7 @@ namespace Engine
 
         bool IsNull() const;
 
-        bool IsEmpty() const;
+        bool Empty() const;
 
         void Resize(strsize len);
 

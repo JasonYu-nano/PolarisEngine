@@ -33,7 +33,7 @@ namespace Engine
 
         bool Empty() const
         {
-            return Tasks.IsEmpty();
+            return Tasks.Empty();
         }
 
         int32 Size() const

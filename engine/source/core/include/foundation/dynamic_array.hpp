@@ -543,7 +543,7 @@ namespace Engine
             return NumericLimits<SizeType>::Max();
         }
 
-        bool IsEmpty() const
+        bool Empty() const
         {
             return ArraySize == 0;
         }

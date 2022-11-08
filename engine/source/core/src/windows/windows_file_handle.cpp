@@ -144,7 +144,7 @@ namespace Engine
             else if (Handle != INVALID_HANDLE_VALUE)
             {
                 ret = ::FindNextFileW(Handle, &data);
-                if (!ret && !RecursionDirectories.IsEmpty())
+                if (!ret && !RecursionDirectories.Empty())
                 {
                     ::FindClose(Handle);
                     Handle = FindTop(data);

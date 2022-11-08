@@ -358,7 +358,7 @@ namespace Engine
         if (CheckDeviceExtensionSupport(device))
         {
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device);
-            swapChainAdequate = !swapChainSupport.Formats.IsEmpty() && !swapChainSupport.PresentModes.IsEmpty();
+            swapChainAdequate = !swapChainSupport.Formats.Empty() && !swapChainSupport.PresentModes.Empty();
         }
         return swapChainAdequate && indices.IsValid();
     }
@@ -381,7 +381,7 @@ namespace Engine
             }
         }
 
-        return requiredExtensions.IsEmpty();
+        return requiredExtensions.Empty();
     }
 
     SwapChainSupportDetails VulkanDynamicRHI::QuerySwapChainSupport(VkPhysicalDevice device)

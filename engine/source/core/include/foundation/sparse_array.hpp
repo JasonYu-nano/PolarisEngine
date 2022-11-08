@@ -291,7 +291,7 @@ namespace Engine
             return AllocateFlags[index];
         }
 
-        bool IsEmpty() const
+        bool Empty() const
         {
             return Size() == 0;
         }

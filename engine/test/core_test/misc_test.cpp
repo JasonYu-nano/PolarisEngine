@@ -205,7 +205,7 @@ namespace Engine
         str.Fill('b', 3);
         EXPECT_TRUE(str == "bbb");
         str.Fill('c', 0);
-        EXPECT_TRUE(str.IsEmpty());
+        EXPECT_TRUE(str.Empty());
 
         str = "test";
         UString rep = str.Repeated(2);
@@ -235,7 +235,7 @@ namespace Engine
 
         removeTest = "testtest";
         removeTest.Remove(str);
-        EXPECT_TRUE(removeTest.IsEmpty());
+        EXPECT_TRUE(removeTest.Empty());
 
         removeTest = "test";
         removeTest.Remove(1, 1);
