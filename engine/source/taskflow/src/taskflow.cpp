@@ -6,8 +6,8 @@ namespace Engine
 {
     void Taskflow::Execute()
     {
-        ENSURE(!Executed);
-        Executed = true;
+        ENSURE(Executable);
+        Executable = false;
         CompletedGraphTask* lastTask = new CompletedGraphTask();
         lastTask->OnTaskCompleted.BindRaw(this, &Taskflow::OnLastTaskCompleted);
 
@@ -22,6 +22,11 @@ namespace Engine
 
     void Taskflow::Wait()
     {
+        if (Executable)
+        {
+            return;
+        }
+
         if (!PromiseRetrieved)
         {
             PromiseRetrieved = true;

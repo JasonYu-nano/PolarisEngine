@@ -41,6 +41,8 @@ namespace Engine
             return Tasks.Size();
         }
 
+        bool IsExecutable() const { return Executable; }
+
         /**
          * Execute taskflow in multi thread.
          * One task flow can only execute once.
@@ -76,7 +78,7 @@ namespace Engine
 
     private:
         bool PromiseRetrieved{ false };
-        std::atomic<bool> Executed{ false };
+        std::atomic<bool> Executable{ true };
         std::promise<void> Promise;
         DynamicArray<GraphTaskBase*> Tasks;
     };
