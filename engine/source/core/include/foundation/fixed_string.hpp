@@ -2,6 +2,7 @@
 
 #include "definitions_core.hpp"
 #include "foundation/details/string_entry_pool.hpp"
+#include "foundation/string.hpp"
 
 namespace Engine
 {
@@ -10,11 +11,11 @@ namespace Engine
     public:
         FixedString() = default;
 
-        FixedString(const char* latain1);
+        explicit FixedString(const char* str);
 
-        FixedString(StringView str);
+        explicit FixedString(const StringView& str);
 
-        FixedString(UStringView str);
+        explicit FixedString(const String& str);
 
         FixedString(const FixedString& other);
 
@@ -24,15 +25,13 @@ namespace Engine
 
         bool operator!= (const FixedString& other) const;
 
-        UString ToString() const;
+        String ToString() const;
 
         FixedEntryId GetEntryId() const {return EntryId;}
 
         uint32 GetNumber() const;
 
     private:
-        void MakeFixedString(UStringView view);
-
         void MakeFixedString(StringView view);
 
     private:

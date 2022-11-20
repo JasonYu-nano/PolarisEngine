@@ -1,33 +1,15 @@
 #include "gtest/gtest.h"
 #include "core_minimal_public.hpp"
-#include "foundation/char_utils.hpp"
 #include "math/city_hash.hpp"
 #include "foundation/fixed_string.hpp"
-#include "foundation/ustring.hpp"
 #include "file_system/path.hpp"
 #include "file_system/file_system.hpp"
+#include "foundation/string.hpp"
+#include "foundation/encoding.hpp"
+#include "misc/type_hash.hpp"
 
 namespace Engine
 {
-    TEST(CharTest, Base)
-    {
-        ansi c = 'C';
-        c = CharUtils::ToLower(c);
-        EXPECT_TRUE(c == 'c');
-
-        c = CharUtils::ToUpper(c);
-        EXPECT_TRUE(c == 'C');
-
-        EXPECT_TRUE(CharUtils::Compare(u"A", "A") == 0);
-
-        UString str = "a";
-        EXPECT_TRUE(CharUtils::Compare(str.Data(), "A") == 1);
-
-        UChar uch = 0x6C49;
-        CharUtils::Compare(&uch, U"你好");
-        //uch.ToLatin1();
-    }
-
     TEST(Codecvt, All)
     {
         const char* a = "你好";
@@ -38,8 +20,8 @@ namespace Engine
 
     TEST(Path, All)
     {
-        UString path = "c:/dirA\\dirB/file.ex";
-        UString ex = Path::GetShortName(path, false);
+        String path = "c:/dirA\\dirB/file.ex";
+        String ex = Path::GetShortName(path, false);
         EXPECT_TRUE(Path::GetExtension(path) == ".ex");
         EXPECT_TRUE(Path::GetShortName(path, false) == "file");
         EXPECT_TRUE(Path::SplitPath(path).Size() == 4);
@@ -61,13 +43,6 @@ namespace Engine
         EXPECT_TRUE(name4.ToString() == "Hello_World_12");
     }
 
-    TEST(UChar, Base)
-    {
-        UChar ch('A');
-        ch.ToLower();
-        EXPECT_TRUE(ch == 'a');
-    }
-
     TEST(StringView, Ctor)
     {
         StringView view = "abcd1234";
@@ -81,174 +56,227 @@ namespace Engine
         EXPECT_TRUE(ret.Size() == 4);
     }
 
-    TEST(UString, Ctor)
+    struct TestChar
     {
-        UString str = UString('a');
-        EXPECT_TRUE(str[0] == 'a');
+        TestChar() {};
 
-        str = UString::FromLatin1("1234\0");
-        EXPECT_TRUE(str[0] == '1' && str[1] == '2' && str[2] == '3' && str[3] == '4');
+        TestChar(char c) : Data(c) {};
 
-        str = UString::FromUtf8("你好");
-        UString str2 = UString::FromStdString("你好");
-        EXPECT_TRUE(str == str2);
+        ~TestChar()
+        {
+            Data = '0';
+        }
 
-        auto u8 = str.ToUtf8();
-        EXPECT_TRUE(UString::FromUtf8(u8.Data()) == str);
+        friend bool operator== (const TestChar& lhs, const TestChar& rhs)
+        {
+            return lhs.Data == rhs.Data;
+        }
 
-        EXPECT_TRUE(str.ToStdString() == u8.Data());
+        friend bool operator!= (const TestChar& lhs, const TestChar& rhs)
+        {
+            return lhs.Data != rhs.Data;
+        }
+
+        char Data{ '\0' };
+    };
+
+    template <>
+    struct CharTraits<TestChar> : PrivateCharTraits<TestChar, int8> {};
+
+    using TestString = BasicString<TestChar>;
+
+    TEST(TestString, Ctor)
+    {
+        TestChar c('f');
+        TestString str(c);
+
+        TestChar cs[12];
+        for (int i = 0; i < 11; ++i)
+        {
+            cs[i] = TestChar('f');
+        }
+        TestString str2(cs);
     }
 
-    TEST(UString, Concat)
+    TEST(String, Ctor)
     {
-        UString str = "abcd";
-        UString str2 = "1234";
-        str.Append(str2);
-        EXPECT_TRUE(str == "abcd1234");
+        String str1('f');
+        String str2("fffffffffff");
+        String str3(16, 'f');
+        String str4(str2);
+        EXPECT_TRUE(str2 == str4);
+        EXPECT_FALSE(str4 == "ffffffffff");
 
-        str.Prepend(str2);
-        EXPECT_TRUE(str == "1234abcd1234");
+        str4 = String::Format("format {0}", 1);
+        EXPECT_TRUE(str4 == "format 1");
     }
 
-    TEST(UString, Compare)
+    TEST(String, Empty)
     {
-        UString str("ABCd");
-        UString str2("abcd");
-
-        EXPECT_FALSE(str.StartsWith(str2));
-        EXPECT_TRUE(str.StartsWith(str2, ECaseSensitivity::Insensitive));
-
-        EXPECT_TRUE(str.StartsWith(UString("ABCd")));
-        EXPECT_FALSE(str.StartsWith(UString("ABCde")));
-
-        EXPECT_FALSE(str.StartsWith(UChar('a')));
-        EXPECT_TRUE(str.StartsWith(UChar('a'), ECaseSensitivity::Insensitive));
-
-        EXPECT_FALSE(str.StartsWith("abc"));
-        EXPECT_TRUE(str.StartsWith("abc", ECaseSensitivity::Insensitive));
-
-        EXPECT_FALSE(str.EndsWith(str2));
-        EXPECT_TRUE(str.EndsWith(str2, ECaseSensitivity::Insensitive));
-
-        EXPECT_TRUE(str.EndsWith(UString("Cd")));
-        EXPECT_FALSE(str.EndsWith(UString("ABCde")));
-
-        EXPECT_FALSE(str.EndsWith(UChar('D')));
-        EXPECT_TRUE(str.EndsWith(UChar('d'), ECaseSensitivity::Insensitive));
-
-        EXPECT_FALSE(str.EndsWith("cd"));
-        EXPECT_TRUE(str.EndsWith("CD", ECaseSensitivity::Insensitive));
-
-        EXPECT_TRUE(str.Compare("ABCd") == 0);
-        EXPECT_TRUE(str.Compare("abcd", ECaseSensitivity::Insensitive) == 0);
-        EXPECT_TRUE(str.Compare("abc") == -1);
-        EXPECT_TRUE(str.Compare("ABCD") == 1);
+        String null;
+        String empty("");
+        EXPECT_TRUE(null.Empty() && empty.Empty());
     }
 
-    TEST(UString, Split)
+    TEST(String, Concat)
     {
-        UString str("1234.567");
-        EXPECT_TRUE(*--str.Chopped(4).end() == '4');
+        String str1("aabb");
+        String str2;
 
-        str.Chop(4);
-        EXPECT_TRUE(*--str.end() == '4');
+        str1.Truncate(2);
+        EXPECT_TRUE(str1 == "aa");
+
+        str2.Truncate(0);
+        EXPECT_TRUE(str2.Empty());
+
+        str1 += "cc";
+        EXPECT_TRUE(str1 == "aacc");
+
+        str2.Append("");
+        EXPECT_TRUE(str2.Empty());
+
+        str2.Append("aa");
+        EXPECT_TRUE(str2 == "aa");
+
+        str1.Prepend(String("0x"));
+        EXPECT_TRUE(str1 == "0xaacc");
+
+        String str3;
+        str3.Prepend("aa");
+        EXPECT_TRUE(str3 == "aa");
+
+        str1.Insert(2, "80");
+        EXPECT_TRUE(str1 == "0x80aacc");
+
+        String str4;
+        str4.Insert(0, "aa");
+        EXPECT_TRUE(str4 == "aa");
+
+        EXPECT_TRUE(str4 / "bb" == "aa/bb");
     }
 
-    TEST(UString, Case)
+    TEST(String, Split)
     {
-        UString str("ABC");
-        EXPECT_TRUE(str.IsUpper());
+        String str1 = "0x80aacc";
+        String str2 = str1.Slices(2, 4);
+        String str3 = str1.Slices(-6, 4);
 
-        str.Append('d');
-        EXPECT_FALSE(str.IsUpper());
+        EXPECT_TRUE(str2 == str3 && str2 == "80aa");
 
-        str.ToUpper();
-        EXPECT_TRUE(str.IsUpper());
+        String str4;
+        EXPECT_TRUE(str4.Slices(0, 0).Empty());
 
-        str.ToLower();
-        EXPECT_TRUE(str.IsLower());
+        EXPECT_TRUE(str1.Remove(4, 1) == "0x80acc");
+        EXPECT_TRUE(str1.Remove(6, 2) == "0x80ac");
+
+        EXPECT_TRUE(str1.Remove("80") == "0xac");
+        str1.Append("adac");
+        EXPECT_TRUE(str1.Remove("ac") == "0xad");
+
+        String str5 = "hello_world_hello_polaris";
+        EXPECT_TRUE(str5.Replace("hello", "thanks") == "thanks_world_thanks_polaris");
+        EXPECT_TRUE(str5.Replace("", "") == "thanks_world_thanks_polaris");
+        EXPECT_TRUE(str5.Replace("thanks", "") == "_world__polaris");
     }
 
-    TEST(UString, Find)
+    TEST(String, Search)
     {
-        UString str("ABC345pc");
-        UString sub("C345");
-        EXPECT_TRUE(str.Contains(sub));
-        EXPECT_TRUE(str.IndexOf(sub) == 2);
+        String str1 = "ABC345efd";
+        EXPECT_TRUE(str1.IndexOf("") == INDEX_NONE);
+        EXPECT_TRUE(str1.IndexOf("AB") == 0);
+        EXPECT_TRUE(str1.IndexOf("c3", CaseInsensitive) == 2);
 
-        UString multiPattern = "UString is unicode string name";
-        EXPECT_TRUE(multiPattern.IndexOf("string") == 19);
-        EXPECT_TRUE(multiPattern.IndexOf("string", ECaseSensitivity::Insensitive) == 1);
+        String str2 = "efd";
+        EXPECT_TRUE(str1.IndexOf(str2) == 6);
+        str2 = "eFd";
+        EXPECT_TRUE(str1.IndexOf(str2, CaseInsensitive) == 6);
 
-        sub.Append('P');
-        EXPECT_FALSE(str.Contains(sub));
+        EXPECT_TRUE(str1.IndexOf('4') == 4);
 
-        EXPECT_TRUE(str.Contains(sub, ECaseSensitivity::Insensitive));
-        EXPECT_TRUE(str.IndexOf(sub, ECaseSensitivity::Insensitive) == 2);
-        EXPECT_TRUE(str.IndexOf("5P", ECaseSensitivity::Insensitive) == 5);
+        EXPECT_TRUE(str1.IndexOfAny("") == INDEX_NONE);
+        EXPECT_TRUE(str1.IndexOfAny("03") == 3);
+        EXPECT_TRUE(str1.IndexOfAny("034") == 3);
 
-        str = "abc456AB78bc9";
-        sub = "bc";
-        EXPECT_TRUE(str.LastIndexOf(sub) == 10);
+        String str3 = "ABC345efdc301";
+        EXPECT_TRUE(str3.LastIndexOf("") == INDEX_NONE);
+        EXPECT_TRUE(str3.LastIndexOf("C3") == 2);
+        EXPECT_TRUE(str3.LastIndexOf("C3", CaseInsensitive) == 9);
+        EXPECT_TRUE(str3.LastIndexOfAny("9c", CaseInsensitive) == 9);
 
-        str = "abc";
-        UString append = "345";
-        EXPECT_TRUE(str + append == "abc345");
-        EXPECT_TRUE(str / append == "abc/345");
+        EXPECT_TRUE(str3.LastIndexOfAny(str3.Contains("efd")));
+        EXPECT_TRUE(str3.LastIndexOfAny(str3.Contains("eFd", CaseInsensitive)));
+
+        String str4 = "abcdaef";
+        EXPECT_TRUE(str4.Count('a') == 2);
+        EXPECT_TRUE(str4.Count("ac") == 0);
+
+        str4.Fill('f', 3);
+        EXPECT_TRUE(str4 == "fff");
+        str4.Fill('t');
+        EXPECT_TRUE(str4 == "ttt");
+
+        String str5 = str4.Repeated(3);
+        EXPECT_TRUE(str5 == "ttttttttt");
+
+        String str6 = "  hello. ";
+        str6 = str6.Trimmed();
+        EXPECT_TRUE(str6 == "hello.");
+
+        EXPECT_TRUE(str6.IsLowerLatin1());
+        str6.ToUpperLatin1();
+        EXPECT_TRUE(str6 == "HELLO.");
+        EXPECT_TRUE(str6.IsUpperLatin1());
+        str6.ToLowerLatin1();
+        EXPECT_TRUE(str6 == "hello.");
+
+        String str7 = "80universe item snip";
+        auto items = str7.Split("ni");
+        EXPECT_TRUE(items.Size() == 3);
+        items = str7.SplitAny("ni");
+        EXPECT_TRUE(items.Size() == 6);
+        items = str7.SplitAny("ni", SkipEmptyParts);
+        EXPECT_TRUE(items.Size() == 4);
     }
 
-    TEST(UString, Modify)
+    TEST(String, Iterator)
     {
-        UString str("123456");
-        str.Fill('a', -1);
-        EXPECT_TRUE(str == "aaaaaa");
-        str.Fill('b', 3);
-        EXPECT_TRUE(str == "bbb");
-        str.Fill('c', 0);
-        EXPECT_TRUE(str.Empty());
+        String str = "abcd1234fgh";
+        for (auto elem : str)
+        {
+            elem = 'f';
+        }
 
-        str = "test";
-        UString rep = str.Repeated(2);
-        EXPECT_TRUE(rep == "testtest");
+        EXPECT_TRUE(str == "abcd1234fgh");
 
-        rep = str.Repeated(1);
-        EXPECT_TRUE(rep == str);
+        for (auto&& elem : str)
+        {
+            elem = 'f';
+        }
+        EXPECT_TRUE(str == "fffffffffff");
 
-        rep = str.Repeated(0);
-        EXPECT_TRUE(rep.IsNull());
+        String str2 = "abcd1234fgh";
+        for (String::Iterator It = str2.begin(); It; ++It)
+        {
+            EXPECT_TRUE(*It != char());
 
-        str = "test";
-        UString removeTest = "123test";
-        removeTest.Remove(str);
-        EXPECT_TRUE(removeTest == "123");
+            if (*It == 'd')
+            {
+                It.RemoveSelf();
+            }
+        }
 
-        removeTest = "test123test";
-        removeTest.Remove(str);
-        EXPECT_TRUE(removeTest == "123");
+        for (String::Iterator It = str2.begin(); It != str2.end(); ++It)
+        {
+            EXPECT_TRUE(*It != char());
+        }
 
-        removeTest = "test123test";
-        removeTest.Remove("test");
-        EXPECT_TRUE(removeTest == "123");
+    }
 
-        removeTest.Remove('2');
-        EXPECT_TRUE(removeTest == "13");
-
-        removeTest = "testtest";
-        removeTest.Remove(str);
-        EXPECT_TRUE(removeTest.Empty());
-
-        removeTest = "test";
-        removeTest.Remove(1, 1);
-        EXPECT_TRUE(removeTest == "tst");
-
-        removeTest = "  lots\t of\nwhitespace\r\n ";
-        removeTest = removeTest.Trimmed();
-        EXPECT_TRUE(removeTest == "lots\t of\nwhitespace");
-
-        UString replaceTest = "UString is unicode string name";
-        auto t= replaceTest.IndexOf("string");
-        replaceTest.Replace("string", "str");
-        EXPECT_TRUE(replaceTest == "UString is unicode str name");
+    TEST(String, Hash)
+    {
+        String str = "abcd";
+        uint32 hash = GetHashCode(str);
+        EXPECT_TRUE(hash != 0);
     }
 
     TEST(FileSystem, All)

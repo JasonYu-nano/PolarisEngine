@@ -21,7 +21,7 @@ namespace Engine
         return false;
     }
 
-    void VulkanWindowsHelper::GetExtraExtensions(VkArray<const ansi*>& extensions)
+    void VulkanWindowsHelper::GetExtraExtensions(VkArray<const char*>& extensions)
     {
         extensions.Add(VK_KHR_SURFACE_EXTENSION_NAME);
         extensions.Add(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);

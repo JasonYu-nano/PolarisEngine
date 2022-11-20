@@ -112,7 +112,7 @@ namespace Engine
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
-        VkArray<const ansi*> extensions = GetExtraExtensions();
+        VkArray<const char*> extensions = GetExtraExtensions();
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -136,13 +136,13 @@ namespace Engine
         }
     }
 
-    VkArray<const ansi*> VulkanDynamicRHI::GetExtraExtensions()
+    VkArray<const char*> VulkanDynamicRHI::GetExtraExtensions()
     {
         uint32 glfwExtensionCount = 0;
         /*const ansi** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);*/
 
-        VkArray<const ansi*> extensions;
+        VkArray<const char*> extensions;
         VulkanPlatformHelper::GetExtraExtensions(extensions);
 #if VULKAN_DEBUG_MODE
         extensions.Add(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

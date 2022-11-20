@@ -8,6 +8,38 @@
 namespace Engine
 {
     template <SignedIntegralType IntType>
+    class StandardAllocator
+    {
+    public:
+
+        template <typename ElementType>
+        class ElementAllocator
+        {
+        public:
+            using SizeType = IntType;
+            using ValueType = ElementType;
+
+            ElementAllocator() = default;
+
+            ElementAllocator(const ElementAllocator& other) noexcept = default;
+
+            ElementAllocator(ElementAllocator&& other) noexcept = default;
+
+            ElementAllocator& operator=(const ElementAllocator& other) = default;
+
+            NODISCARD ValueType* Allocate(SizeType n)
+            {
+                return static_cast<ValueType*>(Memory::Malloc(n * sizeof(ElementType), alignof(ElementType)));
+            }
+
+            constexpr void Deallocate(ValueType* ptr, SizeType n)
+            {
+                Memory::Free(ptr);
+            }
+        };
+    };
+
+    template <SignedIntegralType IntType>
     class HeapSizeAllocator
     {
     public:

@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "definitions_core.hpp"
 #include "foundation/time.hpp"
+#include "foundation/string.hpp"
 
 namespace Engine
 {
@@ -37,21 +38,21 @@ namespace Engine
     public:
         DirectoryEntry() = default;
 
-        DirectoryEntry(FileStat stat, const UString& path)
+        DirectoryEntry(FileStat stat, const String& path)
             : Path(path), Stat(stat) {}
 
-        UString GetPath() const
+        String GetPath() const
         {
             return Path;
         }
 
-        UString& GetPath()
+        String& GetPath()
         {
             return Path;
         }
 
     private:
-        UString Path;
+        String Path;
         FileStat Stat;
     };
 }

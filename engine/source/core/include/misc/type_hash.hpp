@@ -57,13 +57,25 @@ namespace Engine
 
     inline uint32 GetPtrHashCode(const void* value)
     {
-        std::uintptr_t ptrInt = reinterpret_cast<std::uintptr_t>(value);
+        uintptr ptrInt = reinterpret_cast<uintptr>(value);
         return GetHashCode(ptrInt);
     }
 
     inline uint32 GetHashCode(const void* value)
     {
         return GetPtrHashCode(value);
+    }
+
+    template <typename T>
+    concept ConceptCustomHash = requires(T a)
+    {
+        a.GetHashCode();
+    };
+
+    template <ConceptCustomHash T>
+    inline uint32 GetHashCode(const T& value)
+    {
+        return value.GetHashCode();
     }
 
     template <typename T>

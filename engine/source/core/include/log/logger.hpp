@@ -4,7 +4,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/pattern_formatter.h"
-#include "foundation/ustring.hpp"
+#include "foundation/string.hpp"
 #include "foundation/smart_ptr.hpp"
 
 namespace Engine
@@ -30,32 +30,32 @@ namespace Engine
             {
                 case Trace:
                 {
-                    GetLogger()->log(src, spdlog::level::trace, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(src, spdlog::level::trace, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Debug:
                 {
-                    GetLogger()->log(src, spdlog::level::debug, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(src, spdlog::level::debug, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Info:
                 {
-                    GetLogger()->log(src, spdlog::level::info, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(src, spdlog::level::info, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Warn:
                 {
-                    GetLogger()->log(src, spdlog::level::warn, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(src, spdlog::level::warn, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Error:
                 {
-                    GetLogger()->log(src, spdlog::level::err, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(src, spdlog::level::err, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Critical:
                 {
-                    GetLogger()->log(src, spdlog::level::critical, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(src, spdlog::level::critical, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 default:;
@@ -69,32 +69,32 @@ namespace Engine
             {
                 case Trace:
                 {
-                    GetLogger()->log(spdlog::level::trace, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(spdlog::level::trace, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Debug:
                 {
-                    GetLogger()->log(spdlog::level::debug, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(spdlog::level::debug, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Info:
                 {
-                    GetLogger()->log(spdlog::level::info, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(spdlog::level::info, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Warn:
                 {
-                    GetLogger()->log(spdlog::level::warn, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(spdlog::level::warn, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Error:
                 {
-                    GetLogger()->log(spdlog::level::err, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(spdlog::level::err, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 case Critical:
                 {
-                    GetLogger()->log(spdlog::level::critical, UString::Format(fmt, Forward<Args>(args)...));
+                    GetLogger()->log(spdlog::level::critical, String::Format(fmt, Forward<Args>(args)...));
                     break;
                 }
                 default:;
@@ -102,12 +102,12 @@ namespace Engine
         }
 
         template<typename... Args>
-        static void Log(spdlog::level::level_enum level, const ansi* category, const char* fmt, Args&&... args)
+        static void Log(spdlog::level::level_enum level, const char* category, const char* fmt, Args&&... args)
         {
-            GetLogger()->log(level, UString::Format(fmt, Forward<Args>(args)...));
+            GetLogger()->log(level, String::Format(fmt, Forward<Args>(args)...));
         }
 
-        static void AssertFail(spdlog::source_loc src, const ansi* expr)
+        static void AssertFail(spdlog::source_loc src, const char* expr)
         {
             GetLogger()->log(src, spdlog::level::critical, "assertion failed: at {0}", expr);
             abort();

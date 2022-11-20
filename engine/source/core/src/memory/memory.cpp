@@ -31,7 +31,7 @@ namespace Engine
         return gMalloc->Realloc(ptr, newSize, alignment);
     }
 
-    void Memory::Memcpy(void* dest, void* src, size_t size)
+    void Memory::Memcpy(void* dest, void const* src, size_t size)
     {
         PlatformMemory::Memcpy(dest, src, size);
     }

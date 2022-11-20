@@ -1,19 +1,19 @@
 #pragma once
 
-#include "global.hpp"
 #include "foundation/char_traits.hpp"
 #include "foundation/details/string_algorithm.hpp"
 
 namespace Engine
 {
-    template <CharConcept T>
+    template <typename T, typename Traits = CharTraits<T>>
     struct BasicStringView
     {
         using CharType = T;
+        using SizeType = typename Traits::SizeType;
 
         BasicStringView() = default;
 
-        BasicStringView(const CharType* str, strsize length)
+        BasicStringView(const CharType* str, SizeType length)
             : Len(length)
             , Str(str)
         {}
@@ -35,30 +35,30 @@ namespace Engine
             return *this;
         }
 
-        constexpr strsize Length() const { return Len; }
+        constexpr SizeType Length() const { return Len; }
 
-        constexpr strsize& Length() { return Len; }
+        constexpr SizeType& Length() { return Len; }
 
         constexpr const CharType* Data() const { return Str; }
 
-        constexpr bool IsNull() const { return !Str; }
+        constexpr bool Null() const { return !Str; }
 
-        constexpr bool IsEmpty() const { return Length() <= 0; }
+        constexpr bool Empty() const { return Len <= 0; }
 
-        constexpr void RemovePrefix(strsize num) noexcept
+        constexpr void RemovePrefix(SizeType num) noexcept
         {
             ENSURE(num >= 0 && num < Len);
             Len -= num;
             Str += num;
         }
 
-        constexpr void RemoveSuffix(strsize num) noexcept
+        constexpr void RemoveSuffix(SizeType num) noexcept
         {
             ENSURE(num >= 0 && num < Len);
             Len -= num;
         }
 
-        constexpr BasicStringView Slices(strsize pos, strsize len) const noexcept
+        constexpr BasicStringView Slices(SizeType pos, SizeType len) const noexcept
         {
             ENSURE(pos >= 0 && len >= 0 && pos + len <= Len);
             return BasicStringView(Str + pos, len);
@@ -71,7 +71,7 @@ namespace Engine
 
         constexpr bool StartsWith(const BasicStringView rhs) const noexcept
         {
-            const strsize len = rhs.Len;
+            const SizeType len = rhs.Len;
             if (Len < len)
             {
                 return false;
@@ -81,7 +81,7 @@ namespace Engine
 
         constexpr bool StartsWith(const CharType ch) const noexcept
         {
-            if (IsNull() || IsEmpty())
+            if (Null() || Empty())
             {
                 return false;
             }
@@ -90,7 +90,7 @@ namespace Engine
 
         constexpr bool EndsWith(const BasicStringView rhs) const noexcept
         {
-            const strsize len = rhs.Len;
+            const SizeType len = rhs.Len;
             if (Len < len)
             {
                 return false;
@@ -100,7 +100,7 @@ namespace Engine
 
         constexpr bool EndsWith(const CharType ch) const noexcept
         {
-            if (IsEmpty())
+            if (Empty())
             {
                 return false;
             }
@@ -109,29 +109,29 @@ namespace Engine
 
         bool inline Contains(BasicStringView needle)
         {
-            return Private::FindString<CharType>(Str, Len, 0, needle.Str, needle.Len) == 0;
+            return Private::FindString<CharType, Traits, SizeType>(Str, Len, 0, needle.Str, needle.Len) == 0;
         }
 
         int32 inline IndexOf(BasicStringView needle)
         {
-            return Private::FindString<CharType>(Str, Len, 0, needle.Str, needle.Len);
+            return Private::FindString<CharType, Traits, SizeType>(Str, Len, 0, needle.Str, needle.Len);
         }
 
-        DynamicArray<BasicStringView> Split(BasicStringView sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts)
+        DynamicArray<BasicStringView> Split(BasicStringView sep, ESplitBehavior behavior = KeepEmptyParts)
         {
             DynamicArray<BasicStringView> ret;
-            strsize start = 0;
-            strsize end;
-            strsize extra = 0;
-            while ((end = Private::FindString<CharType>(Str, Len, start + extra, sep.Str, sep.Len)) != -1)
+            SizeType start = 0;
+            SizeType end;
+            SizeType extra = 0;
+            while ((end = Private::FindString<CharType, Traits, SizeType>(Str, Len, start + extra, sep.Str, sep.Len)) != -1)
             {
-                if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+                if (start != end || behavior == KeepEmptyParts)
                 {
                     ret.Add(Slices(start, end - start));
                 }
                 start = end + sep.Len;
             }
-            if (start != Len || behavior == ESplitBehavior::KeepEmptyParts)
+            if (start != Len || behavior == KeepEmptyParts)
             {
                 ret.Add(Slices(start, Len - start));
             }
@@ -144,14 +144,11 @@ namespace Engine
         }
 
     private:
-        using Traits = CharTraits<CharType>;
-        strsize Len = 0;
+        SizeType Len = 0;
         const CharType* Str = nullptr;
     };
 
-    using TStringView = BasicStringView<char_t>;
-
-    using StringView = BasicStringView<ansi>;
+    using StringView = BasicStringView<char>;
 
     using U16StringView = BasicStringView<char16_t>;
 

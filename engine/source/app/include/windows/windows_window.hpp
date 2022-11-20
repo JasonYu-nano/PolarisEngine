@@ -16,7 +16,7 @@ namespace Engine
         void GetWindowSize(int32& width, int32& height) const;
 
     public:
-        static const char_t WinClassName[];
+        static const wchar WinClassName[];
     private:
         HWND HWnd{ nullptr };
         HDC HDc{ nullptr };
