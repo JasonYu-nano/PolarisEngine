@@ -20,7 +20,17 @@ namespace Engine
             return *this;
         }
 
+        const T1& First() const
+        {
+            return *this;
+        }
+
         T2& Second()
+        {
+            return SecondVal;
+        }
+
+        const T2& Second() const
         {
             return SecondVal;
         }
@@ -44,7 +54,17 @@ namespace Engine
             return FirstVal;
         }
 
+        const T1& First() const
+        {
+            return FirstVal;
+        }
+
         T2& Second()
+        {
+            return SecondVal;
+        }
+
+        const T2& Second() const
         {
             return SecondVal;
         }

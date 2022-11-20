@@ -5,7 +5,7 @@
 
 namespace Engine
 {
-    template <CharConcept T, IntegralType U, typename V = Utf8>
+    template <typename T, IntegralType U, typename V = Utf8>
     struct PrivateCharTraits
     {
         using CharType = T;
@@ -50,7 +50,7 @@ namespace Engine
             return NumericLimits<IntType>::Max();
         }
 
-        template <CharConcept OtherCharType>
+        template <typename OtherCharType>
         static constexpr CharType CastTo(const OtherCharType ch) noexcept
         {
             return static_cast<CharType>(ch);
@@ -71,7 +71,12 @@ namespace Engine
             return lhs == rhs;
         }
 
-        template <CharConcept OtherChar>
+        static constexpr void Copy(CharType* dest, const CharType* source, strsize len) noexcept
+        {
+            Memory::Memcpy(dest, source, len * sizeof(CharType));
+        }
+
+        template <typename OtherChar>
         static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, strsize count) noexcept
         {
             if constexpr (std::is_same_v<CharType, OtherChar>)
@@ -95,7 +100,7 @@ namespace Engine
             return 0;
         }
 
-        template <CharConcept OtherChar>
+        template <typename OtherChar>
         static constexpr int32 Compare(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen) noexcept
         {
             int32 result = Compare(lhs, rhs, Math::Min(llen, rlen));
@@ -118,13 +123,13 @@ namespace Engine
             return 0;
         }
 
-        template <CharConcept OtherChar>
+        template <typename OtherChar>
         static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs) noexcept
         {
             return Compare(lhs, Length(lhs), rhs, Length(rhs));
         }
 
-        template <CharConcept OtherChar>
+        template <typename OtherChar>
         static constexpr int32 CompareInsensitive(const CharType* lhs, const OtherChar* rhs, strsize len) noexcept
         {
             if constexpr (std::is_same_v<CharType, OtherChar>)
@@ -152,7 +157,7 @@ namespace Engine
             return 0;
         }
 
-        template <CharConcept OtherChar>
+        template <typename OtherChar>
         static constexpr int32 CompareInsensitive(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen)
         {
             int32 result = CompareInsensitive(lhs, rhs, Math::Min(llen, rlen));
@@ -185,7 +190,7 @@ namespace Engine
         }
     };
 
-    template <CharConcept T>
+    template <typename T>
     struct CharTraits : private PrivateCharTraits<T, strsize> {};
 
     template <>

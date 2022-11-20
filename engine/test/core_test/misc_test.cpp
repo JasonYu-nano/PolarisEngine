@@ -6,6 +6,7 @@
 #include "foundation/ustring.hpp"
 #include "file_system/path.hpp"
 #include "file_system/file_system.hpp"
+#include "foundation/string.hpp"
 
 namespace Engine
 {
@@ -97,6 +98,57 @@ namespace Engine
         EXPECT_TRUE(UString::FromUtf8(u8.Data()) == str);
 
         EXPECT_TRUE(str.ToStdString() == u8.Data());
+    }
+
+    struct TestChar
+    {
+        TestChar() {};
+
+        TestChar(char c) : Data(c) {};
+
+        ~TestChar()
+        {
+            Data = '0';
+        }
+
+        friend bool operator== (const TestChar& lhs, const TestChar& rhs)
+        {
+            return lhs.Data == rhs.Data;
+        }
+
+        friend bool operator!= (const TestChar& lhs, const TestChar& rhs)
+        {
+            return lhs.Data != rhs.Data;
+        }
+
+        char Data{ '\0' };
+    };
+
+    template <>
+    struct CharTraits<TestChar> : PrivateCharTraits<TestChar, int8> {};
+
+    using TestString = BasicString<TestChar>;
+
+    TEST(TestString, Ctor)
+    {
+        TestChar c('f');
+        TestString str(c);
+        str.Reserve(17);
+
+        TestChar cs[12];
+        for (int i = 0; i < 11; ++i)
+        {
+            cs[i] = TestChar('f');
+        }
+        TestString str2(cs);
+    }
+
+    TEST(String, Ctor)
+    {
+        String str1('f');
+        String str2("fffffffffff");
+        String str3("abcdefghijklmnopqrst");
+        String str4(16, 'f');
     }
 
     TEST(UString, Concat)

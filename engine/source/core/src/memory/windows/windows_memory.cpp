@@ -16,7 +16,7 @@ namespace Engine
         return SDefaultAlignment;
     }
 
-    void WindowsMemory::Memcpy(void* dest, void* src, size_t size)
+    void WindowsMemory::Memcpy(void* dest, void const* src, size_t size)
     {
         ::memcpy(dest, src, size);
     }

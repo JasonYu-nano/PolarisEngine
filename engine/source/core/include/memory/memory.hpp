@@ -15,7 +15,7 @@ namespace Engine
 
         static void* Realloc(void* ptr, size_t newSize, uint32 alignment = PlatformMemory::GetDefaultAlignment());
 
-        static void Memcpy(void* dest, void* src, size_t size);
+        static void Memcpy(void* dest, void const* src, size_t size);
 
         /**
          * Copies the values of num bytes from the location pointed by source to the memory block pointed by destination. 

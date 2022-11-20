@@ -13,7 +13,7 @@ namespace Engine
 
         static uint32 GetDefaultAlignment();
 
-        static void Memcpy(void* dest, void* src, size_t size);
+        static void Memcpy(void* dest, void const* src, size_t size);
 
         static void Memmove(void* dest, void* src, size_t size);
 
