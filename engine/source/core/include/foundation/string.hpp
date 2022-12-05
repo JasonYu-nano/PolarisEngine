@@ -13,17 +13,45 @@ namespace Engine
 
         ~StringVal() {};
 
+        bool LargeStringEngaged() const
+        {
+            return StringVal<CharType>::INLINE_SIZE < MaxSize;
+        }
+
+        TChar* GetPtr()
+        {
+            if (LargeStringEngaged())
+            {
+                return UBuffer.Ptr;
+            }
+
+            return UBuffer.InlineBuffer;
+        }
+
+        const TChar* GetPtr() const
+        {
+            if (LargeStringEngaged())
+            {
+                return UBuffer.Ptr;
+            }
+
+            return UBuffer.InlineBuffer;
+        }
+
         using CharType = TChar;
         static constexpr int32 INLINE_SIZE = (16 / sizeof(CharType) < 1) ? 1 : (16 / sizeof(CharType));
 
         strsize Size{ 0 };
         strsize MaxSize{ INLINE_SIZE };
 
-        union
+        union UBufferType
         {
+            UBufferType() : Ptr() {}
+            ~UBufferType() {}
+
             CharType* Ptr;
             CharType InlineBuffer[INLINE_SIZE];
-        };
+        } UBuffer;
     };
 
     template <typename TChar, typename TCharTraits = CharTraits<TChar>, typename TAllocator = StandardAllocator<strsize>>
@@ -39,43 +67,44 @@ namespace Engine
     public:
         BasicString() = default;
 
-        BasicString(CharType ch);
+        explicit BasicString(CharType ch);
 
-        BasicString(ConstPointer ch, strsize len = -1);
+        explicit BasicString(ConstPointer ch, strsize len = -1);
 
         BasicString(strsize count, CharType ch);
 
-        BasicString(const BasicString& other) noexcept = default;
+        BasicString(const BasicString& other);
 
-        BasicString(BasicString&& other) noexcept = default;
+        BasicString(BasicString&& other) noexcept;
 
         BasicString(const BasicString& other, strsize extraSlack);
 
-        ~BasicString() = default;
+        ~BasicString();
+
+        BasicString& operator= (const BasicString& other) = default;
+
+        BasicString& operator= (BasicString&& other) = default;
+
+        BasicString& operator= (const Pointer raw);
 
         Pointer Data()
         {
-            if (LargeStringEngaged())
-            {
-                return Pair.Second().Ptr;
-            }
-
-            return Pair.Second().InlineBuffer;
+            return Pair.Second().GetPtr();
         }
 
         ConstPointer Data() const
         {
-            if (LargeStringEngaged())
-            {
-                return Pair.Second().Ptr;
-            }
-
-            return Pair.Second().InlineBuffer;
+            return Pair.Second().GetPtr();
         }
 
         strsize Length() const;
 
         strsize Capacity() const;
+
+        void Clear()
+        {
+            Eos(0);
+        }
 
     protected:
         AllocatorType& GetAllocator()
@@ -90,7 +119,7 @@ namespace Engine
 
         bool LargeStringEngaged() const
         {
-            return StringVal<CharType>::INLINE_SIZE < Pair.Second().MaxSize;
+            return Pair.Second().LargeStringEngaged();
         }
 
         template <typename... Args>
@@ -105,8 +134,10 @@ namespace Engine
             strsize index = AddUnconstructElement(count);
             CharTraitsType::Copy(Data() + index, elements, count);
         }
-    public:
+
         void Reserve(strsize capacity);
+
+        void Eos(strsize offset);
 
     private:
         strsize AddUnconstructElement(strsize count)
@@ -154,6 +185,9 @@ namespace Engine
         void BecomeLarge(strsize capacity);
 
     private:
+        static constexpr auto INLINE_SIZE = StringVal<CharType>::INLINE_SIZE;
+        static constexpr bool CAN_MEMORY_COPY = std::is_trivial_v<Pointer>;
+
         CompressedPair<AllocatorType, StringVal<CharType>> Pair;
     };
 
@@ -188,6 +222,40 @@ namespace Engine
     }
 
     template <typename TChar, typename TCharTraits, typename TAllocator>
+    BasicString<TChar, TCharTraits, TAllocator>::BasicString(const BasicString& other) noexcept
+        : Pair(OneArgPlaceholder(), MoveTemp(other.GetAllocator()))
+    {
+        if constexpr (CAN_MEMORY_COPY)
+        {
+            Pair.Second().Size = other.Pair.Second().Size;
+            Pair.Second().MaxSize = other.Pair.Second().MaxSize;
+        }
+    }
+
+    template <typename TChar, typename TCharTraits, typename TAllocator>
+    BasicString<TChar, TCharTraits, TAllocator>::BasicString(BasicString&& other) noexcept
+        : Pair(OneArgPlaceholder(), MoveTemp(other.GetAllocator()))
+    {
+
+    }
+
+    template <typename TChar, typename TCharTraits, typename TAllocator>
+    BasicString<TChar, TCharTraits, TAllocator>::~BasicString()
+    {
+        if (LargeStringEngaged())
+        {
+            const Pointer ptr = Pair.Second().UBuffer.Ptr;
+            auto& allocator = GetAllocator();
+            std::destroy_at(Pair.Second().UBuffer.Ptr);
+            allocator.Deallocate(ptr, Size());
+        }
+
+        Pair.Second().Size = 1;
+        Pair.Second().MaxSize = INLINE_SIZE;
+        CharTraitsType::Assign(Pair.Second().UBuffer.InlineBuffer[0], CharType());
+    }
+
+    template <typename TChar, typename TCharTraits, typename TAllocator>
     void BasicString<TChar, TCharTraits, TAllocator>::Reserve(strsize capacity)
     {
         if (capacity < Size() || capacity == Capacity())
@@ -206,21 +274,28 @@ namespace Engine
     }
 
     template <typename TChar, typename TCharTraits, typename TAllocator>
+    void BasicString<TChar, TCharTraits, TAllocator>::Eos(strsize offset)
+    {
+        Pair.Second().Size = offset + 1;
+        CharTraitsType::Assign(Pair.Second().GetPtr()[offset], 1, CharType());
+    }
+
+    template <typename TChar, typename TCharTraits, typename TAllocator>
     void BasicString<TChar, TCharTraits, TAllocator>::BecomeSmall()
     {
-        Pointer ptr = Pair.Second().Ptr;
-        CharTraitsType::Copy(Pair.Second().InlineBuffer, ptr, Size());
+        Pointer ptr = Pair.Second().UBuffer.Ptr;
+        CharTraitsType::Copy(Pair.Second().UBuffer.InlineBuffer, ptr, Size());
         std::destroy_at(ptr);
         GetAllocator().Deallocate(ptr, Size());
-        Pair.Second().MaxSize = StringVal<CharType>::INLINE_SIZE;
+        Pair.Second().MaxSize = INLINE_SIZE;
     }
 
     template <typename TChar, typename TCharTraits, typename TAllocator>
     void BasicString<TChar, TCharTraits, TAllocator>::BecomeLarge(strsize capacity)
     {
         Pointer ptr = GetAllocator().Allocate(capacity);
-        CharTraitsType::Copy(ptr, Pair.Second().InlineBuffer, Size());
-        Pair.Second().Ptr = ptr;
+        CharTraitsType::Copy(ptr, Pair.Second().UBuffer.InlineBuffer, Size());
+        Pair.Second().UBuffer.Ptr = ptr;
         Pair.Second().MaxSize = capacity;
     }
 

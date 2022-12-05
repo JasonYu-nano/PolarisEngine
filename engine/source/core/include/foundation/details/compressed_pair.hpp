@@ -4,16 +4,20 @@
 
 namespace Engine
 {
+    struct ZeroArgPlaceholder {};
+
+    struct OneArgPlaceholder {};
+
     template <typename T1, typename T2, bool = std::is_empty_v<T1> && !std::is_final_v<T1>>
     class CompressedPair : private T1
     {
         using Super = T1;
     public:
         template <typename... ArgType2>
-        explicit CompressedPair(ArgType2&&... arg2) : Super(), SecondVal(Forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(ZeroArgPlaceholder, ArgType2&&... arg2) : Super(), SecondVal(Forward<ArgType2>(arg2)...) {}
 
         template <typename ArgType1, typename... ArgType2>
-        explicit CompressedPair(ArgType1&& arg1, ArgType2&&... arg2) : Super(Forward<ArgType1>(arg1)), SecondVal(Forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(OneArgPlaceholder, ArgType1&& arg1, ArgType2&&... arg2) : Super(Forward<ArgType1>(arg1)), SecondVal(Forward<ArgType2>(arg2)...) {}
 
         T1& First()
         {

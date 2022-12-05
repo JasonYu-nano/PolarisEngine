@@ -133,7 +133,6 @@ namespace Engine
     {
         TestChar c('f');
         TestString str(c);
-        str.Reserve(17);
 
         TestChar cs[12];
         for (int i = 0; i < 11; ++i)

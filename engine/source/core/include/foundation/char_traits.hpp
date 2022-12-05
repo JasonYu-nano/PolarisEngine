@@ -45,6 +45,11 @@ namespace Engine
             return first;
         }
 
+        static constexpr void Assign(CharType& lhs, const CharType& rhs) noexcept
+        {
+            lhs = rhs;
+        }
+
         static constexpr IntType* MaxSize() noexcept
         {
             return NumericLimits<IntType>::Max();
