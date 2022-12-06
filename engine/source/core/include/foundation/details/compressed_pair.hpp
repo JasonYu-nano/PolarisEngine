@@ -13,6 +13,8 @@ namespace Engine
     {
         using Super = T1;
     public:
+        CompressedPair() = default;
+
         template <typename... ArgType2>
         explicit CompressedPair(ZeroArgPlaceholder, ArgType2&&... arg2) : Super(), SecondVal(Forward<ArgType2>(arg2)...) {}
 

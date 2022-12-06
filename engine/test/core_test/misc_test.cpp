@@ -146,8 +146,10 @@ namespace Engine
     {
         String str1('f');
         String str2("fffffffffff");
-        String str3("abcdefghijklmnopqrst");
-        String str4(16, 'f');
+        String str3(16, 'f');
+        String str4(str2);
+        EXPECT_TRUE(str2 == str4);
+        EXPECT_FALSE(str4 == "ffffffffff");
     }
 
     TEST(UString, Concat)

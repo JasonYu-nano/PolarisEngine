@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-    template <CharConcept T>
+    template <typename T>
     struct BasicStringView
     {
         using CharType = T;

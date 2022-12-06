@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-    template <typename TChar>
+    template <typename Elem, typename Traits>
     struct StringVal
     {
         StringVal() {};
@@ -15,52 +15,53 @@ namespace Engine
 
         bool LargeStringEngaged() const
         {
-            return StringVal<CharType>::INLINE_SIZE < MaxSize;
+            return INLINE_SIZE < MaxSize;
         }
 
-        TChar* GetPtr()
+        Elem* GetPtr()
         {
             if (LargeStringEngaged())
             {
-                return UBuffer.Ptr;
+                return UB.Ptr;
             }
 
-            return UBuffer.InlineBuffer;
+            return UB.Buffer;
         }
 
-        const TChar* GetPtr() const
+        const Elem* GetPtr() const
         {
             if (LargeStringEngaged())
             {
-                return UBuffer.Ptr;
+                return UB.Ptr;
             }
 
-            return UBuffer.InlineBuffer;
+            return UB.Buffer;
         }
 
-        using CharType = TChar;
+        using CharType = Elem;
         static constexpr int32 INLINE_SIZE = (16 / sizeof(CharType) < 1) ? 1 : (16 / sizeof(CharType));
 
-        strsize Size{ 0 };
-        strsize MaxSize{ INLINE_SIZE };
+        typename Traits::SizeType Size{ 0 };
+        typename Traits::SizeType MaxSize{ INLINE_SIZE };
 
-        union UBufferType
+        union _UB
         {
-            UBufferType() : Ptr() {}
-            ~UBufferType() {}
+            _UB() : Ptr() {}
+            ~_UB() {}
 
             CharType* Ptr;
-            CharType InlineBuffer[INLINE_SIZE];
-        } UBuffer;
+            CharType Buffer[INLINE_SIZE];
+        } UB;
     };
 
-    template <typename TChar, typename TCharTraits = CharTraits<TChar>, typename TAllocator = StandardAllocator<strsize>>
+    template <typename Elem, typename Traits = CharTraits<Elem>, typename Alloc = StandardAllocator<typename Traits::SizeType>>
     class BasicString
     {
     public:
-        using CharType = TChar;
-        using CharTraitsType = TCharTraits;
-        using AllocatorType = typename TAllocator::template ElementAllocator<TChar>;
+        using CharType = Elem;
+        using CharTraits = Traits;
+        using SizeType = typename CharTraits::SizeType;
+        using AllocatorType = typename Alloc::template ElementAllocator<Elem>;
         using Pointer = CharType*;
         using ConstPointer = const CharType*;
 
@@ -69,23 +70,31 @@ namespace Engine
 
         explicit BasicString(CharType ch);
 
-        explicit BasicString(ConstPointer ch, strsize len = -1);
+        explicit BasicString(ConstPointer ch, SizeType len = -1);
 
-        BasicString(strsize count, CharType ch);
+        BasicString(SizeType count, CharType ch);
 
         BasicString(const BasicString& other);
 
         BasicString(BasicString&& other) noexcept;
 
-        BasicString(const BasicString& other, strsize extraSlack);
+        BasicString(const BasicString& other, SizeType extraSlack);
 
         ~BasicString();
 
-        BasicString& operator= (const BasicString& other) = default;
+        BasicString& operator= (const BasicString& other);
 
-        BasicString& operator= (BasicString&& other) = default;
+        BasicString& operator= (BasicString&& other);
 
         BasicString& operator= (const Pointer raw);
+
+        bool operator== (const BasicString& other) const;
+
+        bool operator!= (const BasicString& other) const;
+
+        bool operator== (const BasicStringView<CharType>& other) const;
+
+        bool operator!= (const BasicStringView<CharType>& other) const;
 
         Pointer Data()
         {
@@ -97,9 +106,9 @@ namespace Engine
             return Pair.Second().GetPtr();
         }
 
-        strsize Length() const;
+        SizeType Length() const;
 
-        strsize Capacity() const;
+        SizeType Capacity() const;
 
         void Clear()
         {
@@ -112,7 +121,12 @@ namespace Engine
             return Pair.First();
         }
 
-        strsize Size() const
+        const AllocatorType& GetAllocator() const
+        {
+            return Pair.First();
+        }
+
+        SizeType Size() const
         {
             return Pair.Second().Size;
         }
@@ -125,25 +139,33 @@ namespace Engine
         template <typename... Args>
         void EmplaceBack(Args&&... args)
         {
-            strsize index = AddUnconstructElement(1);
+            SizeType index = AddUnconstructElement(1);
             new(Data() + index) CharType(Forward<Args>(args)...);
         }
 
-        void Add(ConstPointer elements, strsize count)
+        void Add(ConstPointer elements, SizeType count)
         {
-            strsize index = AddUnconstructElement(count);
-            CharTraitsType::Copy(Data() + index, elements, count);
+            SizeType index = AddUnconstructElement(count);
+            CharTraits::Copy(Data() + index, elements, count);
         }
 
-        void Reserve(strsize capacity);
+        void Reserve(SizeType capacity);
 
-        void Eos(strsize offset);
+        void Eos(SizeType offset);
+
+        void Invalidate();
+
+        void MoveAssign(BasicString&& right);
+
+        void CopyAssign(const BasicString& right);
+
+        void CopyAssign(const StringView& right);
 
     private:
-        strsize AddUnconstructElement(strsize count)
+        SizeType AddUnconstructElement(SizeType count)
         {
             ENSURE(count > 0);
-            strsize index = Pair.Second().Size;
+            SizeType index = Pair.Second().Size;
             Pair.Second().Size += count;
             if (Pair.Second().Size > Capacity())
             {
@@ -152,25 +174,25 @@ namespace Engine
             return index;
         }
 
-        void Expansion(strsize destSize = -1)
+        void Expansion(SizeType destSize = -1)
         {
             destSize = destSize >= 0 ? destSize : Pair.Second().Size;
-            strsize newCapacity = CalculateGrowth(destSize);
+            SizeType newCapacity = CalculateGrowth(destSize);
             ENSURE(destSize <= newCapacity);
             Reserve(newCapacity);
         }
 
-        strsize CalculateGrowth(const strsize newSize) const
+        SizeType CalculateGrowth(const SizeType newSize) const
         {
-            strsize oldCapacity = Pair.Second().MaxSize;
-            strsize max = NumericLimits<strsize>::Max();
+            SizeType oldCapacity = Pair.Second().MaxSize;
+            SizeType max = NumericLimits<SizeType>::Max();
 
             if (oldCapacity > max - oldCapacity / 2)
             {
                 return max;
             }
 
-            const strsize geometric = oldCapacity + oldCapacity / 2;
+            const SizeType geometric = oldCapacity + oldCapacity / 2;
 
             if (geometric < newSize)
             {
@@ -182,88 +204,109 @@ namespace Engine
 
         void BecomeSmall();
 
-        void BecomeLarge(strsize capacity);
+        void BecomeLarge(SizeType capacity);
+
+        int32 Compare(const BasicString& other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
+        int32 Compare(const BasicStringView<CharType>& other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
 
     private:
-        static constexpr auto INLINE_SIZE = StringVal<CharType>::INLINE_SIZE;
+        static constexpr auto INLINE_SIZE = StringVal<CharType, CharTraits>::INLINE_SIZE;
         static constexpr bool CAN_MEMORY_COPY = std::is_trivial_v<Pointer>;
 
-        CompressedPair<AllocatorType, StringVal<CharType>> Pair;
+        CompressedPair<AllocatorType, StringVal<CharType, CharTraits>> Pair;
     };
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    BasicString<TChar, TCharTraits, TAllocator>::BasicString(CharType ch)
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>::BasicString(CharType ch)
     {
         Reserve(2);
         EmplaceBack(ch);
         EmplaceBack(CharType());
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    BasicString<TChar, TCharTraits, TAllocator>::BasicString(BasicString::ConstPointer ch, strsize len)
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>::BasicString(BasicString::ConstPointer ch, SizeType len)
     {
-        len = len < 0 ? CharTraitsType::Length(ch) : len;
+        len = len < 0 ? CharTraits::Length(ch) : len;
         Reserve(len + 1);
         Add(ch, len);
         EmplaceBack(CharType());
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    BasicString<TChar, TCharTraits, TAllocator>::BasicString(strsize count, CharType ch)
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>::BasicString(SizeType count, CharType ch)
     {
         ENSURE(count > 0);
         Reserve(count + 1);
-        strsize index = AddUnconstructElement(count + 1);
-        for (strsize i = 0; i < count; ++index, ++i)
+        SizeType index = AddUnconstructElement(count + 1);
+        for (SizeType i = 0; i < count; ++index, ++i)
         {
             new(Data() + index) CharType(ch);
         }
         new(Data() + count) CharType();
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    BasicString<TChar, TCharTraits, TAllocator>::BasicString(const BasicString& other) noexcept
-        : Pair(OneArgPlaceholder(), MoveTemp(other.GetAllocator()))
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>::BasicString(const BasicString& other)
+        : Pair(OneArgPlaceholder(), other.GetAllocator())
     {
-        if constexpr (CAN_MEMORY_COPY)
-        {
-            Pair.Second().Size = other.Pair.Second().Size;
-            Pair.Second().MaxSize = other.Pair.Second().MaxSize;
-        }
+        CopyAssign(other);
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    BasicString<TChar, TCharTraits, TAllocator>::BasicString(BasicString&& other) noexcept
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>::BasicString(BasicString&& other) noexcept
         : Pair(OneArgPlaceholder(), MoveTemp(other.GetAllocator()))
     {
-
+        MoveAssign(Forward<BasicString&&>(other));
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    BasicString<TChar, TCharTraits, TAllocator>::~BasicString()
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>::~BasicString()
     {
         if (LargeStringEngaged())
         {
-            const Pointer ptr = Pair.Second().UBuffer.Ptr;
+            const Pointer ptr = Pair.Second().UB.Ptr;
             auto& allocator = GetAllocator();
-            std::destroy_at(Pair.Second().UBuffer.Ptr);
+            std::destroy_at(Pair.Second().UB.Ptr);
             allocator.Deallocate(ptr, Size());
         }
 
-        Pair.Second().Size = 1;
-        Pair.Second().MaxSize = INLINE_SIZE;
-        CharTraitsType::Assign(Pair.Second().UBuffer.InlineBuffer[0], CharType());
+        Invalidate();
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    void BasicString<TChar, TCharTraits, TAllocator>::Reserve(strsize capacity)
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(const BasicString& other)
+    {
+        Pair.First() = other.GetAllocator();
+        CopyAssign(other);
+        return *this;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString&& other)
+    {
+        Pair.First() = MoveTemp(other.GetAllocator());
+        MoveAssign(other);
+        return *this;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString::Pointer const raw)
+    {
+        CopyAssign(StringView(raw));
+        return *this;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::Reserve(SizeType capacity)
     {
         if (capacity < Size() || capacity == Capacity())
         {
             return;
         }
 
-        if (LargeStringEngaged() && capacity <= StringVal<CharType>::INLINE_SIZE)
+        if (LargeStringEngaged() && capacity <= INLINE_SIZE)
         {
             BecomeSmall();
         }
@@ -273,42 +316,147 @@ namespace Engine
         }
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    void BasicString<TChar, TCharTraits, TAllocator>::Eos(strsize offset)
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::Eos(SizeType offset)
     {
         Pair.Second().Size = offset + 1;
-        CharTraitsType::Assign(Pair.Second().GetPtr()[offset], 1, CharType());
+        CharTraits::Assign(Pair.Second().GetPtr()[offset], 1, CharType());
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    void BasicString<TChar, TCharTraits, TAllocator>::BecomeSmall()
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::BecomeSmall()
     {
-        Pointer ptr = Pair.Second().UBuffer.Ptr;
-        CharTraitsType::Copy(Pair.Second().UBuffer.InlineBuffer, ptr, Size());
+        Pointer ptr = Pair.Second().UB.Ptr;
+        CharTraits::Copy(Pair.Second().UB.Buffer, ptr, Size());
         std::destroy_at(ptr);
         GetAllocator().Deallocate(ptr, Size());
         Pair.Second().MaxSize = INLINE_SIZE;
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    void BasicString<TChar, TCharTraits, TAllocator>::BecomeLarge(strsize capacity)
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::BecomeLarge(SizeType capacity)
     {
         Pointer ptr = GetAllocator().Allocate(capacity);
-        CharTraitsType::Copy(ptr, Pair.Second().UBuffer.InlineBuffer, Size());
-        Pair.Second().UBuffer.Ptr = ptr;
+        CharTraits::Copy(ptr, Pair.Second().UB.Buffer, Size());
+        Pair.Second().UB.Ptr = ptr;
         Pair.Second().MaxSize = capacity;
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    strsize BasicString<TChar, TCharTraits, TAllocator>::Length() const
+    template <typename Elem, typename Traits, typename Alloc>
+    typename BasicString<Elem, Traits, Alloc>::SizeType BasicString<Elem, Traits, Alloc>::Length() const
     {
         return Size() > 0 ? Size() - 1 : 0;
     }
 
-    template <typename TChar, typename TCharTraits, typename TAllocator>
-    strsize BasicString<TChar, TCharTraits, TAllocator>::Capacity() const
+    template <typename Elem, typename Traits, typename Alloc>
+    typename BasicString<Elem, Traits, Alloc>::SizeType BasicString<Elem, Traits, Alloc>::Capacity() const
     {
         return Pair.Second().MaxSize;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::Invalidate()
+    {
+        auto& myVal = Pair.Second();
+        myVal.Size = 1;
+        myVal.MaxSize = INLINE_SIZE;
+        myVal.UB.Buffer[0] = CharType();
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::MoveAssign(BasicString&& right)
+    {
+        ENSURE(std::addressof(*this) != std::addressof(right));
+        auto& leftVal = Pair.Second();
+        auto& rightVal = right.Pair.Second();
+        int32 size = rightVal.Size;
+        ENSURE(size >= 0);
+        Reserve(rightVal.MaxSize);
+
+        if constexpr (CAN_MEMORY_COPY)
+        {
+            const auto lhsData = reinterpret_cast<uint8*>(std::addressof(leftVal));
+            const auto rhsData = reinterpret_cast<const uint8*>(std::addressof(rightVal));
+            Memory::Memcpy(lhsData, rhsData, size);
+            right.Invalidate();
+            return;
+        }
+
+        if (right.LargeStringEngaged())
+        {
+            leftVal.UB.Ptr = rightVal.UB.Ptr;
+            rightVal.UB.Ptr = nullptr;
+        }
+        else
+        {
+            CharTraits::Copy(leftVal.UB.Buffer, rightVal.UB.Buffer, size);
+        }
+
+        leftVal.Size = rightVal.Size;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::CopyAssign(const BasicString& right)
+    {
+        ENSURE(std::addressof(*this) != std::addressof(right));
+        auto& leftVal = Pair.Second();
+        auto& rightVal = right.Pair.Second();
+        int32 size = rightVal.Size;
+        ENSURE(size >= 0);
+        Reserve(rightVal.MaxSize);
+
+        CharTraits::Copy(leftVal.GetPtr(), rightVal.GetPtr(), size);
+        leftVal.Size = rightVal.Size;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::CopyAssign(const StringView& right)
+    {
+        ENSURE(std::addressof(*this) != std::addressof(*right.Data()));
+        auto& leftVal = Pair.Second();
+        auto rightVal = right.Data();
+        int32 size = right.Length() + 1;
+        ENSURE(size >= 0);
+        Reserve(size);
+
+        CharTraits::Copy(leftVal.GetPtr(), rightVal, size);
+        leftVal.Size = size;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    int32 BasicString<Elem, Traits, Alloc>::Compare(const BasicString& other, ECaseSensitivity cs) const
+    {
+        return CharTraits::Compare(Data(), Length(), other.Data(), other.Length());
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    int32 BasicString<Elem, Traits, Alloc>::Compare(const BasicStringView<Elem>& other, ECaseSensitivity cs) const
+    {
+        return CharTraits::Compare(Data(), Length(), other.Data(), other.Length());
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator==(const BasicString& other) const
+    {
+        return Compare(other) == 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator!=(const BasicString& other) const
+    {
+        return Compare(other) != 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator==(const BasicStringView<Elem>& other) const
+    {
+        return Compare(other) == 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator!=(const BasicStringView<Elem>& other) const
+    {
+        return Compare(other) != 0;
     }
 
     using String = BasicString<char>;

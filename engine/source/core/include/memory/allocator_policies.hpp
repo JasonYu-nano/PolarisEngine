@@ -21,7 +21,7 @@ namespace Engine
 
             ElementAllocator() = default;
 
-            ElementAllocator(const ElementAllocator& other) = delete;
+            ElementAllocator(const ElementAllocator& other) noexcept = default;
 
             ElementAllocator(ElementAllocator&& other) noexcept = default;
 

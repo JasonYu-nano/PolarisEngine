@@ -49,9 +49,9 @@
         <DisplayString Condition="Pair.SecondVal.Size == 0">Empty</DisplayString>
         <DisplayString Condition="Pair.SecondVal.Size &lt; 0">Invalid</DisplayString>
         <DisplayString Condition="Pair.SecondVal.MaxSize &lt; Pair.SecondVal.Size">Invalid</DisplayString>
-        <DisplayString Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &lt;= 16">{(const char*)Pair.SecondVal.UBuffer.InlineBuffer,su}</DisplayString>
-        <DisplayString Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &gt; 16">{(const char*)Pair.SecondVal.UBuffer.Ptr,su}</DisplayString>
-        <StringView Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &lt;= 16">(const char*)Pair.SecondVal.UBuffer.InlineBuffer,su</StringView>
-        <StringView Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &gt; 16">(const char*)Pair.SecondVal.UBuffer.Ptr,su</StringView>
+        <DisplayString Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &lt;= 16">{(const char*)Pair.SecondVal.UB.Buffer,su}</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &gt; 16">{(const char*)Pair.SecondVal.UB.Ptr,su}</DisplayString>
+        <StringView Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &lt;= 16">(const char*)Pair.SecondVal.UB.Buffer,su</StringView>
+        <StringView Condition="Pair.SecondVal.MaxSize &gt;= Pair.SecondVal.Size &amp;&amp; Pair.SecondVal.MaxSize &gt; 16">(const char*)Pair.SecondVal.UB.Ptr,su</StringView>
     </Type>
 </AutoVisualizer>

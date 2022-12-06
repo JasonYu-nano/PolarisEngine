@@ -11,6 +11,7 @@ namespace Engine
         using CharType = T;
         using IntType = U;
         using Charcvt = V;
+        using SizeType = int32;
 
         static constexpr strsize Length(const CharType* str) noexcept
         {
