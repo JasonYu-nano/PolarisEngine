@@ -36,7 +36,7 @@ namespace Engine
             return nullptr;
         }
 
-        static constexpr CharType* Assign(const CharType* first, size_t len, const CharType ch) noexcept
+        static constexpr CharType* Assign(CharType* first, size_t len, const CharType ch) noexcept
         {
             for (CharType* next = first; len > 0; --len, ++next)
             {

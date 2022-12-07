@@ -152,6 +152,36 @@ namespace Engine
         EXPECT_FALSE(str4 == "ffffffffff");
     }
 
+    TEST(String, Empty)
+    {
+        String null;
+        String empty("");
+
+        EXPECT_TRUE(null.Null());
+        EXPECT_TRUE(empty.Empty() && !empty.Null());
+    }
+
+    TEST(String, Concat)
+    {
+        String str1("aabb");
+        str1.Truncate(2);
+        EXPECT_TRUE(str1 == "aa");
+
+        str1.Append("cc");
+        EXPECT_TRUE(str1 == "aacc");
+
+        str1.Prepend(String("0x"));
+        EXPECT_TRUE(str1 == "0xaacc");
+
+        str1.Insert(2, "80");
+        EXPECT_TRUE(str1 == "0x80aacc");
+
+        String str2 = str1.Slices(2, 4);
+        String str3 = str1.Slices(-6, 4);
+
+        EXPECT_TRUE(str2 == str3 && str2 == "80aa");
+    }
+
     TEST(UString, Concat)
     {
         UString str = "abcd";

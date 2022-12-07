@@ -84,9 +84,9 @@ namespace Engine
 
         BasicString& operator= (const BasicString& other);
 
-        BasicString& operator= (BasicString&& other);
+        BasicString& operator= (BasicString&& other) noexcept ;
 
-        BasicString& operator= (const Pointer raw);
+        BasicString& operator= (const CharType* raw);
 
         bool operator== (const BasicString& other) const;
 
@@ -95,6 +95,23 @@ namespace Engine
         bool operator== (const BasicStringView<CharType>& other) const;
 
         bool operator!= (const BasicStringView<CharType>& other) const;
+
+        CharType operator[] (SizeType index) const
+        {
+            ENSURE(index < Length());
+            return *(Pair.Second().GetPtr() + index);
+        }
+
+        CharType operator[] (SizeType index)
+        {
+            ENSURE(index < Length());
+            return *(Pair.Second().GetPtr() + index);
+        }
+
+        explicit operator BasicStringView<CharType>() const
+        {
+            return BasicStringView<CharType>(Data(), Length());
+        }
 
         Pointer Data()
         {
@@ -110,9 +127,107 @@ namespace Engine
 
         SizeType Capacity() const;
 
+        NODISCARD bool Null() const
+        {
+            return Size() <= 0;
+        }
+
+        NODISCARD bool Empty() const
+        {
+            return Size() <= 1;
+        }
+
+        void Resize(SizeType len);
+
+        void Truncate(SizeType pos)
+        {
+            pos = pos < 0 ? pos + Length() : pos;
+            if (pos >= 0 && pos < Length())
+            {
+                Pair.Second().Size = pos + 1;
+                CharTraits::Assign(Pair.Second().GetPtr() + pos, 1, CharType());
+            }
+        }
+
+        BasicString Slices(SizeType pos, SizeType num) const
+        {
+            pos = pos < 0 ? pos + Length() : pos;
+            if (pos >= 0 && num >= 0 && pos + num <= Length())
+            {
+                return BasicString(Data() + pos, num);
+            }
+
+            return BasicString();
+        }
+
+        bool StartsWith(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
+        bool StartsWith(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return StartsWith(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        bool StartsWith(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return StartsWith(BasicStringView<CharType>(ch, 1), cs);
+        }
+
+        bool EndsWith(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
+        bool EndsWith(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return EndsWith(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        inline bool EndsWith(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return EndsWith(BasicStringView<CharType>(ch, 1), cs);
+        }
+
+        BasicString& Append(const BasicStringView<CharType>& view);
+
+        BasicString& Append(const BasicString& str)
+        {
+            return Append(static_cast<BasicStringView<CharType>>(str));
+        }
+
+        BasicString& Append(CharType ch)
+        {
+            return Append(BasicStringView<CharType>(ch, 1));
+        }
+
+        BasicString& Prepend(const BasicStringView<CharType>& view);
+
+        BasicString& Prepend(const BasicString& str)
+        {
+            return Prepend(static_cast<BasicStringView<CharType>>(str));
+        }
+
+        BasicString& Prepend(CharType ch)
+        {
+            return Append(BasicStringView<CharType>(ch, 1));
+        }
+
+        BasicString& Insert(SizeType index, const BasicStringView<CharType>& view)
+        {
+            InsertUnconstructElement(index, view.Length());
+            CharTraits::Copy(Data() + index, view.Data(), view.Length());
+            return *this;
+        }
+
+        BasicString& Insert(SizeType index, const BasicString& str)
+        {
+            return Insert(index, static_cast<BasicStringView<CharType>>(str));
+        }
+
+        BasicString& Insert(SizeType index, CharType ch)
+        {
+            return Insert(index, BasicStringView<CharType>(ch, 1));
+        }
+
         void Clear()
         {
-            Eos(0);
+            Truncate(0);
         }
 
     protected:
@@ -143,15 +258,13 @@ namespace Engine
             new(Data() + index) CharType(Forward<Args>(args)...);
         }
 
-        void Add(ConstPointer elements, SizeType count)
+        void Add(ConstPointer elements, SizeType size)
         {
-            SizeType index = AddUnconstructElement(count);
-            CharTraits::Copy(Data() + index, elements, count);
+            SizeType index = AddUnconstructElement(size);
+            CharTraits::Copy(Data() + index, elements, size);
         }
 
         void Reserve(SizeType capacity);
-
-        void Eos(SizeType offset);
 
         void Invalidate();
 
@@ -172,6 +285,21 @@ namespace Engine
                 Expansion();
             }
             return index;
+        }
+
+        void InsertUnconstructElement(SizeType index, SizeType count)
+        {
+            ENSURE(index >= 0 && count > 0 && index <= Size());
+            auto& val = Pair.Second();
+            SizeType oldSize = val.Size;
+            val.Size += count;
+            if (val.Size > val.MaxSize)
+            {
+                Expansion();
+            }
+
+            CharType* src = val.GetPtr() + index;
+            Memory::Memmove(src + count, src, (oldSize - index) * sizeof(CharType));
         }
 
         void Expansion(SizeType destSize = -1)
@@ -230,7 +358,10 @@ namespace Engine
     {
         len = len < 0 ? CharTraits::Length(ch) : len;
         Reserve(len + 1);
-        Add(ch, len);
+        if (len > 0)
+        {
+            Add(ch, len);
+        }
         EmplaceBack(CharType());
     }
 
@@ -284,7 +415,7 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString&& other)
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString&& other) noexcept
     {
         Pair.First() = MoveTemp(other.GetAllocator());
         MoveAssign(other);
@@ -292,7 +423,7 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString::Pointer const raw)
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(const CharType* raw)
     {
         CopyAssign(StringView(raw));
         return *this;
@@ -314,13 +445,6 @@ namespace Engine
         {
             BecomeLarge(capacity);
         }
-    }
-
-    template <typename Elem, typename Traits, typename Alloc>
-    void BasicString<Elem, Traits, Alloc>::Eos(SizeType offset)
-    {
-        Pair.Second().Size = offset + 1;
-        CharTraits::Assign(Pair.Second().GetPtr()[offset], 1, CharType());
     }
 
     template <typename Elem, typename Traits, typename Alloc>
@@ -457,6 +581,53 @@ namespace Engine
     bool BasicString<Elem, Traits, Alloc>::operator!=(const BasicStringView<Elem>& other) const
     {
         return Compare(other) != 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::StartsWith(const BasicStringView<CharType>& view, ECaseSensitivity cs) const
+    {
+        SizeType compareLen = view.Length();
+        if (Empty() || Length() < compareLen)
+        {
+            return false;
+        }
+
+        return CharTraits::Compare(Data(), view.Data(), compareLen) == 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::EndsWith(const BasicStringView<CharType>& view, ECaseSensitivity cs) const
+    {
+        strsize compareLen = view.Length();
+        if (Empty() || Length() < compareLen)
+        {
+            return false;
+        }
+
+        return CharTraits::Compare(Data() + Length() - compareLen, view.Data(), compareLen) == 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Append(const BasicStringView<CharType>& view)
+    {
+        SizeType len = view.Length();
+        if (Null())
+        {
+            Reserve(len + 1);
+            Add(view.Data(), len);
+            EmplaceBack(CharType());
+        }
+        else
+        {
+            Insert(Length(), view);
+        }
+        return *this;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Prepend(const BasicStringView<CharType>& view)
+    {
+        return Insert(0, view);
     }
 
     using String = BasicString<char>;
