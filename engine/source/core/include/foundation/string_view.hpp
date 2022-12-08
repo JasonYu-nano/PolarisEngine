@@ -41,9 +41,9 @@ namespace Engine
 
         constexpr const CharType* Data() const { return Str; }
 
-        constexpr bool IsNull() const { return !Str; }
+        constexpr bool Null() const { return !Str; }
 
-        constexpr bool IsEmpty() const { return Length() <= 0; }
+        constexpr bool Empty() const { return Len <= 0; }
 
         constexpr void RemovePrefix(strsize num) noexcept
         {
@@ -81,7 +81,7 @@ namespace Engine
 
         constexpr bool StartsWith(const CharType ch) const noexcept
         {
-            if (IsNull() || IsEmpty())
+            if (Null() || Empty())
             {
                 return false;
             }
@@ -100,7 +100,7 @@ namespace Engine
 
         constexpr bool EndsWith(const CharType ch) const noexcept
         {
-            if (IsEmpty())
+            if (Empty())
             {
                 return false;
             }

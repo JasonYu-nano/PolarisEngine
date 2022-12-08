@@ -41,12 +41,12 @@ namespace Engine
         using CharType = Elem;
         static constexpr int32 INLINE_SIZE = (16 / sizeof(CharType) < 1) ? 1 : (16 / sizeof(CharType));
 
-        typename Traits::SizeType Size{ 0 };
+        typename Traits::SizeType Size{ 1 };
         typename Traits::SizeType MaxSize{ INLINE_SIZE };
 
         union _UB
         {
-            _UB() : Ptr() {}
+            _UB() { Traits::Assign(Buffer[0], CharType()); }
             ~_UB() {}
 
             CharType* Ptr;
@@ -127,11 +127,6 @@ namespace Engine
 
         SizeType Capacity() const;
 
-        NODISCARD bool Null() const
-        {
-            return Size() <= 0;
-        }
-
         NODISCARD bool Empty() const
         {
             return Size() <= 1;
@@ -205,12 +200,19 @@ namespace Engine
 
         BasicString& Prepend(CharType ch)
         {
-            return Append(BasicStringView<CharType>(ch, 1));
+            return Prepend(BasicStringView<CharType>(ch, 1));
         }
 
         BasicString& Insert(SizeType index, const BasicStringView<CharType>& view)
         {
-            InsertUnconstructElement(index, view.Length());
+            SizeType oldLen = Length();
+            if (index > Length())
+            {
+                return *this;
+            }
+
+            SizeType len = view.Length();
+            InsertUnconstructElement(index, len);
             CharTraits::Copy(Data() + index, view.Data(), view.Length());
             return *this;
         }
@@ -258,12 +260,6 @@ namespace Engine
             new(Data() + index) CharType(Forward<Args>(args)...);
         }
 
-        void Add(ConstPointer elements, SizeType size)
-        {
-            SizeType index = AddUnconstructElement(size);
-            CharTraits::Copy(Data() + index, elements, size);
-        }
-
         void Reserve(SizeType capacity);
 
         void Invalidate();
@@ -277,13 +273,16 @@ namespace Engine
     private:
         SizeType AddUnconstructElement(SizeType count)
         {
-            ENSURE(count > 0);
-            SizeType index = Pair.Second().Size;
-            Pair.Second().Size += count;
-            if (Pair.Second().Size > Capacity())
+            auto& val = Pair.Second();
+            ENSURE(count > 0 && val.Size > 0);
+            SizeType index = val.Size - 1;
+            SizeType newSize = val.Size + count;
+            if (newSize > Capacity())
             {
-                Expansion();
+                Expansion(newSize);
             }
+
+            val.Size = newSize;
             return index;
         }
 
@@ -292,19 +291,19 @@ namespace Engine
             ENSURE(index >= 0 && count > 0 && index <= Size());
             auto& val = Pair.Second();
             SizeType oldSize = val.Size;
-            val.Size += count;
-            if (val.Size > val.MaxSize)
+            SizeType newSize = val.Size + count;
+            if (newSize > val.MaxSize)
             {
-                Expansion();
+                Expansion(newSize);
             }
 
+            val.Size = newSize;
             CharType* src = val.GetPtr() + index;
             Memory::Memmove(src + count, src, (oldSize - index) * sizeof(CharType));
         }
 
-        void Expansion(SizeType destSize = -1)
+        void Expansion(SizeType destSize)
         {
-            destSize = destSize >= 0 ? destSize : Pair.Second().Size;
             SizeType newCapacity = CalculateGrowth(destSize);
             ENSURE(destSize <= newCapacity);
             Reserve(newCapacity);
@@ -348,34 +347,26 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>::BasicString(CharType ch)
     {
-        Reserve(2);
-        EmplaceBack(ch);
-        EmplaceBack(CharType());
+        Append(BasicStringView<CharType>(std::addressof(ch), 1));
     }
 
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>::BasicString(BasicString::ConstPointer ch, SizeType len)
     {
         len = len < 0 ? CharTraits::Length(ch) : len;
-        Reserve(len + 1);
-        if (len > 0)
-        {
-            Add(ch, len);
-        }
-        EmplaceBack(CharType());
+        Append(BasicStringView<CharType>(ch, len));
     }
 
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>::BasicString(SizeType count, CharType ch)
     {
         ENSURE(count > 0);
-        Reserve(count + 1);
-        SizeType index = AddUnconstructElement(count + 1);
-        for (SizeType i = 0; i < count; ++index, ++i)
+        SizeType index = AddUnconstructElement(count);
+        for (SizeType i = 0; i < count; ++i)
         {
-            new(Data() + index) CharType(ch);
+            CharTraits::Assign(Data()[i], ch);
         }
-        new(Data() + count) CharType();
+        CharTraits::Assign(Data()[index + count], CharType());
     }
 
     template <typename Elem, typename Traits, typename Alloc>
@@ -610,17 +601,15 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Append(const BasicStringView<CharType>& view)
     {
+        if (view.Null() || view.Empty())
+        {
+            return *this;
+        }
+
         SizeType len = view.Length();
-        if (Null())
-        {
-            Reserve(len + 1);
-            Add(view.Data(), len);
-            EmplaceBack(CharType());
-        }
-        else
-        {
-            Insert(Length(), view);
-        }
+        SizeType index = AddUnconstructElement(len);
+        CharTraits::Copy(Data() + index, view.Data(), len);
+        CharTraits::Assign(*(Data() + index + len), CharType());
         return *this;
     }
 

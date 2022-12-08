@@ -156,30 +156,54 @@ namespace Engine
     {
         String null;
         String empty("");
-
-        EXPECT_TRUE(null.Null());
-        EXPECT_TRUE(empty.Empty() && !empty.Null());
+        EXPECT_TRUE(null.Empty() && empty.Empty());
     }
 
     TEST(String, Concat)
     {
         String str1("aabb");
+        String str2;
+
         str1.Truncate(2);
         EXPECT_TRUE(str1 == "aa");
+
+        str2.Truncate(0);
+        EXPECT_TRUE(str2.Empty());
 
         str1.Append("cc");
         EXPECT_TRUE(str1 == "aacc");
 
+        str2.Append("");
+        EXPECT_TRUE(str2.Empty());
+
+        str2.Append("aa");
+        EXPECT_TRUE(str2 == "aa");
+
         str1.Prepend(String("0x"));
         EXPECT_TRUE(str1 == "0xaacc");
+
+        String str3;
+        str3.Prepend("aa");
+        EXPECT_TRUE(str3 == "aa");
 
         str1.Insert(2, "80");
         EXPECT_TRUE(str1 == "0x80aacc");
 
+        String str4;
+        str4.Insert(0, "aa");
+        EXPECT_TRUE(str4 == "aa");
+    }
+
+    TEST(String, Split)
+    {
+        String str1("0x80aacc");
         String str2 = str1.Slices(2, 4);
         String str3 = str1.Slices(-6, 4);
 
         EXPECT_TRUE(str2 == str3 && str2 == "80aa");
+
+        String str4;
+        EXPECT_TRUE(str4.Slices(0, 0).Empty());
     }
 
     TEST(UString, Concat)

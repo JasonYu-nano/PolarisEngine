@@ -76,7 +76,7 @@ namespace Engine
 
     UString UString::FromUtf8(StringView view)
     {
-        if (view.IsEmpty())
+        if (view.Empty())
         {
             return UString();
         }
@@ -746,7 +746,7 @@ namespace Engine
 
     void UString::ReplaceHelper(UString& source, UStringView before, UStringView after, ECaseSensitivity cs)
     {
-        if (before.IsEmpty() || after.IsEmpty())
+        if (before.Empty() || after.Empty())
         {
             return;
         }
