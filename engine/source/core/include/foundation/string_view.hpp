@@ -118,7 +118,7 @@ namespace Engine
             return Private::FindString<CharType, Traits, SizeType>(Str, Len, 0, needle.Str, needle.Len);
         }
 
-        DynamicArray<BasicStringView> Split(BasicStringView sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts)
+        DynamicArray<BasicStringView> Split(BasicStringView sep, ESplitBehavior behavior = KeepEmptyParts)
         {
             DynamicArray<BasicStringView> ret;
             SizeType start = 0;
@@ -126,13 +126,13 @@ namespace Engine
             SizeType extra = 0;
             while ((end = Private::FindString<CharType, Traits, SizeType>(Str, Len, start + extra, sep.Str, sep.Len)) != -1)
             {
-                if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+                if (start != end || behavior == KeepEmptyParts)
                 {
                     ret.Add(Slices(start, end - start));
                 }
                 start = end + sep.Len;
             }
-            if (start != Len || behavior == ESplitBehavior::KeepEmptyParts)
+            if (start != Len || behavior == KeepEmptyParts)
             {
                 ret.Add(Slices(start, Len - start));
             }

@@ -301,12 +301,12 @@ namespace Engine::Private
 //        strsize extra = 0;
 //        while ((end = FindString(Source, start + extra, sep, cs)) != -1)
 //        {
-//            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+//            if (start != end || behavior == KeepEmptyParts)
 //                list.Add(Source.sliced(start, end - start));
 //            start = end + sep.size();
 //            extra = (sep.Length() == 0 ? 1 : 0);
 //        }
-//        if (start != Source.Length() || behavior == ESplitBehavior::KeepEmptyParts)
+//        if (start != Source.Length() || behavior == KeepEmptyParts)
 //            list.Add(source.sliced(start));
 //        return list;
 //    }

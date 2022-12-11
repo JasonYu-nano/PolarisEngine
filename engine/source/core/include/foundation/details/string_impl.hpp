@@ -446,13 +446,13 @@ namespace Engine
         SizeType end;
         while ((end = FindStringHelper(static_cast<BasicStringView<CharType>>(*this), start, sep, cs)) != -1)
         {
-            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            if (start != end || behavior == KeepEmptyParts)
             {
                 ret.Add(Slices(start, end - start));
             }
             start = end + sep.Length();
         }
-        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        if (start != Length() || behavior == KeepEmptyParts)
         {
             ret.Add(Slices(start, Length() - start));
         }
@@ -469,13 +469,13 @@ namespace Engine
         SizeType end;
         while ((end = FindAnyCharHelper(static_cast<BasicStringView<CharType>>(*this), start, sep, cs)) != -1)
         {
-            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            if (start != end || behavior == KeepEmptyParts)
             {
                 ret.Add(Slices(start, end - start));
             }
             start = end + 1;
         }
-        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        if (start != Length() || behavior == KeepEmptyParts)
         {
             ret.Add(Slices(start, Length() - start));
         }
@@ -688,7 +688,7 @@ namespace Engine
             CharType* src = val.GetPtr();
             for (int32 i = nIndices - 1; i >= 0; --i)
             {
-                strsize idx = indices[i];
+                SizeType idx = indices[i];
                 CharTraits::Copy(src + idx + alen, src + idx + blen, oldSize - idx - blen);
                 CharTraits::Copy(src + idx, afterData, alen);
             }

@@ -240,7 +240,7 @@ namespace Engine
             return false;
         }
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             return CharTraits<UChar>::Compare(Data(), latin1.Data(), compareLen) == 0;
         }
@@ -258,7 +258,7 @@ namespace Engine
             return false;
         }
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             return CharTraits<UChar>::Compare(Data(), latin1, compareLen) == 0;
         }
@@ -276,7 +276,7 @@ namespace Engine
             return false;
         }
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             return CharTraits<UChar>::Compare(Data() + Length() - compareLen, latin1.Data(), compareLen) == 0;
         }
@@ -294,7 +294,7 @@ namespace Engine
             return false;
         }
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             return CharTraits<UChar>::Compare(Data() + Length() - compareLen, latin1, compareLen) == 0;
         }
@@ -597,13 +597,13 @@ namespace Engine
         strsize end;
         while ((end = FindStringHelper((UStringView)*this, start, (UStringView)sep, cs)) != -1)
         {
-            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            if (start != end || behavior == KeepEmptyParts)
             {
                 ret.Add(Slices(start, end - start));
             }
             start = end + sep.Length();
         }
-        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        if (start != Length() || behavior == KeepEmptyParts)
         {
             ret.Add(Slices(start, Length() - start));
         }
@@ -617,13 +617,13 @@ namespace Engine
         strsize end;
         while ((end = FindAnyCharHelper((UStringView)*this, start, (UStringView)sep, cs)) != -1)
         {
-            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            if (start != end || behavior == KeepEmptyParts)
             {
                 ret.Add(Slices(start, end - start));
             }
             start = end + 1;
         }
-        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        if (start != Length() || behavior == KeepEmptyParts)
         {
             ret.Add(Slices(start, Length() - start));
         }
@@ -632,7 +632,7 @@ namespace Engine
 
     int32 UString::Compare(UStringView other, ECaseSensitivity cs) const
     {
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             return CharTraits<UChar>::Compare(Data(), Length(), other.Data(), other.Length());
         }
@@ -644,7 +644,7 @@ namespace Engine
 
     int32 UString::Compare(const char* other, ECaseSensitivity cs) const
     {
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             return CharTraits<UChar>::Compare(Data(), Length(), other, CharTraits<char>::Length(other));
         }

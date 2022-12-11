@@ -89,7 +89,7 @@ namespace Engine
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, strsize count, ECaseSensitivity cs = ECaseSensitivity::Sensitive) noexcept
+        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, strsize count, ECaseSensitivity cs = CaseSensitive) noexcept
         {
             if constexpr (std::is_same_v<CharType, OtherChar>)
             {
@@ -99,7 +99,7 @@ namespace Engine
                 }
             }
 
-            if (cs == ECaseSensitivity::Sensitive)
+            if (cs == CaseSensitive)
             {
                 auto left = reinterpret_cast<const typename std::make_unsigned_t<CharType>*>(lhs);
                 auto right = reinterpret_cast<const typename std::make_unsigned_t<OtherChar>*>(rhs);
@@ -128,7 +128,7 @@ namespace Engine
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen, ECaseSensitivity cs = ECaseSensitivity::Sensitive) noexcept
+        static constexpr int32 Compare(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen, ECaseSensitivity cs = CaseSensitive) noexcept
         {
             int32 result = Compare(lhs, rhs, Math::Min(llen, rlen), cs);
 
@@ -151,7 +151,7 @@ namespace Engine
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, ECaseSensitivity cs = ECaseSensitivity::Sensitive) noexcept
+        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, ECaseSensitivity cs = CaseSensitive) noexcept
         {
             return Compare(lhs, Length(lhs), rhs, Length(rhs), cs);
         }

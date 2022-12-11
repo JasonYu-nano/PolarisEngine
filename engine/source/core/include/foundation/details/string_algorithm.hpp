@@ -20,12 +20,12 @@ namespace Engine::Private
 {
     template <typename CharType, typename Traits, typename SizeType>
     void _BMInitSkipTable(const CharType* needle, SizeType len, int32* skipTable,
-                            ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                            ECaseSensitivity cs = CaseSensitive)
     {
         SizeType l = Math::Min(len, 255);
         Memory::Memset(skipTable, -1, 256 * sizeof(int32));
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             for (SizeType idx = len - l; idx < len; ++idx)
             {
@@ -73,7 +73,7 @@ namespace Engine::Private
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType _BMFind(const CharType* haystack, SizeType alen, SizeType from, const CharType* needle, SizeType blen,
-                      const int32* skipTable, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                      const int32* skipTable, ECaseSensitivity cs = CaseSensitive)
     {
         if (from < 0)
         {
@@ -92,7 +92,7 @@ namespace Engine::Private
 
         const CharType* start = haystack;
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             int32 skip;
 
@@ -233,7 +233,7 @@ namespace Engine::Private
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType FindChar(const CharType* haystack, SizeType len, SizeType from, CharType ch,
-                     ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                     ECaseSensitivity cs = CaseSensitive)
     {
         if (from < 0)
         {
@@ -247,7 +247,7 @@ namespace Engine::Private
             const CharType* end = haystack + len;
             while (current < end)
             {
-                if (cs == ECaseSensitivity::Sensitive)
+                if (cs == CaseSensitive)
                 {
                     if (*current == ch)
                     {
@@ -270,7 +270,7 @@ namespace Engine::Private
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType FindStringBoyerMoore(const CharType* haystack, SizeType alen, SizeType from, const CharType* needle, SizeType blen,
-                         ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                         ECaseSensitivity cs = CaseSensitive)
     {
         int32 skipTable[256];
         _BMInitSkipTable<CharType, Traits, SizeType>(needle, blen, skipTable, cs);
@@ -279,7 +279,7 @@ namespace Engine::Private
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType FindStringHash(const CharType* haystack, SizeType alen, SizeType from, const CharType* needle, SizeType blen,
-                       ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                       ECaseSensitivity cs = CaseSensitive)
     {
         const CharType* current = haystack + from;
         const CharType* end = haystack + (alen - blen);
@@ -287,7 +287,7 @@ namespace Engine::Private
         size_t hashNeedle = 0, hashHaystack = 0;
         SizeType idx;
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             for (idx = 0; idx < blen; ++idx)
             {
@@ -401,7 +401,7 @@ namespace Engine::Private
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType FindString(const CharType* haystack, SizeType alen, SizeType from, const CharType* needle, SizeType blen,
-                       ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                       ECaseSensitivity cs = CaseSensitive)
     {
         if (from < 0)
         {
@@ -446,7 +446,7 @@ namespace Engine::Private
 
     template <typename CharType, typename Traits, typename SizeType>
     static SizeType FindLastChar(const CharType* haystack, SizeType len, CharType ch, SizeType from,
-                                ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                                ECaseSensitivity cs = CaseSensitive)
     {
         if (len == 0)
         {
@@ -464,7 +464,7 @@ namespace Engine::Private
         {
             auto c = Traits::ToInt(ch);
             auto n = haystack + from;
-            if (cs == ECaseSensitivity::Sensitive)
+            if (cs == CaseSensitive)
             {
                 for (; n >= haystack; --n)
                 {
@@ -491,7 +491,7 @@ namespace Engine::Private
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType FindLastString(const CharType* haystack, SizeType alen, SizeType from, const CharType* needle, SizeType blen,
-                           ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+                           ECaseSensitivity cs = CaseSensitive)
     {
         if (blen == 1)
         {
@@ -523,7 +523,7 @@ namespace Engine::Private
         const auto* h = haystack + slMinusOne;
         size_t hashNeedle = 0, hashHaystack = 0;
 
-        if (cs == ECaseSensitivity::Sensitive)
+        if (cs == CaseSensitive)
         {
             for (SizeType idx = 0; idx < blen; ++idx)
             {

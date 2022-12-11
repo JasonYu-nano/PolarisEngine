@@ -133,26 +133,26 @@ namespace Engine
 
         BasicString Slices(SizeType pos, SizeType num) const;
 
-        bool StartsWith(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        bool StartsWith(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const;
 
-        bool StartsWith(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool StartsWith(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return StartsWith(static_cast<ViewType>(str), cs);
         }
 
-        bool StartsWith(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool StartsWith(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
             return StartsWith(ViewType(ch, 1), cs);
         }
 
-        bool EndsWith(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        bool EndsWith(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const;
 
-        bool EndsWith(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool EndsWith(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return EndsWith(static_cast<ViewType>(str), cs);
         }
 
-        bool EndsWith(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool EndsWith(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
             return EndsWith(ViewType(ch, 1), cs);
         }
@@ -213,35 +213,35 @@ namespace Engine
 
         BasicString& Remove(SizeType pos, SizeType num);
 
-        BasicString& Remove(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+        BasicString& Remove(const ViewType& view, ECaseSensitivity cs = CaseSensitive);
 
-        BasicString& Remove(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        BasicString& Remove(const BasicString& str, ECaseSensitivity cs = CaseSensitive)
         {
             return Remove(static_cast<ViewType>(str), cs);
         }
 
-        BasicString& Remove(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        BasicString& Remove(const CharType* str, ECaseSensitivity cs = CaseSensitive)
         {
             return Remove(ViewType(str), cs);
         }
 
-        BasicString& Remove(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        BasicString& Remove(CharType ch, ECaseSensitivity cs = CaseSensitive)
         {
             return Remove(ViewType(std::addressof(ch), 1), cs);
         }
 
-        BasicString& Replace(const ViewType& before, const ViewType& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        BasicString& Replace(const ViewType& before, const ViewType& after, ECaseSensitivity cs = CaseSensitive)
         {
             ReplaceHelper(*this, before, after, cs);
             return *this;
         }
 
-        BasicString& Replace(const BasicString& before, const BasicString& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        BasicString& Replace(const BasicString& before, const BasicString& after, ECaseSensitivity cs = CaseSensitive)
         {
             return Replace(static_cast<ViewType>(before), static_cast<ViewType>(after), cs);
         }
 
-        BasicString& Replace(const CharType* before, const CharType* after, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        BasicString& Replace(const CharType* before, const CharType* after, ECaseSensitivity cs = CaseSensitive)
         {
             return Replace(ViewType(before), ViewType(after), cs);
         }
@@ -255,109 +255,109 @@ namespace Engine
 
         BasicString Chopped(SizeType n);
 
-        SizeType IndexOf(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType IndexOf(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const
         {
             return FindStringHelper(static_cast<ViewType>(*this), 0, view, cs);
         }
 
-        SizeType IndexOf(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType IndexOf(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
         {
             return IndexOf(ViewType(str), cs);
         }
 
-        SizeType IndexOf(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType IndexOf(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return IndexOf(static_cast<ViewType>(str), cs);
         }
 
-        SizeType IndexOf(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType IndexOf(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
             return IndexOf(ViewType(std::addressof(ch), 1), cs);
         }
 
-        SizeType IndexOfAny(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType IndexOfAny(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const
         {
             return FindAnyCharHelper(static_cast<ViewType>(*this), 0, view, cs);
         }
 
-        SizeType IndexOfAny(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType IndexOfAny(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return IndexOfAny(static_cast<ViewType>(str), cs);
         }
 
-        SizeType IndexOfAny(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType IndexOfAny(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
         {
             return IndexOfAny(ViewType(str), cs);
         }
 
-        SizeType LastIndexOf(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType LastIndexOf(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const
         {
             return FindLastHelper(static_cast<ViewType>(*this), -1, view, cs);
         }
 
-        SizeType LastIndexOf(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType LastIndexOf(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return LastIndexOf(static_cast<ViewType>(str), cs);
         }
 
-        SizeType LastIndexOf(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType LastIndexOf(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
         {
             return LastIndexOf(ViewType(str), cs);
         }
 
-        SizeType LastIndexOf(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType LastIndexOf(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
             return LastIndexOf(ViewType(std::addressof(ch), 1), cs);
         }
 
-        SizeType LastIndexOfAny(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType LastIndexOfAny(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const
         {
             return FindLastAnyCharHelper(static_cast<ViewType>(*this), 0, view, cs);
         }
 
-        SizeType LastIndexOfAny(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType LastIndexOfAny(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
         {
             return LastIndexOfAny(ViewType(str), cs);
         }
 
-        SizeType LastIndexOfAny(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        SizeType LastIndexOfAny(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return LastIndexOfAny(static_cast<ViewType>(str), cs);
         }
 
-        bool Contains(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool Contains(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const
         {
             return FindStringHelper(static_cast<ViewType>(*this), 0, view, cs) >= 0;
         }
 
-        bool Contains(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool Contains(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
         {
             return Contains(ViewType(str), cs);
         }
 
-        bool Contains(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool Contains(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return Contains(static_cast<ViewType>(str), cs);
         }
 
-        bool Contains(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        bool Contains(UChar ch, ECaseSensitivity cs = CaseSensitive) const
         {
             return Contains(ViewType(std::addressof(ch), 1), cs);
         }
 
-        int32 Count(const ViewType& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        int32 Count(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const;
 
-        int32 Count(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        int32 Count(const BasicString& str, ECaseSensitivity cs = CaseSensitive) const
         {
             return Count(static_cast<ViewType>(str), cs);
         }
 
-        int32 Count(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        int32 Count(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
         {
             return Count(ViewType(str), cs);
         }
 
-        int32 Count(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        int32 Count(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
             return Count(ViewType(std::addressof(ch), 1), cs);
         }
@@ -376,36 +376,36 @@ namespace Engine
 
         void ToLowerAscii();
 
-        DynamicArray<BasicString> Split(const ViewType& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        DynamicArray<BasicString> Split(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        DynamicArray<BasicString> Split(const BasicString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        DynamicArray<BasicString> Split(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(static_cast<ViewType>(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> Split(const CharType* sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        DynamicArray<BasicString> Split(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(ViewType(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> Split(CharType sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        DynamicArray<BasicString> Split(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(ViewType(std::addressof(sep), 1), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(const ViewType& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        DynamicArray<BasicString> SplitAny(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        DynamicArray<BasicString> SplitAny(const BasicString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        DynamicArray<BasicString> SplitAny(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(static_cast<ViewType>(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(const CharType* sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        DynamicArray<BasicString> SplitAny(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(ViewType(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(CharType sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        DynamicArray<BasicString> SplitAny(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(ViewType(std::addressof(sep), 1), behavior, cs);
         }
@@ -470,7 +470,7 @@ namespace Engine
 
         static SizeType FindLastAnyCharHelper(const ViewType& haystack, SizeType from, const ViewType& needle, ECaseSensitivity cs);
 
-        static void ReplaceHelper(BasicString& source, const ViewType& before, const ViewType& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+        static void ReplaceHelper(BasicString& source, const ViewType& before, const ViewType& after, ECaseSensitivity cs = CaseSensitive);
 
     private:
         SizeType AddUnconstructElement(SizeType count);
@@ -485,12 +485,12 @@ namespace Engine
 
         void BecomeLarge(SizeType capacity);
 
-        int32 Compare(const BasicString& other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        int32 Compare(const BasicString& other, ECaseSensitivity cs = CaseSensitive) const
         {
             return CharTraits::Compare(Data(), Length(), other.Data(), other.Length(), cs);
         }
 
-        int32 Compare(const ViewType& other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        int32 Compare(const ViewType& other, ECaseSensitivity cs = CaseSensitive) const
         {
             return CharTraits::Compare(Data(), Length(), other.Data(), other.Length(), cs);
         }

@@ -4,13 +4,13 @@
 
 namespace Engine
 {
-    enum class ECaseSensitivity : uint8
+    enum ECaseSensitivity : uint8
     {
-        Sensitive,
-        Insensitive
+        CaseSensitive,
+        CaseInsensitive
     };
 
-    enum class ESplitBehavior : uint8
+    enum ESplitBehavior : uint8
     {
         KeepEmptyParts,
         SkipEmptyParts,

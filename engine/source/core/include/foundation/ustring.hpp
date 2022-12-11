@@ -126,15 +126,15 @@ namespace Engine
 
         UString Slices(strsize pos, strsize num) const;
 
-        bool StartsWith(UStringView latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        bool StartsWith(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline bool StartsWith(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline bool StartsWith(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        bool StartsWith(UStringView latin1, ECaseSensitivity cs = CaseSensitive) const;
+        bool StartsWith(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
+        inline bool StartsWith(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
+        inline bool StartsWith(UChar ch, ECaseSensitivity cs = CaseSensitive) const;
 
-        bool EndsWith(UStringView latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        bool EndsWith(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline bool EndsWith(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline bool EndsWith(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        bool EndsWith(UStringView latin1, ECaseSensitivity cs = CaseSensitive) const;
+        bool EndsWith(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
+        inline bool EndsWith(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
+        inline bool EndsWith(UChar ch, ECaseSensitivity cs = CaseSensitive) const;
 
         inline UString& Append(const char* latin1);
         inline UString& Append(UChar ch);
@@ -149,11 +149,11 @@ namespace Engine
         UString& Insert(strsize pos, const UChar* str, strsize len);
 
         UString& Remove(strsize pos, strsize num);
-        UString& Remove(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
-        UString& Remove(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
-        UString& Remove(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+        UString& Remove(const char* latin1, ECaseSensitivity cs = CaseSensitive);
+        UString& Remove(const UString& str, ECaseSensitivity cs = CaseSensitive);
+        UString& Remove(UChar ch, ECaseSensitivity cs = CaseSensitive);
 
-        UString& Replace(const UString& before, const UString& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+        UString& Replace(const UString& before, const UString& after, ECaseSensitivity cs = CaseSensitive);
 
         bool IsUpper() const;
         bool IsLower() const;
@@ -171,31 +171,31 @@ namespace Engine
 
         UString Chopped(strsize n);
 
-        inline strsize IndexOf(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize IndexOf(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize IndexOf(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize IndexOf(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize IndexOf(UStringView str, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize IndexOf(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize IndexOf(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize IndexOf(UChar ch, ECaseSensitivity cs = CaseSensitive) const;
 
-        inline strsize IndexOfAny(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize IndexOfAny(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize IndexOfAny(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize IndexOfAny(UStringView str, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize IndexOfAny(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize IndexOfAny(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
 
-        inline strsize LastIndexOf(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize LastIndexOf(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize LastIndexOf(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize LastIndexOf(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize LastIndexOf(UStringView str, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize LastIndexOf(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize LastIndexOf(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize LastIndexOf(UChar ch, ECaseSensitivity cs = CaseSensitive) const;
 
-        inline strsize LastIndexOfAny(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize LastIndexOfAny(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline strsize LastIndexOfAny(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline strsize LastIndexOfAny(UStringView str, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize LastIndexOfAny(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
+        inline strsize LastIndexOfAny(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
 
-        inline bool Contains(UStringView str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline bool Contains(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline bool Contains(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        inline bool Contains(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline bool Contains(UStringView str, ECaseSensitivity cs = CaseSensitive) const;
+        inline bool Contains(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
+        inline bool Contains(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
+        inline bool Contains(UChar ch, ECaseSensitivity cs = CaseSensitive) const;
 
-        int32 Count(const UString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
-        int32 Count(const char* latin1, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        int32 Count(const UString& str, ECaseSensitivity cs = CaseSensitive) const;
+        int32 Count(const char* latin1, ECaseSensitivity cs = CaseSensitive) const;
 
         UString& Fill(UChar ch, int32 num = -1);
 
@@ -205,17 +205,17 @@ namespace Engine
 
         UString Simplified() const;
 
-        DynamicArray<UString> Split(const UString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        DynamicArray<UString> Split(const UString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        DynamicArray<UString> SplitAny(const UString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        DynamicArray<UString> SplitAny(const UString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        int32 Compare(UStringView other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        int32 Compare(UStringView other, ECaseSensitivity cs = CaseSensitive) const;
 
-        int32 Compare(const char* other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        int32 Compare(const char* other, ECaseSensitivity cs = CaseSensitive) const;
 
-        inline int32 Compare(const UString& other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline int32 Compare(const UString& other, ECaseSensitivity cs = CaseSensitive) const;
 
-        inline int32 Compare(UChar other, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+        inline int32 Compare(UChar other, ECaseSensitivity cs = CaseSensitive) const;
 
         inline bool operator== (const UString& other) const
         {
@@ -277,7 +277,7 @@ namespace Engine
 
         static strsize FindLastAnyCharHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs);
 
-        static void ReplaceHelper(UString& source, UStringView before, UStringView after, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+        static void ReplaceHelper(UString& source, UStringView before, UStringView after, ECaseSensitivity cs = CaseSensitive);
 
         static void ReplaceHelper(UString& source, strsize* indices, int32 nIndices, strsize blen, const UChar*after, strsize alen);
 

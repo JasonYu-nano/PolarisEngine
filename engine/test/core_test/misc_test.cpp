@@ -228,12 +228,12 @@ namespace Engine
         String str1 = "ABC345efd";
         EXPECT_TRUE(str1.IndexOf("") == INDEX_NONE);
         EXPECT_TRUE(str1.IndexOf("AB") == 0);
-        EXPECT_TRUE(str1.IndexOf("c3", ECaseSensitivity::Insensitive) == 2);
+        EXPECT_TRUE(str1.IndexOf("c3", CaseInsensitive) == 2);
 
         String str2 = "efd";
         EXPECT_TRUE(str1.IndexOf(str2) == 6);
         str2 = "eFd";
-        EXPECT_TRUE(str1.IndexOf(str2, ECaseSensitivity::Insensitive) == 6);
+        EXPECT_TRUE(str1.IndexOf(str2, CaseInsensitive) == 6);
 
         EXPECT_TRUE(str1.IndexOf('4') == 4);
 
@@ -244,11 +244,11 @@ namespace Engine
         String str3 = "ABC345efdc301";
         EXPECT_TRUE(str3.LastIndexOf("") == INDEX_NONE);
         EXPECT_TRUE(str3.LastIndexOf("C3") == 2);
-        EXPECT_TRUE(str3.LastIndexOf("C3", ECaseSensitivity::Insensitive) == 9);
-        EXPECT_TRUE(str3.LastIndexOfAny("9c", ECaseSensitivity::Insensitive) == 9);
+        EXPECT_TRUE(str3.LastIndexOf("C3", CaseInsensitive) == 9);
+        EXPECT_TRUE(str3.LastIndexOfAny("9c", CaseInsensitive) == 9);
 
         EXPECT_TRUE(str3.LastIndexOfAny(str3.Contains("efd")));
-        EXPECT_TRUE(str3.LastIndexOfAny(str3.Contains("eFd", ECaseSensitivity::Insensitive)));
+        EXPECT_TRUE(str3.LastIndexOfAny(str3.Contains("eFd", CaseInsensitive)));
 
         String str4 = "abcdaef";
         EXPECT_TRUE(str4.Count('a') == 2);
@@ -278,7 +278,7 @@ namespace Engine
         EXPECT_TRUE(items.Size() == 3);
         items = str7.SplitAny("ni");
         EXPECT_TRUE(items.Size() == 6);
-        items = str7.SplitAny("ni", ESplitBehavior::SkipEmptyParts);
+        items = str7.SplitAny("ni", SkipEmptyParts);
         EXPECT_TRUE(items.Size() == 4);
     }
 
@@ -361,14 +361,14 @@ namespace Engine
 
         UString multiPattern = "UString is unicode string name";
         EXPECT_TRUE(multiPattern.IndexOf("string") == 19);
-        EXPECT_TRUE(multiPattern.IndexOf("string", ECaseSensitivity::Insensitive) == 1);
+        EXPECT_TRUE(multiPattern.IndexOf("string", CaseInsensitive) == 1);
 
         sub.Append('P');
         EXPECT_FALSE(str.Contains(sub));
 
-        EXPECT_TRUE(str.Contains(sub, ECaseSensitivity::Insensitive));
-        EXPECT_TRUE(str.IndexOf(sub, ECaseSensitivity::Insensitive) == 2);
-        EXPECT_TRUE(str.IndexOf("5P", ECaseSensitivity::Insensitive) == 5);
+        EXPECT_TRUE(str.Contains(sub, CaseInsensitive));
+        EXPECT_TRUE(str.IndexOf(sub, CaseInsensitive) == 2);
+        EXPECT_TRUE(str.IndexOf("5P", CaseInsensitive) == 5);
 
         str = "abc456AB78bc9";
         sub = "bc";
