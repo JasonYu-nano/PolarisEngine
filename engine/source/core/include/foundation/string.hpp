@@ -43,8 +43,6 @@ namespace Engine
         using SizeType = typename CharTraits::SizeType;
         using AllocatorType = typename Alloc::template ElementAllocator<Elem>;
         using ViewType = BasicStringView<CharType>;
-        using Pointer = CharType*;
-        using ConstPointer = const CharType*;
 
     public:
         BasicString() = default;
@@ -497,7 +495,7 @@ namespace Engine
 
     private:
         static constexpr auto INLINE_SIZE = StringVal<CharType, CharTraits>::INLINE_SIZE;
-        static constexpr bool CAN_MEMORY_COPY = std::is_trivial_v<Pointer>;
+        static constexpr bool CAN_MEMORY_COPY = std::is_trivial_v<CharType>;
 
         CompressedPair<AllocatorType, StringVal<CharType, CharTraits>> Pair;
     };

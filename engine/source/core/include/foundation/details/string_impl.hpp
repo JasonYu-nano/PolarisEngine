@@ -498,8 +498,8 @@ namespace Engine
         }
 
         auto& alloc = GetAllocator();
-        Pointer ptr = alloc.Allocate(capacity);
-        Pointer oldPtr = val.UB.Ptr;
+        CharType* ptr = alloc.Allocate(capacity);
+        CharType* oldPtr = val.UB.Ptr;
         SizeType oldSize = val.Size;
         CharTraits::Copy(ptr, oldPtr, oldSize);
         val.UB.Ptr = ptr;
@@ -780,7 +780,7 @@ namespace Engine
     void BasicString<Elem, Traits, Alloc>::BecomeLarge(SizeType capacity)
     {
         auto& myVal = Pair.Second();
-        Pointer ptr = GetAllocator().Allocate(capacity);
+        CharType* ptr = GetAllocator().Allocate(capacity);
         CharTraits::Copy(ptr, myVal.UB.Buffer, Size());
         myVal.UB.Ptr = ptr;
         myVal.MaxSize = capacity;
