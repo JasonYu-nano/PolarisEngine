@@ -150,6 +150,9 @@ namespace Engine
         String str4(str2);
         EXPECT_TRUE(str2 == str4);
         EXPECT_FALSE(str4 == "ffffffffff");
+
+        str4 = String::Format("format {0}", 1);
+        EXPECT_TRUE(str4 == "format 1");
     }
 
     TEST(String, Empty)
@@ -170,7 +173,7 @@ namespace Engine
         str2.Truncate(0);
         EXPECT_TRUE(str2.Empty());
 
-        str1.Append("cc");
+        str1 += "cc";
         EXPECT_TRUE(str1 == "aacc");
 
         str2.Append("");
@@ -192,6 +195,8 @@ namespace Engine
         String str4;
         str4.Insert(0, "aa");
         EXPECT_TRUE(str4 == "aa");
+
+        EXPECT_TRUE(str4 / "bb" == "aa/bb");
     }
 
     TEST(String, Split)

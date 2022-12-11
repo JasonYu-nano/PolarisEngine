@@ -2,6 +2,7 @@
 
 #include "foundation/encoding.hpp"
 #include "foundation/uchar.hpp"
+#include "string_type.hpp"
 
 namespace Engine
 {
@@ -56,7 +57,7 @@ namespace Engine
             lhs = rhs;
         }
 
-        static constexpr IntType* MaxSize() noexcept
+        static constexpr IntType MaxSize() noexcept
         {
             return NumericLimits<IntType>::Max();
         }
@@ -88,7 +89,7 @@ namespace Engine
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, strsize count) noexcept
+        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, strsize count, ECaseSensitivity cs = ECaseSensitivity::Sensitive) noexcept
         {
             if constexpr (std::is_same_v<CharType, OtherChar>)
             {
@@ -98,13 +99,28 @@ namespace Engine
                 }
             }
 
-            auto left = reinterpret_cast<const typename std::make_unsigned_t<CharType>*>(lhs);
-            auto right = reinterpret_cast<const typename std::make_unsigned_t<OtherChar>*>(rhs);
-            for (; 0 < count; --count, ++left, ++right)
+            if (cs == ECaseSensitivity::Sensitive)
             {
-                if (*left != *right)
+                auto left = reinterpret_cast<const typename std::make_unsigned_t<CharType>*>(lhs);
+                auto right = reinterpret_cast<const typename std::make_unsigned_t<OtherChar>*>(rhs);
+                for (; 0 < count; --count, ++left, ++right)
                 {
-                    return *left < *right ? -1 : +1;
+                    if (*left != *right)
+                    {
+                        return *left < *right ? -1 : +1;
+                    }
+                }
+            }
+            else
+            {
+                for (; 0 < count; --count, ++lhs, ++rhs)
+                {
+                    auto left = ToInt(FoldCaseAscii(*lhs));
+                    auto right = ToInt(FoldCaseAscii(*lhs));
+                    if (left != left)
+                    {
+                        return left < right ? -1 : +1;
+                    }
                 }
             }
 
@@ -112,9 +128,9 @@ namespace Engine
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen) noexcept
+        static constexpr int32 Compare(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen, ECaseSensitivity cs = ECaseSensitivity::Sensitive) noexcept
         {
-            int32 result = Compare(lhs, rhs, Math::Min(llen, rlen));
+            int32 result = Compare(lhs, rhs, Math::Min(llen, rlen), cs);
 
             if (result != 0)
             {
@@ -135,9 +151,9 @@ namespace Engine
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs) noexcept
+        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, ECaseSensitivity cs = ECaseSensitivity::Sensitive) noexcept
         {
-            return Compare(lhs, Length(lhs), rhs, Length(rhs));
+            return Compare(lhs, Length(lhs), rhs, Length(rhs), cs);
         }
 
         template <typename OtherChar>
