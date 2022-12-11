@@ -68,17 +68,15 @@ namespace Engine
     public:
         BasicString() = default;
 
-        explicit BasicString(CharType ch);
+        BasicString(CharType ch);
 
-        explicit BasicString(ConstPointer ch, SizeType len = -1);
+        BasicString(ConstPointer ch, SizeType len = -1);
 
         BasicString(SizeType count, CharType ch);
 
         BasicString(const BasicString& other);
 
         BasicString(BasicString&& other) noexcept;
-
-        BasicString(const BasicString& other, SizeType extraSlack);
 
         ~BasicString();
 
@@ -92,9 +90,9 @@ namespace Engine
 
         bool operator!= (const BasicString& other) const;
 
-        bool operator== (const BasicStringView<CharType>& other) const;
+        bool operator== (const CharType* other) const;
 
-        bool operator!= (const BasicStringView<CharType>& other) const;
+        bool operator!= (const CharType* other) const;
 
         CharType operator[] (SizeType index) const
         {
@@ -131,8 +129,6 @@ namespace Engine
         {
             return Size() <= 1;
         }
-
-        void Resize(SizeType len);
 
         void Truncate(SizeType pos)
         {
@@ -186,6 +182,11 @@ namespace Engine
             return Append(static_cast<BasicStringView<CharType>>(str));
         }
 
+        BasicString& Append(const CharType* str)
+        {
+            return Append(BasicStringView<CharType>(str));
+        }
+
         BasicString& Append(CharType ch)
         {
             return Append(BasicStringView<CharType>(ch, 1));
@@ -196,6 +197,11 @@ namespace Engine
         BasicString& Prepend(const BasicString& str)
         {
             return Prepend(static_cast<BasicStringView<CharType>>(str));
+        }
+
+        BasicString& Prepend(const CharType* str)
+        {
+            return Prepend(BasicStringView<CharType>(str));
         }
 
         BasicString& Prepend(CharType ch)
@@ -222,9 +228,222 @@ namespace Engine
             return Insert(index, static_cast<BasicStringView<CharType>>(str));
         }
 
+        BasicString& Insert(SizeType index, const CharType* str)
+        {
+            return Insert(index, BasicStringView<CharType>(str));
+        }
+
         BasicString& Insert(SizeType index, CharType ch)
         {
             return Insert(index, BasicStringView<CharType>(ch, 1));
+        }
+
+        BasicString& Remove(SizeType pos, SizeType num);
+
+        BasicString& Remove(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
+
+        BasicString& Remove(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        {
+            return Remove(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        BasicString& Remove(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        {
+            return Remove(BasicStringView<CharType>(str), cs);
+        }
+
+        BasicString& Remove(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        {
+            return Remove(BasicStringView<CharType>(std::addressof(ch), 1), cs);
+        }
+
+        BasicString& Replace(const BasicStringView<CharType>& before, const BasicStringView<CharType>& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        {
+            ReplaceHelper(*this, before, after, cs);
+            return *this;
+        }
+
+        BasicString& Replace(const BasicString& before, const BasicString& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        {
+            return Replace(static_cast<BasicStringView<CharType>>(before), static_cast<BasicStringView<CharType>>(after), cs);
+        }
+
+        BasicString& Replace(const CharType* before, const CharType* after, ECaseSensitivity cs = ECaseSensitivity::Sensitive)
+        {
+            return Replace(BasicStringView<CharType>(before), BasicStringView<CharType>(after), cs);
+        }
+
+        /**
+         * Removes n characters from the end of the string.
+         * If n is greater than or equal to Length(), the result is an empty string;
+         * @param n
+         */
+        void Chop(SizeType n);
+
+        BasicString Chopped(SizeType n);
+
+        SizeType IndexOf(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return FindStringHelper(static_cast<BasicStringView<CharType>>(*this), 0, view, cs);
+        }
+
+        SizeType IndexOf(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return IndexOf(BasicStringView<CharType>(str), cs);
+        }
+
+        SizeType IndexOf(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return IndexOf(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        SizeType IndexOf(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return IndexOf(BasicStringView<CharType>(std::addressof(ch), 1), cs);
+        }
+
+        SizeType IndexOfAny(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return FindAnyCharHelper(static_cast<BasicStringView<CharType>>(*this), 0, view, cs);
+        }
+
+        SizeType IndexOfAny(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return IndexOfAny(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        SizeType IndexOfAny(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return IndexOfAny(BasicStringView<CharType>(str), cs);
+        }
+
+        SizeType LastIndexOf(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return FindLastHelper(static_cast<BasicStringView<CharType>>(*this), -1, view, cs);
+        }
+
+        SizeType LastIndexOf(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return LastIndexOf(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        SizeType LastIndexOf(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return LastIndexOf(BasicStringView<CharType>(str), cs);
+        }
+
+        SizeType LastIndexOf(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return LastIndexOf(BasicStringView<CharType>(std::addressof(ch), 1), cs);
+        }
+
+        SizeType LastIndexOfAny(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return FindLastAnyCharHelper(static_cast<BasicStringView<CharType>>(*this), 0, view, cs);
+        }
+
+        SizeType LastIndexOfAny(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return LastIndexOfAny(BasicStringView<CharType>(str), cs);
+        }
+
+        SizeType LastIndexOfAny(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return LastIndexOfAny(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        bool Contains(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return FindStringHelper(static_cast<BasicStringView<CharType>>(*this), 0, view, cs) >= 0;
+        }
+
+        bool Contains(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Contains(BasicStringView<CharType>(str), cs);
+        }
+
+        bool Contains(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Contains(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        bool Contains(UChar ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Contains(BasicStringView<CharType>(std::addressof(ch), 1), cs);
+        }
+
+        int32 Count(const BasicStringView<CharType>& view, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            SizeType num = 0;
+            SizeType i = -1;
+            while ((i = FindStringHelper(static_cast<BasicStringView<CharType>>(*this), i + 1, view, cs)) != -1)
+            {
+                ++num;
+            }
+            return num;
+        }
+
+        int32 Count(const BasicString& str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Count(static_cast<BasicStringView<CharType>>(str), cs);
+        }
+
+        int32 Count(const CharType* str, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Count(BasicStringView<CharType>(str), cs);
+        }
+
+        int32 Count(CharType ch, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Count(BasicStringView<CharType>(std::addressof(ch), 1), cs);
+        }
+
+        BasicString& Fill(CharType ch, int32 num = -1);
+
+        BasicString	Repeated(int32 times) const;
+
+        BasicString Trimmed() const;
+
+        bool IsUpperAscii() const;
+
+        bool IsLowerAscii() const;
+
+        void ToUpperAscii();
+
+        void ToLowerAscii();
+
+        DynamicArray<BasicString> Split(const BasicStringView<CharType>& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
+        DynamicArray<BasicString> Split(const BasicString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Split(static_cast<BasicStringView<CharType>>(sep), behavior, cs);
+        }
+
+        DynamicArray<BasicString> Split(const CharType* sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Split(BasicStringView<CharType>(sep), behavior, cs);
+        }
+
+        DynamicArray<BasicString> Split(CharType sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return Split(BasicStringView<CharType>(std::addressof(sep), 1), behavior, cs);
+        }
+
+        DynamicArray<BasicString> SplitAny(const BasicStringView<CharType>& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const;
+
+        DynamicArray<BasicString> SplitAny(const BasicString& sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return SplitAny(static_cast<BasicStringView<CharType>>(sep), behavior, cs);
+        }
+
+        DynamicArray<BasicString> SplitAny(const CharType* sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return SplitAny(BasicStringView<CharType>(sep), behavior, cs);
+        }
+
+        DynamicArray<BasicString> SplitAny(CharType sep, ESplitBehavior behavior = ESplitBehavior::KeepEmptyParts, ECaseSensitivity cs = ECaseSensitivity::Sensitive) const
+        {
+            return SplitAny(BasicStringView<CharType>(std::addressof(sep), 1), behavior, cs);
         }
 
         void Clear()
@@ -268,7 +487,17 @@ namespace Engine
 
         void CopyAssign(const BasicString& right);
 
-        void CopyAssign(const StringView& right);
+        void CopyAssign(const BasicStringView<CharType>& right);
+
+        static SizeType FindStringHelper(const BasicStringView<CharType>& haystack, SizeType from, const BasicStringView<CharType>& needle, ECaseSensitivity cs);
+
+        static SizeType FindAnyCharHelper(const BasicStringView<CharType>& haystack, SizeType from, const BasicStringView<CharType>& needle, ECaseSensitivity cs);
+
+        static SizeType FindLastHelper(const BasicStringView<CharType>& haystack, SizeType from, const BasicStringView<CharType>& needle, ECaseSensitivity cs);
+
+        static SizeType FindLastAnyCharHelper(const BasicStringView<CharType>& haystack, SizeType from, const BasicStringView<CharType>& needle, ECaseSensitivity cs);
+
+        static void ReplaceHelper(BasicString& source, const BasicStringView<CharType>& before, const BasicStringView<CharType>& after, ECaseSensitivity cs = ECaseSensitivity::Sensitive);
 
     private:
         SizeType AddUnconstructElement(SizeType count)
@@ -300,6 +529,20 @@ namespace Engine
             val.Size = newSize;
             CharType* src = val.GetPtr() + index;
             Memory::Memmove(src + count, src, (oldSize - index) * sizeof(CharType));
+        }
+
+        void DestructElements(CharType* elems, SizeType count)
+        {
+            bool needDestroy = LargeStringEngaged();
+            while (count)
+            {
+                if (needDestroy)
+                {
+                    std::destroy_at(elems);
+                }
+                ++elems;
+                --count;
+            }
         }
 
         void Expansion(SizeType destSize)
@@ -409,7 +652,7 @@ namespace Engine
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString&& other) noexcept
     {
         Pair.First() = MoveTemp(other.GetAllocator());
-        MoveAssign(other);
+        MoveAssign(Forward<BasicString>(other));
         return *this;
     }
 
@@ -423,19 +666,26 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::Reserve(SizeType capacity)
     {
-        if (capacity < Size() || capacity == Capacity())
+        auto& val = Pair.Second();
+        if (capacity < val.Size || capacity <= val.MaxSize)
         {
             return;
         }
 
-        if (LargeStringEngaged() && capacity <= INLINE_SIZE)
-        {
-            BecomeSmall();
-        }
-        else if (!LargeStringEngaged() && capacity > Capacity())
+        if (!LargeStringEngaged())
         {
             BecomeLarge(capacity);
+            return;
         }
+
+        auto& alloc = GetAllocator();
+        Pointer ptr = alloc.Allocate(capacity);
+        Pointer oldPtr = val.UB.Ptr;
+        SizeType oldSize = val.Size;
+        CharTraits::Copy(ptr, oldPtr, oldSize);
+        val.UB.Ptr = ptr;
+        val.MaxSize = capacity;
+        alloc.Deallocate(oldPtr, oldSize);
     }
 
     template <typename Elem, typename Traits, typename Alloc>
@@ -492,7 +742,7 @@ namespace Engine
         {
             const auto lhsData = reinterpret_cast<uint8*>(std::addressof(leftVal));
             const auto rhsData = reinterpret_cast<const uint8*>(std::addressof(rightVal));
-            Memory::Memcpy(lhsData, rhsData, size);
+            Memory::Memcpy(lhsData, rhsData, sizeof(decltype(leftVal)));
             right.Invalidate();
             return;
         }
@@ -513,10 +763,10 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::CopyAssign(const BasicString& right)
     {
-        ENSURE(std::addressof(*this) != std::addressof(right));
+        ENSURE(this->Data() != right.Data());
         auto& leftVal = Pair.Second();
         auto& rightVal = right.Pair.Second();
-        int32 size = rightVal.Size;
+        SizeType size = rightVal.Size;
         ENSURE(size >= 0);
         Reserve(rightVal.MaxSize);
 
@@ -525,17 +775,17 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    void BasicString<Elem, Traits, Alloc>::CopyAssign(const StringView& right)
+    void BasicString<Elem, Traits, Alloc>::CopyAssign(const BasicStringView<CharType>& right)
     {
-        ENSURE(std::addressof(*this) != std::addressof(*right.Data()));
+        ENSURE(this->Data() != right.Data());
         auto& leftVal = Pair.Second();
-        auto rightVal = right.Data();
-        int32 size = right.Length() + 1;
-        ENSURE(size >= 0);
-        Reserve(size);
+        SizeType len = right.Length();
+        ENSURE(len >= 0);
+        Reserve(len + 1);
 
-        CharTraits::Copy(leftVal.GetPtr(), rightVal, size);
-        leftVal.Size = size;
+        CharTraits::Copy(leftVal.GetPtr(), right.Data(), len);
+        CharTraits::Assign(leftVal.GetPtr()[len], CharType());
+        leftVal.Size = len + 1;
     }
 
     template <typename Elem, typename Traits, typename Alloc>
@@ -563,15 +813,15 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    bool BasicString<Elem, Traits, Alloc>::operator==(const BasicStringView<Elem>& other) const
+    bool BasicString<Elem, Traits, Alloc>::operator==(const CharType* other) const
     {
-        return Compare(other) == 0;
+        return Compare(BasicStringView<CharType>(other)) == 0;
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    bool BasicString<Elem, Traits, Alloc>::operator!=(const BasicStringView<Elem>& other) const
+    bool BasicString<Elem, Traits, Alloc>::operator!=(const CharType* other) const
     {
-        return Compare(other) != 0;
+        return Compare(BasicStringView<CharType>(other)) != 0;
     }
 
     template <typename Elem, typename Traits, typename Alloc>
@@ -589,7 +839,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     bool BasicString<Elem, Traits, Alloc>::EndsWith(const BasicStringView<CharType>& view, ECaseSensitivity cs) const
     {
-        strsize compareLen = view.Length();
+        SizeType compareLen = view.Length();
         if (Empty() || Length() < compareLen)
         {
             return false;
@@ -617,6 +867,363 @@ namespace Engine
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Prepend(const BasicStringView<CharType>& view)
     {
         return Insert(0, view);
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    typename BasicString<Elem, Traits, Alloc>::SizeType BasicString<Elem, Traits, Alloc>::FindStringHelper(const BasicStringView<CharType>& haystack, SizeType from,
+        const BasicStringView<CharType>& needle,
+        ECaseSensitivity cs)
+    {
+        return Private::FindString<CharType, CharTraits, SizeType>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length(), cs);
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    typename BasicString<Elem, Traits, Alloc>::SizeType
+    BasicString<Elem, Traits, Alloc>::FindAnyCharHelper(const BasicStringView<CharType>& haystack, SizeType from,
+                                                        const BasicStringView<CharType>& needle, ECaseSensitivity cs)
+    {
+        const CharType* data = haystack.Data();
+        for (SizeType idx = from; idx < haystack.Length(); ++idx)
+        {
+            if (FindStringHelper(needle, 0, BasicStringView<CharType>(data + idx, 1), cs) > -1)
+            {
+                return idx;
+            }
+        }
+        return -1;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    typename BasicString<Elem, Traits, Alloc>::SizeType
+    BasicString<Elem, Traits, Alloc>::FindLastHelper(const BasicStringView<CharType>& haystack, SizeType from,
+                                                              const BasicStringView<CharType>& needle,
+                                                              ECaseSensitivity cs)
+    {
+        return Private::FindLastString<CharType, CharTraits, SizeType>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length(), cs);
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    typename BasicString<Elem, Traits, Alloc>::SizeType
+    BasicString<Elem, Traits, Alloc>::FindLastAnyCharHelper(const BasicStringView<CharType>& haystack, SizeType from,
+                                                            const BasicStringView<CharType>& needle,
+                                                            ECaseSensitivity cs)
+    {
+        const CharType* data = haystack.Data();
+        for (SizeType idx = haystack.Length() - 1; idx >= from; --idx)
+        {
+            if (FindStringHelper(needle, 0, BasicStringView<CharType>(data + idx, 1), cs) > -1)
+            {
+                return idx;
+            }
+        }
+        return -1;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::Chop(SizeType n)
+    {
+
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc> BasicString<Elem, Traits, Alloc>::Chopped(SizeType n)
+    {
+        return BasicString();
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Remove(SizeType pos, SizeType num)
+    {
+        auto& val = Pair.Second();
+        auto& size = val.Size;
+        auto len = size - 1;
+        if (pos < 0)
+        {
+            pos += len;
+        }
+        if (pos < 0 || pos >= len)
+        {
+        }
+        else if (num >= len - pos)
+        {
+            Truncate(pos);
+        }
+        else if (num > 0)
+        {
+            SizeType end = pos + num - 1;
+            DestructElements(Data() + pos, num);
+            SizeType countToMove = Size() - end - 1;
+            if (countToMove)
+            {
+                Memory::Memmove(Data() + pos, Data() + end + 1, countToMove * sizeof(CharType));
+            }
+            size -= num;
+        }
+        return *this;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Remove(const BasicStringView<CharType>& view, ECaseSensitivity cs)
+    {
+        SizeType from = 0;
+        do
+        {
+            SizeType pos = FindStringHelper(static_cast<BasicStringView<CharType>>(*this), from, view, cs);
+            if (pos >= 0)
+            {
+                Remove(pos, view.Length());
+                from = pos;
+            }
+            else
+            {
+                break;
+            }
+        }
+        while (true);
+
+        return *this;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::ReplaceHelper(BasicString& source, const BasicStringView<CharType>& before,
+                                                         const BasicStringView<CharType>& after, ECaseSensitivity cs)
+    {
+        if (before.Empty())
+        {
+            return;
+        }
+
+        SizeType alen = after.Length();
+        SizeType blen = before.Length();
+        if (source.Length() < blen)
+        {
+            return;
+        }
+        if (before == after)
+        {
+            return;
+        }
+
+        Private::StringMatcher<CharType, CharTraits, SizeType> matcher(before.Data(), blen, cs);
+
+        DynamicArray<SizeType, InlineAllocator<128>> indices;
+        SizeType pos = matcher.IndexIn(source.Data(), source.Length(), 0);
+
+        while (pos >= 0)
+        {
+            indices.Add(pos);
+            pos += blen;
+            pos = matcher.IndexIn(source.Data(), source.Length(), pos);
+        }
+
+        int32 nIndices = indices.Size();
+        if (nIndices <= 0)
+        {
+            return;
+        }
+
+        auto& val = source.Pair.Second();
+        const CharType* afterData = after.Data();
+        if (blen == alen)
+        {
+            CharType* src = val.GetPtr();
+            for (int32 i = 0; i < nIndices; ++i)
+            {
+                CharTraits::Copy(src + indices[i], afterData, alen);
+            }
+        }
+        else
+        {
+            SizeType oldSize = val.Size;
+            int32 deltaSize = (alen - blen);
+            int32 newSize = oldSize + deltaSize * nIndices;
+
+            if (newSize > oldSize)
+            {
+                source.Reserve(newSize);
+            }
+
+            CharType* src = val.GetPtr();
+            for (int32 i = nIndices - 1; i >= 0; --i)
+            {
+                strsize idx = indices[i];
+                CharTraits::Copy(src + idx + alen, src + idx + blen, oldSize - idx - blen);
+                CharTraits::Copy(src + idx, afterData, alen);
+            }
+
+            CharTraits::Assign(src[newSize - 1], CharType());
+            val.Size = newSize;
+        }
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Fill(CharType ch, int32 num)
+    {
+        auto& val = Pair.Second();
+        SizeType size = val.Size;
+        if (size <= 1 && num <= 0)
+        {
+            return *this;
+        }
+
+        SizeType newSize = num >= 0 ? num + 1 : size;
+        Reserve(newSize);
+        val.Size = newSize;
+        auto ptr = val.GetPtr();
+
+        CharTraits::Assign(ptr[--newSize], CharType());
+        while (newSize > 0)
+        {
+            --newSize;
+            CharTraits::Assign(ptr[newSize], ch);
+        }
+        return *this;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc> BasicString<Elem, Traits, Alloc>::Repeated(int32 times) const
+    {
+        if (Empty() || times == 1)
+        {
+            return *this;
+        }
+
+        if (times <= 0)
+        {
+            return BasicString();
+        }
+
+        SizeType len = Length();
+        SizeType resultSize = len * times;
+        BasicString ret;
+        ret.Reserve(resultSize + 1);
+        if (ret.Capacity() > resultSize)
+        {
+            const CharType* raw = Data();
+            while (times > 0)
+            {
+                ret.Append(BasicStringView<CharType>(raw, len));
+                --times;
+            }
+        }
+        CharTraits::Assign(ret.Pair.Second().GetPtr()[resultSize], CharType());
+        return ret;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc> BasicString<Elem, Traits, Alloc>::Trimmed() const
+    {
+        const CharType* start = Data();
+        const CharType* end = Data() + Length() - 1;
+
+        while (start < end && CharTraits::IsSpace(*start))
+        {
+            ++start;
+        }
+
+        while (start < end && CharTraits::IsSpace(end[-1]))
+        {
+            --end;
+        }
+        return BasicString(start, static_cast<SizeType>(end - start));
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::IsUpperAscii() const
+    {
+        auto& myVal = Pair.Second();
+        const CharType* data = myVal.GetPtr();
+        for (SizeType i = 0; i < myVal.Size - 1; ++i)
+        {
+            if (CharTraits::Latin1ToUpper(data[i]) != data[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::IsLowerAscii() const
+    {
+        auto& myVal = Pair.Second();
+        const CharType* data = myVal.GetPtr();
+        for (SizeType i = 0; i < myVal.Size - 1; ++i)
+        {
+            if (CharTraits::Latin1ToLower(data[i]) != data[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::ToUpperAscii()
+    {
+        auto& myVal = Pair.Second();
+        CharType* data = myVal.GetPtr();
+        for (SizeType i = 0; i < myVal.Size - 1; ++i)
+        {
+            data[i] = CharTraits::Latin1ToUpper(data[i]);
+        }
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    void BasicString<Elem, Traits, Alloc>::ToLowerAscii()
+    {
+        auto& myVal = Pair.Second();
+        CharType* data = myVal.GetPtr();
+        for (SizeType i = 0; i < myVal.Size - 1; ++i)
+        {
+            data[i] = CharTraits::Latin1ToLower(data[i]);
+        }
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    DynamicArray<BasicString<Elem, Traits, Alloc>>
+    BasicString<Elem, Traits, Alloc>::Split(const BasicStringView<CharType>& sep, ESplitBehavior behavior,
+                                            ECaseSensitivity cs) const
+    {
+        DynamicArray<BasicString> ret;
+        SizeType start = 0;
+        SizeType end;
+        while ((end = FindStringHelper(static_cast<BasicStringView<CharType>>(*this), start, sep, cs)) != -1)
+        {
+            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            {
+                ret.Add(Slices(start, end - start));
+            }
+            start = end + sep.Length();
+        }
+        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        {
+            ret.Add(Slices(start, Length() - start));
+        }
+        return ret;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    DynamicArray<BasicString<Elem, Traits, Alloc>>
+    BasicString<Elem, Traits, Alloc>::SplitAny(const BasicStringView<CharType>& sep, ESplitBehavior behavior,
+                                               ECaseSensitivity cs) const
+    {
+        DynamicArray<BasicString> ret;
+        SizeType start = 0;
+        SizeType end;
+        while ((end = FindAnyCharHelper(static_cast<BasicStringView<CharType>>(*this), start, sep, cs)) != -1)
+        {
+            if (start != end || behavior == ESplitBehavior::KeepEmptyParts)
+            {
+                ret.Add(Slices(start, end - start));
+            }
+            start = end + 1;
+        }
+        if (start != Length() || behavior == ESplitBehavior::KeepEmptyParts)
+        {
+            ret.Add(Slices(start, Length() - start));
+        }
+        return ret;
     }
 
     using String = BasicString<char>;

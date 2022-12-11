@@ -37,16 +37,16 @@ namespace Engine
             strsize& len = view.Length();
 
             int32 numberCount = 0;
-            for (const UChar* pChar = str + len - 1; pChar >= str && *pChar >= '0' && *pChar <= '9'; --pChar )
+            for (const UChar* pChar = str + len - 1; pChar >= str && int32(*pChar) >= '0' && int32(*pChar) <= '9'; --pChar )
             {
                 ++numberCount;
             }
 
             // number suffix must start with _ and skip number like 01
             const UChar* firstNumber = str + len - numberCount;
-            if (numberCount > 0 && numberCount < len && *(firstNumber - 1) == '_')
+            if (numberCount > 0 && numberCount < len && int32(*(firstNumber - 1)) == '_')
             {
-                if (numberCount == 1 || *firstNumber != '0')
+                if (numberCount == 1 || int32(*firstNumber) != '0')
                 {
                     int64 number = Atoi64(firstNumber, numberCount);
                     if (number < MAX_UINT32)

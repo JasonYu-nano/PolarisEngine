@@ -25,6 +25,8 @@ namespace Engine
 
             ElementAllocator(ElementAllocator&& other) noexcept = default;
 
+            ElementAllocator& operator=(const ElementAllocator& other) = default;
+
             NODISCARD ValueType* Allocate(SizeType n)
             {
                 return static_cast<ValueType*>(Memory::Malloc(n * sizeof(ElementType), alignof(ElementType)));

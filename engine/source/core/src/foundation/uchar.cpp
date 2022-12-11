@@ -63,7 +63,7 @@ namespace Engine
         char32_t ucs4 = ch->Unicode();
         if (IsLowSurrogate(ucs4) && ch > start && IsHighSurrogate((ch - 1)->Unicode()))
         {
-            ucs4 = SurrogateToUcs4(*(ch - 1), ucs4);
+            //ucs4 = SurrogateToUcs4(*(ch - 1), ucs4);
         }
         return Unicode::FoldCase(ucs4);
     }

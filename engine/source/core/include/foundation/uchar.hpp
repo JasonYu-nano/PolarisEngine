@@ -193,7 +193,7 @@ namespace Engine
             return UCS;
         }
 
-        inline explicit operator uint16() const
+        inline operator uint16() const
         {
             return UCS;
         }

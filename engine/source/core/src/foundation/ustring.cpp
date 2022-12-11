@@ -410,7 +410,7 @@ namespace Engine
         strsize from = 0;
         do
         {
-            strsize pos = Private::FindChar(Data(), Length(), from, ch, cs);
+            strsize pos = Private::FindChar<UChar, CharTraits<UChar>, int32>(Data(), Length(), from, ch, cs);
             if (pos >= 0)
             {
                 Source.Remove(pos, pos);
@@ -666,7 +666,7 @@ namespace Engine
 
     strsize UString::FindStringHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
     {
-        return Private::FindString<UChar>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length(), cs);
+        return Private::FindString<UChar, CharTraits<UChar>, int32>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length(), cs);
     }
 
     strsize UString::FindStringHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs)
@@ -706,7 +706,7 @@ namespace Engine
 
     strsize UString::FindLastHelper(UStringView haystack, strsize from, UStringView needle, ECaseSensitivity cs)
     {
-        return Private::FindLastString<UChar>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length());
+        return Private::FindLastString<UChar, CharTraits<UChar>, int32>(haystack.Data(), haystack.Length(), from, needle.Data(), needle.Length());
     }
 
     strsize UString::FindLastHelper(UStringView haystack, strsize from, StringView needle, ECaseSensitivity cs)
@@ -761,7 +761,7 @@ namespace Engine
             return;
         }
 
-        Private::StringMatcher<UChar> matcher(before.Data(), blen, cs);
+        Private::StringMatcher<UChar, CharTraits<UChar>, int32> matcher(before.Data(), blen, cs);
 
         DynamicArray<strsize, InlineAllocator<128>> indices;
         strsize pos = matcher.IndexIn(source.Data(), source.Length(), 0);

@@ -13,6 +13,11 @@ namespace Engine
         using Charcvt = V;
         using SizeType = int32;
 
+        static constexpr bool IsSpace(CharType ch) noexcept
+        {
+            return ToInt(ch) == 0x20;
+        }
+
         static constexpr strsize Length(const CharType* str) noexcept
         {
             strsize len = 0;
@@ -193,6 +198,11 @@ namespace Engine
         static constexpr CharType Latin1ToLower(CharType character)
         {
             return ToChar(ToInt(character) + ((ToInt(character) - 'A' < 26u) << 5));
+        }
+
+        static constexpr CharType FoldCaseAscii(CharType ch)
+        {
+            return Latin1ToLower(ch);
         }
     };
 
