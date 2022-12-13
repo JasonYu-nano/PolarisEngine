@@ -1,7 +1,6 @@
 #pragma once
 
 #include "windows/minimal_windows.hpp"
-#include "foundation/ustring.hpp"
 #include "file_system/file_handle_interface.hpp"
 
 namespace Engine
@@ -34,7 +33,7 @@ namespace Engine
     class CORE_API WindowsFindFileHandle final : public IFindFileHandle
     {
     public:
-        WindowsFindFileHandle(const UString& path);
+        WindowsFindFileHandle(const String& path);
 
         ~WindowsFindFileHandle() final;
 
@@ -42,24 +41,24 @@ namespace Engine
 
     private:
         HANDLE Handle{ nullptr };
-        UString NormalizedPath;
+        String NormalizedPath;
     };
 
     class CORE_API WindowsRecursiveFindFileHandle final : public IFindFileHandle
     {
     public:
-        WindowsRecursiveFindFileHandle(const UString& path);
+        WindowsRecursiveFindFileHandle(const String& path);
 
         ~WindowsRecursiveFindFileHandle() final;
 
         bool FindNext(DirectoryEntry& entry) final;
 
     private:
-        HANDLE FindTop(WIN32_FIND_DATAW& data);
+        HANDLE FindTop(WIN32_FIND_DATAA& data);
 
         HANDLE Handle{ nullptr };
-        UString NormalizedPath;
-        DynamicArray<UString> RecursionDirectories;
+        String NormalizedPath;
+        DynamicArray<String> RecursionDirectories;
     };
 
     typedef WindowsFileHandle PlatformFileHandle;

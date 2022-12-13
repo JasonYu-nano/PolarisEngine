@@ -1,5 +1,4 @@
 #include "foundation/details/string_algorithm.hpp"
-#include "foundation/char_utils.hpp"
 #include "foundation/string_view.hpp"
 
 namespace Engine::Private

@@ -151,7 +151,7 @@ namespace Engine
 
     using TStringView = BasicStringView<char_t>;
 
-    using StringView = BasicStringView<ansi>;
+    using StringView = BasicStringView<char>;
 
     using U16StringView = BasicStringView<char16_t>;
 

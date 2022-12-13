@@ -10,31 +10,31 @@ namespace Engine
         WindowsPlatformFile() = default;
         virtual ~WindowsPlatformFile() = default;
 
-        bool MakeDir(const UString& path) final;
+        bool MakeDir(const String& path) final;
 
-        bool RemoveDir(const UString& path) final;
+        bool RemoveDir(const String& path) final;
 
-        bool MakeFile(const UString& path) final;
+        bool MakeFile(const String& path) final;
 
-        bool RemoveFile(const UString& path) final;
+        bool RemoveFile(const String& path) final;
 
-        bool MoveFile(const UString& from, const UString& to) final;
+        bool MoveFile(const String& from, const String& to) final;
 
-        bool CopyFile(const UString& from, const UString& to) final;
+        bool CopyFile(const String& from, const String& to) final;
 
-        bool FileExists(const UString& path) final;
+        bool FileExists(const String& path) final;
 
-        bool IsReadOnly(const UString& filePath) final;
+        bool IsReadOnly(const String& filePath) final;
 
-        int64 FileSize(const UString& filePath) final;
+        int64 FileSize(const String& filePath) final;
 
-        bool DirExists(const UString& path) final;
+        bool DirExists(const String& path) final;
 
-        FileTime GetFileTime(const UString& path) final;
+        FileTime GetFileTime(const String& path) final;
 
-        DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regexExpr, bool recursion) final;
+        DynamicArray<String> QueryFiles(const String& searchPath, const String& regexExpr, bool recursion) final;
 
-        UniquePtr<IFileHandle> OpenFile(const UString& fileName, EFileAccess access, EFileShareMode mode) final;
+        UniquePtr<IFileHandle> OpenFile(const String& fileName, EFileAccess access, EFileShareMode mode) final;
 
     private:
         uint32 GetLastError();

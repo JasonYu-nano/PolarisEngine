@@ -1,51 +1,50 @@
 #pragma once
 
 #include "global.hpp"
-#include "foundation/ustring.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/smart_ptr.hpp"
 #include "file_system/platform_file_interface.hpp"
-#include <filesystem>
+#include "foundation/string.hpp"
 
 namespace Engine
 {
     class CORE_API FileSystem
     {
     public:
-        static bool MakeDir(const UString& path);
+        static bool MakeDir(const String& path);
 
         /**
          * @brief remove an empty directory
          */
-        static bool RemoveDir(const UString& path);
+        static bool RemoveDir(const String& path);
 
-        static bool DirExists(const UString& path);
+        static bool DirExists(const String& path);
 
-        static inline bool IsDirectory(const UString& path)
+        static inline bool IsDirectory(const String& path)
         {
             return DirExists(path);
         }
 
-        static bool MakeFile(const UString& path);
+        static bool MakeFile(const String& path);
 
-        static bool RemoveFile(const UString& path);
+        static bool RemoveFile(const String& path);
 
-        static bool MoveFile(const UString& from, const UString& to);
+        static bool MoveFile(const String& from, const String& to);
 
-        static bool CopyFile(const UString& from, const UString& to);
+        static bool CopyFile(const String& from, const String& to);
 
-        static bool FileExists(const UString& path);
+        static bool FileExists(const String& path);
 
-        static inline bool IsFile(const UString& path)
+        static inline bool IsFile(const String& path)
         {
             return FileExists(path);
         }
 
-        static bool MakeDirTree(const UString& path);
+        static bool MakeDirTree(const String& path);
 
-        static bool ClearDir(const UString& path);
+        static bool ClearDir(const String& path);
 
-        static FileTime GetFileTime(const UString& path);
+        static FileTime GetFileTime(const String& path);
 
         /**
          * @brief query file (and directory) by regex
@@ -54,16 +53,16 @@ namespace Engine
          * @param recursion recursion search or not, default false
          * @return files or directories match regex
          */
-        static DynamicArray<UString> QueryFiles(const UString& searchPath, const UString& regex, bool recursion = false);
+        static DynamicArray<String> QueryFiles(const String& searchPath, const String& regex, bool recursion = false);
 
-        static UString GetEngineRootPath();
+        static String GetEngineRootPath();
 
-        static void ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary);
+        static void ReadFileToBinary(const String& fileName, DynamicArray64<uint8>& outBinary);
 
         class DirectoryIterImpl
         {
         public:
-            explicit DirectoryIterImpl(const UString& path, bool recursive);
+            explicit DirectoryIterImpl(const String& path, bool recursive);
 
             bool FindNext();
 
@@ -79,7 +78,7 @@ namespace Engine
         public:
             DirectoryIterator() noexcept = default;
 
-            DirectoryIterator(UString path, bool recursive = false);
+            DirectoryIterator(const String& path, bool recursive = false);
 
             NODISCARD DirectoryEntry& operator* () const
             {

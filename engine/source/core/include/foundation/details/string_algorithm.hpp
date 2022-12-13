@@ -5,7 +5,6 @@
 #include "memory/memory.hpp"
 #include "foundation/encoding.hpp"
 #include "foundation/dynamic_array.hpp"
-#include "foundation/uchar.hpp"
 #include "foundation/string_type.hpp"
 #include "foundation/char_traits.hpp"
 
@@ -320,7 +319,7 @@ namespace Engine::Private
             while (current <= end)
             {
                 hashHaystack += Traits::FoldCaseAscii(Traits::ToInt(current[slMinusOne]));
-                if (hashHaystack == hashNeedle && Traits::CompareInsensitive(needle, current, blen) == 0)
+                if (hashHaystack == hashNeedle && Traits::Compare(needle, current, blen, CaseInsensitive) == 0)
                 {
                     return (SizeType) (current - haystack);
                 }
@@ -555,7 +554,7 @@ namespace Engine::Private
             while (haystack >= end)
             {
                 hashHaystack += Traits::FoldCaseAscii(*haystack);
-                if (hashHaystack == hashNeedle && Traits::CompareInsensitive(needle, haystack, blen) == 0)
+                if (hashHaystack == hashNeedle && Traits::Compare(needle, haystack, blen, CaseInsensitive) == 0)
                 {
                     return static_cast<SizeType>(haystack - end);
                 }
@@ -570,13 +569,13 @@ namespace Engine::Private
     class StringMatcher
     {
     public:
-        StringMatcher(const CharType* pattern, strsize len, ECaseSensitivity cs)
+        StringMatcher(const CharType* pattern, SizeType len, ECaseSensitivity cs)
                 : CS(cs), Length(len), Pattern(pattern)
         {
             UpdateSkipTable();
         }
 
-        strsize IndexIn(const CharType* str, strsize len, strsize from = 0) const
+        SizeType IndexIn(const CharType* str, SizeType len, SizeType from = 0) const
         {
             from = from < 0 ? 0 : from;
 
@@ -590,7 +589,7 @@ namespace Engine::Private
         }
 
         ECaseSensitivity CS;
-        strsize Length;
+        SizeType Length;
         const CharType* Pattern;
         int32 SkipTable[256] = {};
     };

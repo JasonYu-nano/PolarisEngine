@@ -9,25 +9,25 @@
 
 namespace Engine
 {
-    bool FileSystem::MakeDir(const UString& path)
+    bool FileSystem::MakeDir(const String& path)
     {
         return PlatformFile->MakeDir(path);
     }
 
-    bool FileSystem::RemoveDir(const UString& path)
+    bool FileSystem::RemoveDir(const String& path)
     {
         return PlatformFile->RemoveDir(path);
     }
 
-    bool FileSystem::MakeDirTree(const UString& path)
+    bool FileSystem::MakeDirTree(const String& path)
     {
-        DynamicArray<UString> dirs = Path::SplitPath(path);
+        DynamicArray<String> dirs = Path::SplitPath(path);
         if (dirs.Size() <= 0)
         {
             return false;
         }
 
-        UString destPath;
+        String destPath;
         for (int32 index = 0; index < dirs.Size(); index++)
         {
             destPath = Path::Combine(destPath, dirs[index]);
@@ -47,7 +47,7 @@ namespace Engine
         return true;
     }
 
-    bool FileSystem::ClearDir(const UString& path)
+    bool FileSystem::ClearDir(const String& path)
     {
         auto files = PlatformFile->QueryFiles(path, ".", false);
         //! files is BFS
@@ -65,12 +65,12 @@ namespace Engine
         return true;
     }
 
-    DynamicArray<UString> FileSystem::QueryFiles(const UString& searchPath, const UString& regex, bool recursion)
+    DynamicArray<String> FileSystem::QueryFiles(const String& searchPath, const String& regex, bool recursion)
     {
         return PlatformFile->QueryFiles(searchPath, regex, recursion);
     }
 
-    UString FileSystem::GetEngineRootPath()
+    String FileSystem::GetEngineRootPath()
     {
         return ENGINE_ROOT_PATH;
     }
@@ -79,7 +79,7 @@ namespace Engine
     UniquePtr<IPlatformFile> FileSystem::PlatformFile = MakeUnique<WindowsPlatformFile>();
 #endif
 
-    void FileSystem::ReadFileToBinary(const UString& fileName, DynamicArray64<uint8>& outBinary)
+    void FileSystem::ReadFileToBinary(const String& fileName, DynamicArray64<uint8>& outBinary)
     {
         UniquePtr<IFileHandle> handle = PlatformFile->OpenFile(fileName, EFileAccess::Read, EFileShareMode::Read);
         int64 fileSize = handle->GetSize();
@@ -87,42 +87,42 @@ namespace Engine
         handle->Read(outBinary.Data(), fileSize);
     }
 
-    bool FileSystem::MakeFile(const UString& path)
+    bool FileSystem::MakeFile(const String& path)
     {
         return PlatformFile->MakeFile(path);
     }
 
-    bool FileSystem::RemoveFile(const UString& path)
+    bool FileSystem::RemoveFile(const String& path)
     {
         return PlatformFile->RemoveFile(path);
     }
 
-    bool FileSystem::MoveFile(const UString& from, const UString& to)
+    bool FileSystem::MoveFile(const String& from, const String& to)
     {
         return PlatformFile->MoveFile(from, to);
     }
 
-    bool FileSystem::CopyFile(const UString& from, const UString& to)
+    bool FileSystem::CopyFile(const String& from, const String& to)
     {
         return PlatformFile->CopyFile(from, to);
     }
 
-    bool FileSystem::DirExists(const UString& path)
+    bool FileSystem::DirExists(const String& path)
     {
         return PlatformFile->DirExists(path);
     }
 
-    bool FileSystem::FileExists(const UString& path)
+    bool FileSystem::FileExists(const String& path)
     {
         return PlatformFile->FileExists(path);
     }
 
-    FileTime FileSystem::GetFileTime(const UString& path)
+    FileTime FileSystem::GetFileTime(const String& path)
     {
         return PlatformFile->GetFileTime(path);
     }
 
-    FileSystem::DirectoryIterImpl::DirectoryIterImpl(const UString& path, bool recursive)
+    FileSystem::DirectoryIterImpl::DirectoryIterImpl(const String& path, bool recursive)
     {
         if (recursive)
         {
@@ -139,7 +139,7 @@ namespace Engine
         return (bool) FileHandle && FileHandle->FindNext(Entry);
     }
 
-    FileSystem::DirectoryIterator::DirectoryIterator(UString path, bool recursive)
+    FileSystem::DirectoryIterator::DirectoryIterator(const String& path, bool recursive)
         : Impl(MakeShared<DirectoryIterImpl>(path, recursive))
     {
         if (!Impl->FindNext())

@@ -2,19 +2,19 @@
 
 namespace Engine
 {
-    FixedString::FixedString(const char* latain1)
+    FixedString::FixedString(const char* str)
     {
-        MakeFixedString(static_cast<UStringView>(UString::FromLatin1(latain1)));
+        MakeFixedString(StringView(str));
     }
 
     FixedString::FixedString(StringView str)
     {
-        MakeFixedString(static_cast<UStringView>(UString::FromLatin1(str)));
+        MakeFixedString(str);
     }
 
-    FixedString::FixedString(UStringView str)
+    FixedString::FixedString(const String& str)
     {
-        MakeFixedString(str);
+        MakeFixedString(static_cast<StringView>(str));
     }
 
     FixedString::FixedString(const FixedString& other)
@@ -39,18 +39,18 @@ namespace Engine
         return EntryId != other.EntryId || Number != other.Number;
     }
 
-    void FixedString::MakeFixedString(UStringView view)
+    void FixedString::MakeFixedString(StringView view)
     {
         Number = FixedStringHelper::SplitNumber(view);
         EntryId = StringEntryPool::Get().FindOrStore(view);
     }
 
-    UString FixedString::ToString() const
+    String FixedString::ToString() const
     {
-        UString* entry = StringEntryPool::Get().Find(EntryId);
+        String* entry = StringEntryPool::Get().Find(EntryId);
         if (entry == nullptr)
         {
-            return UString();
+            return String();
         }
 
         if (Number == SUFFIX_NUMBER_NONE)
@@ -58,7 +58,7 @@ namespace Engine
             return *entry;
         }
 
-        return UString::Format("{0}_{1}", *entry, SUFFIX_TO_ACTUAL(Number));
+        return String::Format("{0}_{1}", *entry, SUFFIX_TO_ACTUAL(Number));
     }
 
     uint32 FixedString::GetNumber() const

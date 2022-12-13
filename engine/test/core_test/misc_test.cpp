@@ -1,34 +1,13 @@
 #include "gtest/gtest.h"
 #include "core_minimal_public.hpp"
-#include "foundation/char_utils.hpp"
 #include "math/city_hash.hpp"
 #include "foundation/fixed_string.hpp"
-#include "foundation/ustring.hpp"
 #include "file_system/path.hpp"
 #include "file_system/file_system.hpp"
 #include "foundation/string.hpp"
 
 namespace Engine
 {
-    TEST(CharTest, Base)
-    {
-        ansi c = 'C';
-        c = CharUtils::ToLower(c);
-        EXPECT_TRUE(c == 'c');
-
-        c = CharUtils::ToUpper(c);
-        EXPECT_TRUE(c == 'C');
-
-        EXPECT_TRUE(CharUtils::Compare(u"A", "A") == 0);
-
-        UString str = "a";
-        EXPECT_TRUE(CharUtils::Compare(str.Data(), "A") == 1);
-
-        UChar uch = 0x6C49;
-        CharUtils::Compare(&uch, U"你好");
-        //uch.ToLatin1();
-    }
-
     TEST(Codecvt, All)
     {
         const char* a = "你好";
@@ -39,8 +18,8 @@ namespace Engine
 
     TEST(Path, All)
     {
-        UString path = "c:/dirA\\dirB/file.ex";
-        UString ex = Path::GetShortName(path, false);
+        String path = "c:/dirA\\dirB/file.ex";
+        String ex = Path::GetShortName(path, false);
         EXPECT_TRUE(Path::GetExtension(path) == ".ex");
         EXPECT_TRUE(Path::GetShortName(path, false) == "file");
         EXPECT_TRUE(Path::SplitPath(path).Size() == 4);
@@ -281,158 +260,6 @@ namespace Engine
         items = str7.SplitAny("ni", SkipEmptyParts);
         EXPECT_TRUE(items.Size() == 4);
     }
-
-//    TEST(UString, Concat)
-//    {
-//        UString str = "abcd";
-//        UString str2 = "1234";
-//        str.Append(str2);
-//        EXPECT_TRUE(str == "abcd1234");
-//
-//        str.Prepend(str2);
-//        EXPECT_TRUE(str == "1234abcd1234");
-//    }
-//
-//    TEST(UString, Compare)
-//    {
-//        UString str("ABCd");
-//        UString str2("abcd");
-//
-//        EXPECT_FALSE(str.StartsWith(str2));
-//        EXPECT_TRUE(str.StartsWith(str2, ECaseSensitivity::Insensitive));
-//
-//        EXPECT_TRUE(str.StartsWith(UString("ABCd")));
-//        EXPECT_FALSE(str.StartsWith(UString("ABCde")));
-//
-//        EXPECT_FALSE(str.StartsWith(UChar('a')));
-//        EXPECT_TRUE(str.StartsWith(UChar('a'), ECaseSensitivity::Insensitive));
-//
-//        EXPECT_FALSE(str.StartsWith("abc"));
-//        EXPECT_TRUE(str.StartsWith("abc", ECaseSensitivity::Insensitive));
-//
-//        EXPECT_FALSE(str.EndsWith(str2));
-//        EXPECT_TRUE(str.EndsWith(str2, ECaseSensitivity::Insensitive));
-//
-//        EXPECT_TRUE(str.EndsWith(UString("Cd")));
-//        EXPECT_FALSE(str.EndsWith(UString("ABCde")));
-//
-//        EXPECT_FALSE(str.EndsWith(UChar('D')));
-//        EXPECT_TRUE(str.EndsWith(UChar('d'), ECaseSensitivity::Insensitive));
-//
-//        EXPECT_FALSE(str.EndsWith("cd"));
-//        EXPECT_TRUE(str.EndsWith("CD", ECaseSensitivity::Insensitive));
-//
-//        EXPECT_TRUE(str.Compare("ABCd") == 0);
-//        EXPECT_TRUE(str.Compare("abcd", ECaseSensitivity::Insensitive) == 0);
-//        EXPECT_TRUE(str.Compare("abc") == -1);
-//        EXPECT_TRUE(str.Compare("ABCD") == 1);
-//    }
-//
-//    TEST(UString, Split)
-//    {
-//        UString str("1234.567");
-//        EXPECT_TRUE(*--str.Chopped(4).end() == '4');
-//
-//        str.Chop(4);
-//        EXPECT_TRUE(*--str.end() == '4');
-//    }
-//
-//    TEST(UString, Case)
-//    {
-//        UString str("ABC");
-//        EXPECT_TRUE(str.IsUpper());
-//
-//        str.Append('d');
-//        EXPECT_FALSE(str.IsUpper());
-//
-//        str.ToUpper();
-//        EXPECT_TRUE(str.IsUpper());
-//
-//        str.ToLower();
-//        EXPECT_TRUE(str.IsLower());
-//    }
-//
-    TEST(UString, Find)
-    {
-        UString str("ABC345pc");
-        UString sub("C345");
-        EXPECT_TRUE(str.Contains(sub));
-        EXPECT_TRUE(str.IndexOf(sub) == 2);
-
-        UString multiPattern = "UString is unicode string name";
-        EXPECT_TRUE(multiPattern.IndexOf("string") == 19);
-        EXPECT_TRUE(multiPattern.IndexOf("string", CaseInsensitive) == 1);
-
-        sub.Append('P');
-        EXPECT_FALSE(str.Contains(sub));
-
-        EXPECT_TRUE(str.Contains(sub, CaseInsensitive));
-        EXPECT_TRUE(str.IndexOf(sub, CaseInsensitive) == 2);
-        EXPECT_TRUE(str.IndexOf("5P", CaseInsensitive) == 5);
-
-        str = "abc456AB78bc9";
-        sub = "bc";
-        EXPECT_TRUE(str.LastIndexOf(sub) == 10);
-
-        str = "abc";
-        UString append = "345";
-        EXPECT_TRUE(str + append == "abc345");
-        EXPECT_TRUE(str / append == "abc/345");
-    }
-//
-//    TEST(UString, Modify)
-//    {
-//        UString str("123456");
-//        str.Fill('a', -1);
-//        EXPECT_TRUE(str == "aaaaaa");
-//        str.Fill('b', 3);
-//        EXPECT_TRUE(str == "bbb");
-//        str.Fill('c', 0);
-//        EXPECT_TRUE(str.Empty());
-//
-//        str = "test";
-//        UString rep = str.Repeated(2);
-//        EXPECT_TRUE(rep == "testtest");
-//
-//        rep = str.Repeated(1);
-//        EXPECT_TRUE(rep == str);
-//
-//        rep = str.Repeated(0);
-//        EXPECT_TRUE(rep.IsNull());
-//
-//        str = "test";
-//        UString removeTest = "123test";
-//        removeTest.Remove(str);
-//        EXPECT_TRUE(removeTest == "123");
-//
-//        removeTest = "test123test";
-//        removeTest.Remove(str);
-//        EXPECT_TRUE(removeTest == "123");
-//
-//        removeTest = "test123test";
-//        removeTest.Remove("test");
-//        EXPECT_TRUE(removeTest == "123");
-//
-//        removeTest.Remove('2');
-//        EXPECT_TRUE(removeTest == "13");
-//
-//        removeTest = "testtest";
-//        removeTest.Remove(str);
-//        EXPECT_TRUE(removeTest.Empty());
-//
-//        removeTest = "test";
-//        removeTest.Remove(1, 1);
-//        EXPECT_TRUE(removeTest == "tst");
-//
-//        removeTest = "  lots\t of\nwhitespace\r\n ";
-//        removeTest = removeTest.Trimmed();
-//        EXPECT_TRUE(removeTest == "lots\t of\nwhitespace");
-//
-//        UString replaceTest = "UString is unicode string name";
-//        auto t= replaceTest.IndexOf("string");
-//        replaceTest.Replace("string", "str");
-//        EXPECT_TRUE(replaceTest == "UString is unicode str name");
-//    }
 
     TEST(FileSystem, All)
     {

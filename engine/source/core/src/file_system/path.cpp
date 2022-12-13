@@ -3,10 +3,10 @@
 
 namespace Engine
 {
-    UString Path::Combine(const UString& dest, const UString& part)
+    String Path::Combine(const String& dest, const String& part)
     {
-        UString path = dest;
-        UString normalizedPart = part;
+        String path = dest;
+        String normalizedPart = part;
 
         if (dest.EndsWith("/") || dest.EndsWith("\\"))
         {
@@ -31,22 +31,22 @@ namespace Engine
         return path;
     }
 
-    UString Path::GetExtension(const UString& path)
+    String Path::GetExtension(const String& path)
     {
         int32 pos;
         if ((pos = path.LastIndexOf('.')) >= 0 && pos < path.Length() - 1)
         {
             return path.Slices(pos, path.Length() - pos);
         }
-        return UString();
+        return String();
     }
 
-    UString Path::RemoveExtension(const UString& path)
+    String Path::RemoveExtension(const String& path)
     {
-        strsize idx = path.LastIndexOf('.');
+        int32 idx = path.LastIndexOf('.');
         if (idx == 0)
         {
-            return UString();
+            return String();
         }
         else if (idx > 0)
         {
@@ -55,10 +55,10 @@ namespace Engine
         return path;
     }
 
-    UString Path::GetShortName(const UString& path, bool withExtension)
+    String Path::GetShortName(const String& path, bool withExtension)
     {
-        UString ret = path;
-        strsize idx = path.LastIndexOfAny("/\\");
+        String ret = path;
+        int32 idx = path.LastIndexOfAny("/\\");
         if (idx > -1)
         {
             ret = ret.Slices(idx + 1, path.Length() - idx - 1);
@@ -72,15 +72,15 @@ namespace Engine
         return ret;
     }
 
-    DynamicArray<UString> Path::SplitPath(const UString& path)
+    DynamicArray<String> Path::SplitPath(const String& path)
     {
         return path.SplitAny("/\\");
     }
 
-    UString Path::Normalize(const UString& path)
+    String Path::Normalize(const String& path)
     {
-        UString ret = path;
-        ret.Replace(UString::FromLatin1("\\"), UString::FromLatin1("/"));
+        String ret = path;
+        ret.Replace("\\", "/");
 
         if (ret.EndsWith('/') && ret.EndsWith("//") && ret.EndsWith(":/"))
         {

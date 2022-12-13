@@ -1,5 +1,7 @@
 #pragma once
 
+#include "string_algorithm.hpp"
+
 namespace Engine
 {
     template <typename Elem, typename Traits, typename Alloc>
@@ -102,6 +104,30 @@ namespace Engine
     bool BasicString<Elem, Traits, Alloc>::operator!=(const CharType* other) const
     {
         return Compare(ViewType(other)) != 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator< (const BasicString& other) const
+    {
+        return Compare(static_cast<ViewType>(other)) < 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator< (const CharType* other) const
+    {
+        return Compare(ViewType(other)) < 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator> (const BasicString& other) const
+    {
+        return Compare(static_cast<ViewType>(other)) > 0;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    bool BasicString<Elem, Traits, Alloc>::operator> (const CharType* other) const
+    {
+        return Compare(ViewType(other)) > 0;
     }
 
     template <typename Elem, typename Traits, typename Alloc>
@@ -258,7 +284,7 @@ namespace Engine
         SizeType from = 0;
         do
         {
-            SizeType pos = FindStringHelper(static_cast<BasicStringView<CharType>>(*this), from, view, cs);
+            SizeType pos = FindStringHelper(static_cast<ViewType>(*this), from, view, cs);
             if (pos >= 0)
             {
                 Remove(pos, view.Length());
@@ -305,7 +331,7 @@ namespace Engine
     {
         SizeType num = 0;
         SizeType i = -1;
-        while ((i = FindStringHelper(static_cast<BasicStringView<CharType>>(*this), i + 1, view, cs)) != -1)
+        while ((i = FindStringHelper(static_cast<ViewType>(*this), i + 1, view, cs)) != -1)
         {
             ++num;
         }
@@ -444,7 +470,7 @@ namespace Engine
         DynamicArray<BasicString> ret;
         SizeType start = 0;
         SizeType end;
-        while ((end = FindStringHelper(static_cast<BasicStringView<CharType>>(*this), start, sep, cs)) != -1)
+        while ((end = FindStringHelper(static_cast<ViewType>(*this), start, sep, cs)) != -1)
         {
             if (start != end || behavior == KeepEmptyParts)
             {
@@ -467,7 +493,7 @@ namespace Engine
         DynamicArray<BasicString> ret;
         SizeType start = 0;
         SizeType end;
-        while ((end = FindAnyCharHelper(static_cast<BasicStringView<CharType>>(*this), start, sep, cs)) != -1)
+        while ((end = FindAnyCharHelper(static_cast<ViewType>(*this), start, sep, cs)) != -1)
         {
             if (start != end || behavior == KeepEmptyParts)
             {

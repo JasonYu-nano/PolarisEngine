@@ -1,5 +1,7 @@
 #pragma once
+
 #include "global.hpp"
+#include "definitions_core.hpp"
 
 namespace Engine
 {

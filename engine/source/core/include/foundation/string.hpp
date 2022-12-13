@@ -2,7 +2,9 @@
 
 #include "foundation/details/compressed_pair.hpp"
 #include "foundation/char_traits.hpp"
+#include "foundation/string_view.hpp"
 #include "memory/allocator_policies.hpp"
+#include "spdlog/pattern_formatter.h"
 
 namespace Engine
 {
@@ -42,7 +44,7 @@ namespace Engine
         using CharTraits = Traits;
         using SizeType = typename CharTraits::SizeType;
         using AllocatorType = typename Alloc::template ElementAllocator<Elem>;
-        using ViewType = BasicStringView<CharType>;
+        using ViewType = BasicStringView<CharType, Traits>;
 
     public:
         BasicString() = default;
@@ -72,6 +74,14 @@ namespace Engine
         bool operator== (const CharType* other) const;
 
         bool operator!= (const CharType* other) const;
+
+        bool operator< (const BasicString& other) const;
+
+        bool operator< (const CharType* other) const;
+
+        bool operator> (const BasicString& other) const;
+
+        bool operator> (const CharType* other) const;
 
         BasicString operator+ (const BasicString& other) const;
 
@@ -138,9 +148,14 @@ namespace Engine
             return StartsWith(static_cast<ViewType>(str), cs);
         }
 
+        bool StartsWith(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
+        {
+            return StartsWith(ViewType(str), cs);
+        }
+
         bool StartsWith(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
-            return StartsWith(ViewType(ch, 1), cs);
+            return StartsWith(ViewType(std::addressof(ch), 1), cs);
         }
 
         bool EndsWith(const ViewType& view, ECaseSensitivity cs = CaseSensitive) const;
@@ -150,9 +165,14 @@ namespace Engine
             return EndsWith(static_cast<ViewType>(str), cs);
         }
 
+        bool EndsWith(const CharType* str, ECaseSensitivity cs = CaseSensitive) const
+        {
+            return EndsWith(ViewType(str), cs);
+        }
+
         bool EndsWith(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
-            return EndsWith(ViewType(ch, 1), cs);
+            return EndsWith(ViewType(std::addressof(ch), 1), cs);
         }
 
         BasicString& Append(const ViewType& view);
@@ -338,7 +358,7 @@ namespace Engine
             return Contains(static_cast<ViewType>(str), cs);
         }
 
-        bool Contains(UChar ch, ECaseSensitivity cs = CaseSensitive) const
+        bool Contains(CharType ch, ECaseSensitivity cs = CaseSensitive) const
         {
             return Contains(ViewType(std::addressof(ch), 1), cs);
         }
@@ -502,5 +522,40 @@ namespace Engine
 
     using String = BasicString<char>;
 }
+
+template<>
+struct CORE_API std::hash<String>
+{
+    size_t operator()(const String& str) const
+    {
+        // TODO: Impl me
+        return 1;
+    }
+};
+
+template<>
+struct CORE_API std::less<String>
+{
+    bool operator()(const String& lhs, const String& rhs) const
+    {
+        return lhs < rhs;
+    }
+};
+
+template <>
+struct CORE_API fmt::formatter<String> : fmt::formatter<int>
+{
+    template<typename ParseContext>
+    constexpr auto parse(ParseContext& ctx)
+    {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const String& str, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "{0}", str.Data());
+    }
+};
 
 #include "foundation/details/string_impl.hpp"

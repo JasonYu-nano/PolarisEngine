@@ -1,27 +1,25 @@
 #pragma once
 
 #include "foundation/encoding.hpp"
-#include "foundation/uchar.hpp"
 #include "string_type.hpp"
 
 namespace Engine
 {
-    template <typename T, IntegralType U, typename V = Utf8>
+    template <typename T, IntegralType U, typename V = int32>
     struct PrivateCharTraits
     {
         using CharType = T;
         using IntType = U;
-        using Charcvt = V;
-        using SizeType = int32;
+        using SizeType = V;
 
         static constexpr bool IsSpace(CharType ch) noexcept
         {
             return ToInt(ch) == 0x20;
         }
 
-        static constexpr strsize Length(const CharType* str) noexcept
+        static constexpr SizeType Length(const CharType* str) noexcept
         {
-            strsize len = 0;
+            SizeType len = 0;
             while (*str != CharType())
             {
                 ++len;
@@ -30,7 +28,7 @@ namespace Engine
             return len;
         }
 
-        static constexpr const CharType* Find(const CharType* first, strsize len, const CharType& ch) noexcept
+        static constexpr const CharType* Find(const CharType* first, SizeType len, const CharType& ch) noexcept
         {
             for (; 0 < len; --len, ++first)
             {
@@ -83,13 +81,13 @@ namespace Engine
             return lhs == rhs;
         }
 
-        static constexpr void Copy(CharType* dest, const CharType* source, strsize len) noexcept
+        static constexpr void Copy(CharType* dest, const CharType* source, SizeType len) noexcept
         {
             Memory::Memcpy(dest, source, len * sizeof(CharType));
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, strsize count, ECaseSensitivity cs = CaseSensitive) noexcept
+        static constexpr int32 Compare(const CharType* lhs, const OtherChar* rhs, SizeType count, ECaseSensitivity cs = CaseSensitive) noexcept
         {
             if constexpr (std::is_same_v<CharType, OtherChar>)
             {
@@ -128,7 +126,7 @@ namespace Engine
         }
 
         template <typename OtherChar>
-        static constexpr int32 Compare(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen, ECaseSensitivity cs = CaseSensitive) noexcept
+        static constexpr int32 Compare(const CharType* lhs, SizeType llen, const OtherChar* rhs, SizeType rlen, ECaseSensitivity cs = CaseSensitive) noexcept
         {
             int32 result = Compare(lhs, rhs, Math::Min(llen, rlen), cs);
 
@@ -156,56 +154,6 @@ namespace Engine
             return Compare(lhs, Length(lhs), rhs, Length(rhs), cs);
         }
 
-        template <typename OtherChar>
-        static constexpr int32 CompareInsensitive(const CharType* lhs, const OtherChar* rhs, strsize len) noexcept
-        {
-            if constexpr (std::is_same_v<CharType, OtherChar>)
-            {
-                if (lhs == rhs)
-                {
-                    return 0;
-                }
-            }
-
-            auto left = reinterpret_cast<const typename std::make_unsigned_t<CharType>*>(lhs);
-            auto right = reinterpret_cast<const typename std::make_unsigned_t<OtherChar>*>(rhs);
-            while (len > 0)
-            {
-                if (int32 diff = Unicode::FoldCase(*left) - Unicode::FoldCase(*right))
-                {
-                    return diff;
-                }
-
-                ++left;
-                ++right;
-                --len;
-            }
-
-            return 0;
-        }
-
-        template <typename OtherChar>
-        static constexpr int32 CompareInsensitive(const CharType* lhs, strsize llen, const OtherChar* rhs, strsize rlen)
-        {
-            int32 result = CompareInsensitive(lhs, rhs, Math::Min(llen, rlen));
-            if (result)
-            {
-                return result;
-            }
-
-            if (llen > rlen)
-            {
-                return 1;
-            }
-
-            if (llen < rlen)
-            {
-                return -1;
-            }
-
-            return 0;
-        }
-
         static constexpr CharType Latin1ToUpper(CharType character)
         {
             return ToChar(ToInt(character) - ((ToInt(character) - 'a' < 26u) << 5));
@@ -223,7 +171,7 @@ namespace Engine
     };
 
     template <typename T>
-    struct CharTraits : private PrivateCharTraits<T, strsize> {};
+    struct CharTraits : private PrivateCharTraits<T, int32> {};
 
     template <>
     struct CharTraits<char> : PrivateCharTraits<char, int8> {};
@@ -236,7 +184,4 @@ namespace Engine
 
     template <>
     struct CharTraits<wchar> : PrivateCharTraits<wchar, wcharsize> {};
-
-    template <>
-    struct CharTraits<UChar> : PrivateCharTraits<UChar, uint16> {};
 }

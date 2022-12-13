@@ -2,8 +2,7 @@
 
 #include <shared_mutex>
 #include "foundation/map.hpp"
-#include "foundation/ustring.hpp"
-#include "foundation/char_utils.hpp"
+#include "foundation/string.hpp"
 #include "math/limit.hpp"
 #include "math/city_hash.hpp"
 
@@ -20,7 +19,7 @@ namespace Engine
     class FixedStringHelper
     {
     public:
-        static constexpr int64 Atoi64(const UChar* str, int32 length)
+        static constexpr int64 Atoi64(const char* str, int32 length)
         {
             int64 number = 0;
             for (int32 Idx = 0; Idx < length; ++Idx)
@@ -31,19 +30,19 @@ namespace Engine
             return number;
         }
 
-        static uint32 SplitNumber(UStringView& view)
+        static uint32 SplitNumber(StringView& view)
         {
-            const UChar* str = view.Data();
-            strsize& len = view.Length();
+            const char* str = view.Data();
+            int32& len = view.Length();
 
             int32 numberCount = 0;
-            for (const UChar* pChar = str + len - 1; pChar >= str && int32(*pChar) >= '0' && int32(*pChar) <= '9'; --pChar )
+            for (const char* pChar = str + len - 1; pChar >= str && int32(*pChar) >= '0' && int32(*pChar) <= '9'; --pChar )
             {
                 ++numberCount;
             }
 
             // number suffix must start with _ and skip number like 01
-            const UChar* firstNumber = str + len - numberCount;
+            const char* firstNumber = str + len - numberCount;
             if (numberCount > 0 && numberCount < len && int32(*(firstNumber - 1)) == '_')
             {
                 if (numberCount == 1 || int32(*firstNumber) != '0')
@@ -71,7 +70,7 @@ namespace Engine
 
     class StringEntryPool
     {
-        using EntryPoolType = Map<FixedEntryId, UString, MapDefaultHashFunc<FixedEntryId, UString>, StringEntryPoolAllocator>;
+        using EntryPoolType = Map<FixedEntryId, String, MapDefaultHashFunc<FixedEntryId, String>, StringEntryPoolAllocator>;
     public:
         static StringEntryPool& Get()
         {
@@ -79,13 +78,13 @@ namespace Engine
             return inst;
         }
 
-        static FixedEntryId AllocEntryId(const UStringView& entry);
+        static FixedEntryId AllocEntryId(const StringView& entry);
 
-        FixedEntryId FindOrStore(const UStringView& entry);
+        FixedEntryId FindOrStore(const StringView& entry);
 
-        FixedEntryId Store(const UStringView& entry);
+        FixedEntryId Store(const StringView& entry);
 
-        UString* Find(FixedEntryId entryId);
+        String* Find(FixedEntryId entryId);
 
     private:
         template <typename CharType>
@@ -103,19 +102,19 @@ namespace Engine
             #endif
         }
 
-        static FixedEntryId GetLowerCaseHash(UStringView view)
+        static FixedEntryId GetLowerCaseHash(StringView view)
         {
-            UChar lowerStr[MAX_ENTRY_LENGTH];
-            strsize len = view.Length();
-            const UChar* data = view.Data();
-            for (strsize idx = 0; idx < len; ++idx)
+            char lowerStr[MAX_ENTRY_LENGTH];
+            int32 len = view.Length();
+            const char* data = view.Data();
+            for (int32 idx = 0; idx < len; ++idx)
             {
-                lowerStr[idx] = CharTraits<UChar>::Latin1ToLower(static_cast<char16_t>(data[idx]));
+                lowerStr[idx] = CharTraits<char>::Latin1ToLower(data[idx]);
             }
 #ifdef SMALLER_FIXED_STRING
-            return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), len * sizeof(UChar));
+            return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), len * sizeof(char));
 #else
-            return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), len * sizeof(UChar));
+            return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), len * sizeof(char));
 #endif
         }
     private:

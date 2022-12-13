@@ -62,29 +62,29 @@ namespace Engine
             return a + b;
         }
 
-        static void OnMultiDelegateBroadcastStatic(const UString& name)
+        static void OnMultiDelegateBroadcastStatic(const String& name)
         {
             LastDelegateName = name;
         }
 
-        UString GetName() const { return LastDelegateName; }
+        String GetName() const { return LastDelegateName; }
 
-        void OnMultiDelegateBroadcastMember(const UString& name, int32 additionNumber)
+        void OnMultiDelegateBroadcastMember(const String& name, int32 additionNumber)
         {
             ReceiveBroadcastCount += additionNumber;
         }
 
-        static UString LastDelegateName;
+        static String LastDelegateName;
 
         int32 ReceiveBroadcastCount = 0;
     };
 
-    UString DelegateTestClass::LastDelegateName = "";
+    String DelegateTestClass::LastDelegateName = "";
 
     TEST(DelegateTest, All)
     {
-        DECLARE_DELEGATE_ONE_PARAM(DelegateType, const UString&);
-        DECLARE_DELEGATE_RET(GetNameDelegate, UString);
+        DECLARE_DELEGATE_ONE_PARAM(DelegateType, const String&);
+        DECLARE_DELEGATE_RET(GetNameDelegate, String);
 
         DelegateType delegate = DelegateType::CreateStatic(&DelegateTestClass::OnMultiDelegateBroadcastStatic);
         delegate.Execute("SingleDelegate");
@@ -102,7 +102,7 @@ namespace Engine
 
     TEST(MultiDelegateTest, All)
     {
-        DECLARE_MULTI_DELEGATE_ONE_PARAM(Notifier, const UString&);
+        DECLARE_MULTI_DELEGATE_ONE_PARAM(Notifier, const String&);
 
         SharedPtr<DelegateTestClass> testClass = MakeShared<DelegateTestClass>();
 
@@ -128,12 +128,12 @@ namespace Engine
                 RemoveHandle = notifier.AddRaw(this, &RemoveSelfDelegateTestClass::OnMultiDelegateBroadcastMemberRemoveSelf);
             }
 
-            void OnMultiDelegateBroadcastMember(const UString& name)
+            void OnMultiDelegateBroadcastMember(const String& name)
             {
                 ReceiveBroadcastCount += 1;
             }
 
-            void OnMultiDelegateBroadcastMemberRemoveSelf(const UString& name)
+            void OnMultiDelegateBroadcastMemberRemoveSelf(const String& name)
             {
                 ReceiveBroadcastCount += 1;
                 Delegate.Remove(RemoveHandle);
