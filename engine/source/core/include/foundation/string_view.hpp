@@ -1,6 +1,5 @@
 #pragma once
 
-#include "global.hpp"
 #include "foundation/char_traits.hpp"
 #include "foundation/details/string_algorithm.hpp"
 

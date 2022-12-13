@@ -1,6 +1,7 @@
 #pragma once
 
 #include "string_algorithm.hpp"
+#include "math/city_hash.hpp"
 
 namespace Engine
 {
@@ -506,6 +507,12 @@ namespace Engine
             ret.Add(Slices(start, Length() - start));
         }
         return ret;
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    uint32 BasicString<Elem, Traits, Alloc>::GetHashCode() const
+    {
+        return CityHash::CityHash32(Data(), Length());
     }
 
     template <typename Elem, typename Traits, typename Alloc>

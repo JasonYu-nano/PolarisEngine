@@ -3,7 +3,6 @@
 #include "global.hpp"
 #include "math/generic_math.hpp"
 #include "memory/memory.hpp"
-#include "foundation/encoding.hpp"
 #include "foundation/dynamic_array.hpp"
 #include "foundation/string_type.hpp"
 #include "foundation/char_traits.hpp"
@@ -39,36 +38,6 @@ namespace Engine::Private
             }
         }
     }
-
-//    template <>
-//    void inline _BMInitSkipTable<char16_t>(const char16_t* needle, strsize len, int32* skipTable, ECaseSensitivity cs)
-//    {
-//        strsize l = Math::Min(len, 255);
-//        Memory::Memset(skipTable, -1, 256 * sizeof(int32));
-//
-//        if (cs == ECaseSensitivity::Sensitive)
-//        {
-//            for (strsize idx = len - l; idx < len; ++idx)
-//            {
-//                skipTable[*(needle + idx) & 0xff] = idx;
-//            }
-//        }
-//        else
-//        {
-//            const char16_t* start = needle;
-//
-//            for (strsize idx = len - l; idx < len; ++idx)
-//            {
-//                skipTable[Utf16::FoldCase(needle + idx, start) & 0xff] = idx;
-//            }
-//        }
-//    }
-
-//    template <>
-//    void inline _BMInitSkipTable<UChar>(const UChar* needle, strsize len, int32* skipTable, ECaseSensitivity cs)
-//    {
-//        _BMInitSkipTable(K_UCHAR_TO_UTF16(needle), len, skipTable, cs);
-//    }
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType _BMFind(const CharType* haystack, SizeType alen, SizeType from, const CharType* needle, SizeType blen,
@@ -145,90 +114,6 @@ namespace Engine::Private
         }
         return -1;
     }
-
-//    template <>
-//    strsize inline _BMFind<char16_t>(const char16_t* haystack, strsize alen, strsize from, const char16_t* needle,
-//                                    strsize blen, const int32* skipTable, ECaseSensitivity cs)
-//    {
-//        if (from < 0)
-//        {
-//            from += alen;
-//        }
-//
-//        if (from < 0 || from >= alen)
-//        {
-//            return -1;
-//        }
-//
-//        if (blen == 0)
-//        {
-//            return from > alen ? -1 : from;
-//        }
-//
-//        const char16_t* start = haystack;
-//
-//        if (cs == ECaseSensitivity::Sensitive)
-//        {
-//            int32 skip;
-//
-//            for (strsize idx = from; idx <= alen - blen; idx += skip)
-//            {
-//                skip = 0;
-//                for (strsize needleIdx = blen - 1; needleIdx >= 0; --needleIdx)
-//                {
-//                    if (needle[needleIdx] != start[idx + needleIdx])
-//                    {
-//                        skip = needleIdx - skipTable[start[idx + needleIdx] & 0xff];
-//                        if (skip < 1)
-//                        {
-//                            skip = 1;
-//                        }
-//                        break;
-//                    }
-//                }
-//
-//                if (skip == 0)
-//                {
-//                    return idx;
-//                }
-//            }
-//        }
-//        else
-//        {
-//            int32 skip;
-//
-//            for (strsize idx = from; idx <= alen - blen; idx += skip)
-//            {
-//                skip = 0;
-//                for (strsize needleIdx = blen - 1; needleIdx >= 0; --needleIdx)
-//                {
-//                    if (Utf16::FoldCase(needle + needleIdx, start) != Utf16::FoldCase(start + idx + needleIdx, start))
-//                    {
-//                        skip = needleIdx - skipTable[start[idx + needleIdx] & 0xff];
-//                        if (skip < 1)
-//                        {
-//                            skip = 1;
-//                        }
-//                        break;
-//                    }
-//                }
-//
-//                if (skip == 0)
-//                {
-//                    return idx;
-//                }
-//            }
-//        }
-//
-//        return -1;
-//    }
-//
-//    template <>
-//    strsize inline _BMFind<UChar>(const UChar* haystack, strsize alen, strsize from, const UChar* needle, strsize blen,
-//                                  const int32* skipTable, ECaseSensitivity cs)
-//    {
-//        return _BMFind(K_UCHAR_TO_UTF16(haystack), alen, from, K_UCHAR_TO_UTF16(needle), blen, skipTable, cs);
-//    }
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType FindChar(const CharType* haystack, SizeType len, SizeType from, CharType ch,
@@ -331,72 +216,6 @@ namespace Engine::Private
 
         return -1;
     }
-
-//    template <>
-//    strsize inline FindStringHash<char16_t>(const char16_t* haystack, strsize alen, strsize from, const char16_t* needle,
-//                                     strsize blen, ECaseSensitivity cs)
-//    {
-//        using Traits = CharTraits<char16_t>;
-//
-//        const char16_t* current = haystack + from;
-//        const char16_t* end = haystack + (alen - blen);
-//        const size_t slMinusOne = blen - 1;
-//        size_t hashNeedle = 0, hashHaystack = 0;
-//        strsize idx;
-//
-//        if (cs == ECaseSensitivity::Sensitive)
-//        {
-//            for (idx = 0; idx < blen; ++idx)
-//            {
-//                hashNeedle = (hashNeedle << 1) + needle[idx];
-//                hashHaystack = (hashHaystack << 1) + current[idx];
-//            }
-//            hashHaystack -= current[slMinusOne];
-//
-//            while (current <= end)
-//            {
-//                hashHaystack += current[slMinusOne];
-//                if (hashHaystack == hashNeedle && Traits::Compare(needle, current, blen) == 0)
-//                {
-//                    return (strsize) (current - haystack);
-//                }
-//
-//                REHASH(*current);
-//                ++current;
-//            }
-//        }
-//        else
-//        {
-//            const char16_t* start = haystack;
-//            for (idx = 0; idx < blen; ++idx)
-//            {
-//                hashNeedle = (hashNeedle << 1) + Utf16::FoldCase(needle + idx, needle);
-//                hashHaystack = (hashHaystack << 1) + Utf16::FoldCase(current + idx, start);
-//            }
-//            hashHaystack -= Utf16::FoldCase(current + slMinusOne, start);
-//
-//            while (current <= end)
-//            {
-//                hashHaystack += Utf16::FoldCase(current + slMinusOne, start);
-//                if (hashHaystack == hashNeedle && Traits::CompareInsensitive(needle, current, blen) == 0)
-//                {
-//                    return (strsize) (current - haystack);
-//                }
-//
-//                REHASH(Traits::CastTo(Utf16::FoldCase(current, start)));
-//                ++current;
-//            }
-//        }
-//
-//        return -1;
-//    }
-
-//    template <>
-//    strsize inline FindStringHash<UChar>(const UChar* haystack, strsize alen, strsize from, const UChar* needle,
-//                                     strsize blen, ECaseSensitivity cs)
-//    {
-//        return FindStringHash(K_UCHAR_TO_UTF16(haystack), alen, from, K_UCHAR_TO_UTF16(needle), blen, cs);
-//    }
 
     template <typename CharType, typename Traits, typename SizeType>
     SizeType FindString(const CharType* haystack, SizeType alen, SizeType from, const CharType* needle, SizeType blen,

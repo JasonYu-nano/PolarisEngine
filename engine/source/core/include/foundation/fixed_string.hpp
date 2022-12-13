@@ -11,11 +11,11 @@ namespace Engine
     public:
         FixedString() = default;
 
-        FixedString(const char* str);
+        explicit FixedString(const char* str);
 
-        FixedString(StringView str);
+        explicit FixedString(const StringView& str);
 
-        FixedString(const String& str);
+        explicit FixedString(const String& str);
 
         FixedString(const FixedString& other);
 

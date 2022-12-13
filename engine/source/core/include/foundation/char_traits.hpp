@@ -1,7 +1,9 @@
 #pragma once
 
-#include "foundation/encoding.hpp"
 #include "string_type.hpp"
+#include "foundation/type_traits.hpp"
+#include "memory/memory.hpp"
+#include "math/generic_math.hpp"
 
 namespace Engine
 {

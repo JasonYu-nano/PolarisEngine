@@ -433,6 +433,8 @@ namespace Engine
             Truncate(0);
         }
 
+        uint32 GetHashCode() const;
+
         template <typename... Args, std::enable_if_t<sizeof(Elem) == sizeof(char), bool> = true>
         static BasicString Format(const CharType* fmt, Args&&... args)
         {
@@ -528,8 +530,7 @@ struct CORE_API std::hash<String>
 {
     size_t operator()(const String& str) const
     {
-        // TODO: Impl me
-        return 1;
+        return str.GetHashCode();
     }
 };
 

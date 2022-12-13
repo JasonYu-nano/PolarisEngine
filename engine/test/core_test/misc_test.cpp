@@ -5,6 +5,8 @@
 #include "file_system/path.hpp"
 #include "file_system/file_system.hpp"
 #include "foundation/string.hpp"
+#include "foundation/encoding.hpp"
+#include "misc/type_hash.hpp"
 
 namespace Engine
 {
@@ -41,13 +43,6 @@ namespace Engine
         EXPECT_TRUE(name4.ToString() == "Hello_World_12");
     }
 
-//    TEST(UChar, Base)
-//    {
-//        UChar ch('A');
-//        ch.ToLower();
-//        EXPECT_TRUE(ch == 'a');
-//    }
-
     TEST(StringView, Ctor)
     {
         StringView view = "abcd1234";
@@ -60,24 +55,6 @@ namespace Engine
         auto ret = view.Split("am");
         EXPECT_TRUE(ret.Size() == 4);
     }
-
-//    TEST(UString, Ctor)
-//    {
-//        UString str = UString('a');
-//        EXPECT_TRUE(str[0] == 'a');
-//
-//        str = UString::FromLatin1("1234\0");
-//        EXPECT_TRUE(str[0] == '1' && str[1] == '2' && str[2] == '3' && str[3] == '4');
-//
-//        str = UString::FromUtf8("你好");
-//        UString str2 = UString::FromStdString("你好");
-//        EXPECT_TRUE(str == str2);
-//
-//        auto u8 = str.ToUtf8();
-//        EXPECT_TRUE(UString::FromUtf8(u8.Data()) == str);
-//
-//        EXPECT_TRUE(str.ToStdString() == u8.Data());
-//    }
 
     struct TestChar
     {
@@ -259,6 +236,13 @@ namespace Engine
         EXPECT_TRUE(items.Size() == 6);
         items = str7.SplitAny("ni", SkipEmptyParts);
         EXPECT_TRUE(items.Size() == 4);
+    }
+
+    TEST(String, Hash)
+    {
+        String str = "abcd";
+        uint32 hash = GetHashCode(str);
+        EXPECT_TRUE(hash != 0);
     }
 
     TEST(FileSystem, All)

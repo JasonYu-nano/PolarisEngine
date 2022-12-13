@@ -10,10 +10,12 @@ namespace Engine
             typedef uint64          size_t;
             typedef int64           ptrdiff;
             typedef int64           intptr;
+            typedef uint64          uintptr;
         #else
             typedef uint32          size_t;
             typedef int32           ptrdiff;
             typedef int32           intptr;
+            typedef uint32          uintptr;
         #endif
             typedef uint16          wcharsize;
     };

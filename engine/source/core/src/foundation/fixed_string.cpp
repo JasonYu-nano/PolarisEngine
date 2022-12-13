@@ -7,7 +7,7 @@ namespace Engine
         MakeFixedString(StringView(str));
     }
 
-    FixedString::FixedString(StringView str)
+    FixedString::FixedString(const StringView& str)
     {
         MakeFixedString(str);
     }
