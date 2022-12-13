@@ -412,13 +412,13 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    bool BasicString<Elem, Traits, Alloc>::IsUpperAscii() const
+    bool BasicString<Elem, Traits, Alloc>::IsUpperLatin1() const
     {
         auto& myVal = Pair.Second();
         const CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
-            if (CharTraits::Latin1ToUpper(data[i]) != data[i])
+            if (CharTraits::ToUpperLatin1(data[i]) != data[i])
             {
                 return false;
             }
@@ -427,13 +427,13 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    bool BasicString<Elem, Traits, Alloc>::IsLowerAscii() const
+    bool BasicString<Elem, Traits, Alloc>::IsLowerLatin1() const
     {
         auto& myVal = Pair.Second();
         const CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
-            if (CharTraits::Latin1ToLower(data[i]) != data[i])
+            if (CharTraits::ToLowerLatin1(data[i]) != data[i])
             {
                 return false;
             }
@@ -442,24 +442,24 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    void BasicString<Elem, Traits, Alloc>::ToUpperAscii()
+    void BasicString<Elem, Traits, Alloc>::ToUpperLatin1()
     {
         auto& myVal = Pair.Second();
         CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
-            data[i] = CharTraits::Latin1ToUpper(data[i]);
+            data[i] = CharTraits::ToUpperLatin1(data[i]);
         }
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    void BasicString<Elem, Traits, Alloc>::ToLowerAscii()
+    void BasicString<Elem, Traits, Alloc>::ToLowerLatin1()
     {
         auto& myVal = Pair.Second();
         CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
-            data[i] = CharTraits::Latin1ToLower(data[i]);
+            data[i] = CharTraits::ToLowerLatin1(data[i]);
         }
     }
 

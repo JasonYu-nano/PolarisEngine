@@ -93,7 +93,7 @@ namespace Engine
             CharType lowerStr[MAX_ENTRY_LENGTH];
             for (int32 idx = 0; idx < length; ++idx)
             {
-                lowerStr[idx] = CharTraits<CharType>::Latin1ToLower(str[idx]);
+                lowerStr[idx] = CharTraits<CharType>::ToLowerLatin1(str[idx]);
             }
             #ifdef SMALLER_FIXED_STRING
             return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));
@@ -109,7 +109,7 @@ namespace Engine
             const char* data = view.Data();
             for (int32 idx = 0; idx < len; ++idx)
             {
-                lowerStr[idx] = CharTraits<char>::Latin1ToLower(data[idx]);
+                lowerStr[idx] = CharTraits<char>::ToLowerLatin1(data[idx]);
             }
 #ifdef SMALLER_FIXED_STRING
             return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), len * sizeof(char));

@@ -386,13 +386,13 @@ namespace Engine
 
         BasicString Trimmed() const;
 
-        bool IsUpperAscii() const;
+        bool IsUpperLatin1() const;
 
-        bool IsLowerAscii() const;
+        bool IsLowerLatin1() const;
 
-        void ToUpperAscii();
+        void ToUpperLatin1();
 
-        void ToLowerAscii();
+        void ToLowerLatin1();
 
         DynamicArray<BasicString> Split(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 

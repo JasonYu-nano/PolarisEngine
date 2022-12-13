@@ -115,8 +115,8 @@ namespace Engine
             {
                 for (; 0 < count; --count, ++lhs, ++rhs)
                 {
-                    auto left = ToInt(FoldCaseAscii(*lhs));
-                    auto right = ToInt(FoldCaseAscii(*lhs));
+                    auto left = ToInt(FoldCaseLatin1(*lhs));
+                    auto right = ToInt(FoldCaseLatin1(*lhs));
                     if (left != left)
                     {
                         return left < right ? -1 : +1;
@@ -156,19 +156,19 @@ namespace Engine
             return Compare(lhs, Length(lhs), rhs, Length(rhs), cs);
         }
 
-        static constexpr CharType Latin1ToUpper(CharType character)
+        static constexpr CharType ToUpperLatin1(CharType character)
         {
             return ToChar(ToInt(character) - ((ToInt(character) - 'a' < 26u) << 5));
         }
 
-        static constexpr CharType Latin1ToLower(CharType character)
+        static constexpr CharType ToLowerLatin1(CharType character)
         {
             return ToChar(ToInt(character) + ((ToInt(character) - 'A' < 26u) << 5));
         }
 
-        static constexpr CharType FoldCaseAscii(CharType ch)
+        static constexpr CharType FoldCaseLatin1(CharType ch)
         {
-            return Latin1ToLower(ch);
+            return ToLowerLatin1(ch);
         }
     };
 

@@ -34,7 +34,7 @@ namespace Engine::Private
         {
             for (SizeType idx = len - l; idx < len; ++idx)
             {
-                skipTable[Traits::FoldCaseAscii(Traits::ToInt(*(needle + idx))) & 0xff] = idx;
+                skipTable[Traits::FoldCaseLatin1(Traits::ToInt(*(needle + idx))) & 0xff] = idx;
             }
         }
     }
@@ -95,7 +95,7 @@ namespace Engine::Private
                 skip = 0;
                 for (SizeType needleIdx = blen - 1; needleIdx >= 0; --needleIdx)
                 {
-                    if (Traits::FoldCaseAscii(needle[needleIdx]) != Traits::FoldCaseAscii(start[idx + needleIdx]))
+                    if (Traits::FoldCaseLatin1(needle[needleIdx]) != Traits::FoldCaseLatin1(start[idx + needleIdx]))
                     {
                         skip = needleIdx - skipTable[Traits::ToInt(start[idx + needleIdx]) & 0xff];
                         if (skip < 1)
@@ -140,8 +140,8 @@ namespace Engine::Private
                 }
                 else
                 {
-                    if (Traits::FoldCaseAscii(static_cast<char32_t>(*current)) ==
-                            Traits::FoldCaseAscii(static_cast<char32_t>(ch)))
+                    if (Traits::FoldCaseLatin1(static_cast<char32_t>(*current)) ==
+                        Traits::FoldCaseLatin1(static_cast<char32_t>(ch)))
                     {
                         return static_cast<SizeType>(current - begin);
                     }
@@ -196,20 +196,20 @@ namespace Engine::Private
         {
             for (idx = 0; idx < blen; ++idx)
             {
-                hashNeedle = (hashNeedle << 1) + Traits::FoldCaseAscii(Traits::ToInt(needle[idx]));
-                hashHaystack = (hashHaystack << 1) + Traits::FoldCaseAscii(Traits::ToInt(current[idx]));
+                hashNeedle = (hashNeedle << 1) + Traits::FoldCaseLatin1(Traits::ToInt(needle[idx]));
+                hashHaystack = (hashHaystack << 1) + Traits::FoldCaseLatin1(Traits::ToInt(current[idx]));
             }
-            hashHaystack -= Traits::FoldCaseAscii(Traits::ToInt(current[slMinusOne]));
+            hashHaystack -= Traits::FoldCaseLatin1(Traits::ToInt(current[slMinusOne]));
 
             while (current <= end)
             {
-                hashHaystack += Traits::FoldCaseAscii(Traits::ToInt(current[slMinusOne]));
+                hashHaystack += Traits::FoldCaseLatin1(Traits::ToInt(current[slMinusOne]));
                 if (hashHaystack == hashNeedle && Traits::Compare(needle, current, blen, CaseInsensitive) == 0)
                 {
                     return (SizeType) (current - haystack);
                 }
 
-                REHASH(Traits::CastTo(Traits::FoldCaseAscii(Traits::ToInt(*current))));
+                REHASH(Traits::CastTo(Traits::FoldCaseLatin1(Traits::ToInt(*current))));
                 ++current;
             }
         }
@@ -294,10 +294,10 @@ namespace Engine::Private
             }
             else
             {
-                c = Traits::ToInt(Traits::FoldCaseAscii(ch));
+                c = Traits::ToInt(Traits::FoldCaseLatin1(ch));
                 for (; n >= haystack; --n)
                 {
-                    if (Traits::ToInt(Traits::FoldCaseAscii(*n)) == c)
+                    if (Traits::ToInt(Traits::FoldCaseLatin1(*n)) == c)
                     {
                         return static_cast<SizeType>(n - haystack);
                     }
@@ -365,20 +365,20 @@ namespace Engine::Private
         {
             for (SizeType idx = 0; idx < blen; ++idx)
             {
-                hashNeedle = (hashNeedle << 1) + Traits::FoldCaseAscii(*(n - idx));
-                hashHaystack = (hashHaystack << 1) + Traits::FoldCaseAscii(*(h - idx));
+                hashNeedle = (hashNeedle << 1) + Traits::FoldCaseLatin1(*(n - idx));
+                hashHaystack = (hashHaystack << 1) + Traits::FoldCaseLatin1(*(h - idx));
             }
-            hashHaystack -= Traits::FoldCaseAscii(*haystack);
+            hashHaystack -= Traits::FoldCaseLatin1(*haystack);
 
             while (haystack >= end)
             {
-                hashHaystack += Traits::FoldCaseAscii(*haystack);
+                hashHaystack += Traits::FoldCaseLatin1(*haystack);
                 if (hashHaystack == hashNeedle && Traits::Compare(needle, haystack, blen, CaseInsensitive) == 0)
                 {
                     return static_cast<SizeType>(haystack - end);
                 }
                 --haystack;
-                REHASH(Traits::FoldCaseAscii(haystack[blen]));
+                REHASH(Traits::FoldCaseLatin1(haystack[blen]));
             }
         }
         return -1;

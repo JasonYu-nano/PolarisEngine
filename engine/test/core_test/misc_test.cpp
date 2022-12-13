@@ -222,11 +222,11 @@ namespace Engine
         str6 = str6.Trimmed();
         EXPECT_TRUE(str6 == "hello.");
 
-        EXPECT_TRUE(str6.IsLowerAscii());
-        str6.ToUpperAscii();
+        EXPECT_TRUE(str6.IsLowerLatin1());
+        str6.ToUpperLatin1();
         EXPECT_TRUE(str6 == "HELLO.");
-        EXPECT_TRUE(str6.IsUpperAscii());
-        str6.ToLowerAscii();
+        EXPECT_TRUE(str6.IsUpperLatin1());
+        str6.ToLowerLatin1();
         EXPECT_TRUE(str6 == "hello.");
 
         String str7 = "80universe item snip";
