@@ -14,14 +14,7 @@ namespace Engine
         typedef signed int              int32;
         typedef signed long long        int64;
 
-        typedef char                    ansi;
         typedef wchar_t                 wchar;
-
-        #ifdef UNICODE
-        typedef wchar_t                 char_t;
-        #else
-        typedef char                    char_t;
-        #endif
 
         typedef unsigned char           byte;
     };

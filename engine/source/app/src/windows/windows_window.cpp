@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    const char_t WindowsWindow::WinClassName[] = _T("PLWindow");
+    const wchar WindowsWindow::WinClassName[] = L"PLWindow";
 
     void WindowsWindow::Init(HINSTANCE instance)
     {

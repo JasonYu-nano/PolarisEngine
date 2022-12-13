@@ -102,12 +102,12 @@ namespace Engine
         }
 
         template<typename... Args>
-        static void Log(spdlog::level::level_enum level, const ansi* category, const char* fmt, Args&&... args)
+        static void Log(spdlog::level::level_enum level, const char* category, const char* fmt, Args&&... args)
         {
             GetLogger()->log(level, String::Format(fmt, Forward<Args>(args)...));
         }
 
-        static void AssertFail(spdlog::source_loc src, const ansi* expr)
+        static void AssertFail(spdlog::source_loc src, const char* expr)
         {
             GetLogger()->log(src, spdlog::level::critical, "assertion failed: at {0}", expr);
             abort();

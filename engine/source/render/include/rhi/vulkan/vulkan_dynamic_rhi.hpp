@@ -40,7 +40,7 @@ namespace Engine
     private:
         void InitInstance();
 
-        VkArray<const ansi*> GetExtraExtensions();
+        VkArray<const char*> GetExtraExtensions();
 
         bool CheckValidationLayerSupport();
 
@@ -83,8 +83,8 @@ namespace Engine
         VkInstance Instance{ nullptr };
 
         VkDebugUtilsMessengerEXT DebugMessenger{ nullptr };
-        VkArray<const ansi*> ValidationLayers{ "VK_LAYER_KHRONOS_validation" };
-        VkArray<const ansi*> DeviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+        VkArray<const char*> ValidationLayers{ "VK_LAYER_KHRONOS_validation" };
+        VkArray<const char*> DeviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
         VkPhysicalDevice PhysicalDevice{ nullptr };
         VkDevice Device{ nullptr };

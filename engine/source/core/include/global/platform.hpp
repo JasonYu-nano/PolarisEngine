@@ -20,11 +20,8 @@ namespace Engine
     typedef CorePlatformType::size_t    size_t;
     typedef CorePlatformType::ptrdiff   ptrdiff;
     typedef CorePlatformType::intptr    intptr;
-    typedef int32                       strsize;
 
-    typedef CorePlatformType::ansi      ansi;
     typedef CorePlatformType::wchar     wchar;
-    typedef CorePlatformType::char_t    char_t;
     typedef CorePlatformType::wcharsize wcharsize;
 
     typedef CorePlatformType::byte      byte;

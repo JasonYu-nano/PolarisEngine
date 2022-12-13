@@ -7,8 +7,8 @@ namespace Engine
     class CORE_API HashHelper
     {
     public:
-        static uint64 FnvHash(const char_t* str, uint64 n) noexcept;
+        static uint64 FnvHash(const char* str, uint64 n) noexcept;
 
-        static uint64 FnvHash(TStringView str) noexcept;
+        static uint64 FnvHash(const StringView& str) noexcept;
     };
 }

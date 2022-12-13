@@ -149,8 +149,6 @@ namespace Engine
         const CharType* Str = nullptr;
     };
 
-    using TStringView = BasicStringView<char_t>;
-
     using StringView = BasicStringView<char>;
 
     using U16StringView = BasicStringView<char16_t>;
