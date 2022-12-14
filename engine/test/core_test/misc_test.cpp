@@ -238,6 +238,29 @@ namespace Engine
         EXPECT_TRUE(items.Size() == 4);
     }
 
+    TEST(String, Iterator)
+    {
+        String str = "abcd1234fgh";
+        for (auto elem : str)
+        {
+            elem = 'f';
+        }
+
+        EXPECT_TRUE(str == "abcd1234fgh");
+
+        for (auto&& elem : str)
+        {
+            elem = 'f';
+        }
+        EXPECT_TRUE(str == "fffffffffff");
+
+        const String str2 = "abcd1234fgh";
+        for (const auto& elem : str2)
+        {
+        }
+
+    }
+
     TEST(String, Hash)
     {
         String str = "abcd";
