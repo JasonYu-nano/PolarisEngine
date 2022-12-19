@@ -630,7 +630,7 @@ namespace Engine
                 return idx;
             }
         }
-        return -1;
+        return INDEX_NONE;
     }
 
     template <typename Elem, typename Traits, typename Alloc>
@@ -656,7 +656,7 @@ namespace Engine
                 return idx;
             }
         }
-        return -1;
+        return INDEX_NONE;
     }
 
     template <typename Elem, typename Traits, typename Alloc>

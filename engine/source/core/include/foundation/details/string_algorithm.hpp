@@ -50,12 +50,12 @@ namespace Engine::Private
 
         if (from < 0 || from >= alen)
         {
-            return -1;
+            return INDEX_NONE;
         }
 
         if (blen == 0)
         {
-            return from > alen ? -1 : from;
+            return from > alen ? INDEX_NONE : from;
         }
 
         const CharType* start = haystack;
@@ -112,7 +112,7 @@ namespace Engine::Private
                 }
             }
         }
-        return -1;
+        return INDEX_NONE;
     }
 
     template <typename CharType, typename Traits, typename SizeType>
@@ -149,7 +149,7 @@ namespace Engine::Private
                 ++current;
             }
         }
-        return -1;
+        return INDEX_NONE;
     }
 
     template <typename CharType, typename Traits, typename SizeType>
@@ -214,7 +214,7 @@ namespace Engine::Private
             }
         }
 
-        return -1;
+        return INDEX_NONE;
     }
 
     template <typename CharType, typename Traits, typename SizeType>
@@ -227,15 +227,15 @@ namespace Engine::Private
         }
         if (blen + from > (alen))
         {
-            return -1;
+            return INDEX_NONE;
         }
         if (!blen)
         {
-            return -1;
+            return INDEX_NONE;
         }
         if (!alen)
         {
-            return -1;
+            return INDEX_NONE;
         }
 
         if (blen == 1)
@@ -268,7 +268,7 @@ namespace Engine::Private
     {
         if (len == 0)
         {
-            return -1;
+            return INDEX_NONE;
         }
         if (from < 0)
         {
@@ -276,7 +276,7 @@ namespace Engine::Private
         }
         else if (from < 0 || from >= len)
         {
-            return -1;
+            return INDEX_NONE;
         }
         if (from >= 0)
         {
@@ -304,7 +304,7 @@ namespace Engine::Private
                 }
             }
         }
-        return -1;
+        return INDEX_NONE;
     }
 
     template <typename CharType, typename Traits, typename SizeType>
@@ -322,12 +322,12 @@ namespace Engine::Private
         }
         if (blen <= 0)
         {
-            return -1;
+            return INDEX_NONE;
         }
         const SizeType delta = alen - blen;
         if (from < 0 || from >= alen || delta < 0)
         {
-            return -1;
+            return INDEX_NONE;
         }
         if (from > delta)
         {
@@ -381,7 +381,7 @@ namespace Engine::Private
                 REHASH(Traits::FoldCaseLatin1(haystack[blen]));
             }
         }
-        return -1;
+        return INDEX_NONE;
     }
 
     template <typename CharType, typename Traits, typename SizeType>
