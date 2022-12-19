@@ -36,30 +36,30 @@ namespace Engine
         } UB;
     };
 
-    template <typename Traits>
+    template <typename StringType>
     class ConstStringIterator
     {
     protected:
-        using CharType = typename Traits::CharType;
-        using SizeType = typename Traits::SizeType;
+        using CharType = typename StringType::CharType;
+        using SizeType = typename StringType::SizeType;
     public:
-        ConstStringIterator(const CharType* ptr)
-            : Ptr(ptr)
+        ConstStringIterator(const StringType& str, SizeType index)
+            : Str(str), Index(index)
         {}
 
         const CharType& operator* () const
         {
-            return *Ptr;
+            return Str[Index];
         }
 
         const CharType* operator-> () const
         {
-            return Ptr;
+            return &Str[Index];
         }
 
         ConstStringIterator& operator++ ()
         {
-            ++Ptr;
+            ++Index;
             return *this;
         }
 
@@ -72,7 +72,7 @@ namespace Engine
 
         ConstStringIterator& operator-- ()
         {
-            --Ptr;
+            --Index;
             return *this;
         }
 
@@ -83,9 +83,14 @@ namespace Engine
             return temp;
         }
 
+        operator bool () const
+        {
+            return Index >= 0 && Index < Str.Length();
+        }
+
         friend bool operator== (const ConstStringIterator& lhs, const ConstStringIterator& rhs)
         {
-            return lhs.Ptr == rhs.Ptr;
+            return (&lhs.Str == &rhs.Str) && (lhs.Index == rhs.Index);
         }
 
         friend bool operator!= (const ConstStringIterator& lhs, const ConstStringIterator& rhs)
@@ -94,17 +99,19 @@ namespace Engine
         }
 
     protected:
-        const CharType* Ptr ;
+        const StringType& Str;
+        SizeType Index;
     };
 
-    template <typename Traits>
-    class StringIterator : public ConstStringIterator<Traits>
+    template <typename StringType>
+    class StringIterator : public ConstStringIterator<StringType>
     {
-        using Super = ConstStringIterator<Traits>;
+        using Super = ConstStringIterator<StringType>;
         using CharType = typename Super::CharType;
+        using SizeType = typename Super::SizeType;
     public:
-        StringIterator(const CharType* ptr)
-            : Super(ptr)
+        StringIterator(const StringType& str, SizeType index)
+            : Super(str, index)
         {}
 
         CharType& operator* () const
@@ -143,9 +150,15 @@ namespace Engine
             return temp;
         }
 
+        void RemoveSelf()
+        {
+            const_cast<StringType&>(this->Str).Remove(this->Index, 1);
+            --this->Index;
+        }
+
         friend bool operator== (const StringIterator& lhs, const StringIterator& rhs)
         {
-            return lhs.Ptr == rhs.Ptr;
+            return (&lhs.Str == &rhs.Str) && (lhs.Index == rhs.Index);
         }
 
         friend bool operator!= (const StringIterator& lhs, const StringIterator& rhs)
@@ -163,8 +176,8 @@ namespace Engine
         using SizeType = typename CharTraits::SizeType;
         using AllocatorType = typename Alloc::template ElementAllocator<Elem>;
         using ViewType = BasicStringView<CharType, Traits>;
-        using Iterator = StringIterator<Traits>;
-        using ConstIterator = ConstStringIterator<Traits>;
+        using Iterator = StringIterator<BasicString>;
+        using ConstIterator = ConstStringIterator<BasicString>;
 
     public:
         BasicString() = default;
@@ -215,13 +228,13 @@ namespace Engine
 
         BasicString operator/ (const CharType* other);
 
-        CharType operator[] (SizeType index) const
+        const CharType& operator[] (SizeType index) const
         {
             ENSURE(index < Length());
             return *(Pair.Second().GetPtr() + index);
         }
 
-        CharType operator[] (SizeType index)
+        CharType& operator[] (SizeType index)
         {
             ENSURE(index < Length());
             return *(Pair.Second().GetPtr() + index);
@@ -557,68 +570,64 @@ namespace Engine
 
         Iterator begin()
         {
-            return Iterator(Data());
+            return Iterator(*this, 0);
         }
 
         ConstIterator begin() const
         {
-            return ConstIterator(Data());
+            return ConstIterator(*this, 0);
         }
 
         Iterator end()
         {
-            auto& myVal = Pair.Second();
-            return Iterator(myVal.GetPtr() + myVal.Size - 1);
+            return Iterator(*this, Length());
         }
 
         ConstIterator end() const
         {
-            auto& myVal = Pair.Second();
-            return ConstIterator(myVal.GetPtr() + myVal.Size - 1);
+            return ConstIterator(*this, Length());
         }
 
         Iterator rbegin()
         {
             auto& myVal = Pair.Second();
-            return Iterator(myVal.GetPtr() + myVal.Size - 2);
+            return Iterator(*this, Length() - 1);
         }
 
         ConstIterator rbegin() const
         {
-            auto& myVal = Pair.Second();
-            return ConstIterator(myVal.GetPtr() + myVal.Size - 2);
+            return ConstIterator(*this, Length() - 1);
         }
 
         Iterator rend()
         {
-            return Iterator(Data() - 1);
+            return Iterator(*this, -1);
         }
 
         ConstIterator rend() const
         {
-            return ConstIterator(Data() - 1);
+            return ConstIterator(*this, -1);
         }
 
         ConstIterator cbegin()
         {
-            return ConstIterator(Data());
+            return ConstIterator(*this, 0);
         }
 
         ConstIterator cend()
         {
             auto& myVal = Pair.Second();
-            return ConstIterator(myVal.GetPtr() + myVal.Size - 1);
+            return ConstIterator(*this, Length());
         }
 
         ConstIterator crbegin()
         {
-            auto& myVal = Pair.Second();
-            return ConstIterator(myVal.GetPtr() + myVal.Size - 2);
+            return ConstIterator(*this, Length() - 1);
         }
 
         ConstIterator crend()
         {
-            return ConstIterator(Data() - 1);
+            return ConstIterator(*this, -1);
         }
 
         template <typename... Args, std::enable_if_t<sizeof(Elem) == sizeof(char), bool> = true>

@@ -254,9 +254,20 @@ namespace Engine
         }
         EXPECT_TRUE(str == "fffffffffff");
 
-        const String str2 = "abcd1234fgh";
-        for (const auto& elem : str2)
+        String str2 = "abcd1234fgh";
+        for (String::Iterator It = str2.begin(); It; ++It)
         {
+            EXPECT_TRUE(*It != char());
+
+            if (*It == 'd')
+            {
+                It.RemoveSelf();
+            }
+        }
+
+        for (String::Iterator It = str2.begin(); It != str2.end(); ++It)
+        {
+            EXPECT_TRUE(*It != char());
         }
 
     }
