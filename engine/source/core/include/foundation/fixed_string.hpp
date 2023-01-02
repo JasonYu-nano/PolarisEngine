@@ -11,7 +11,7 @@ namespace Engine
     public:
         FixedString() = default;
 
-        explicit FixedString(const char* str);
+        FixedString(const char* str);
 
         explicit FixedString(const StringView& str);
 

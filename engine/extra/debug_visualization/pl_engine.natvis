@@ -28,21 +28,38 @@
         </Expand>
     </Type>
 
+<!--    <Type Name="Engine::Array&lt;*,Engine::InlineAllocator&lt;*&gt; &gt;">-->
+<!--        <DisplayString Condition="ArraySize == 0">Empty</DisplayString>-->
+<!--        <DisplayString Condition="ArraySize &lt; 0">Invalid</DisplayString>-->
+<!--        <DisplayString Condition="ArrayCapacity &lt; ArraySize">Invalid</DisplayString>-->
+<!--        <DisplayString Condition="ArrayCapacity &gt;= ArraySize">Size={ArraySize} Capacity={ArrayCapacity}</DisplayString>-->
+<!--        <Expand>-->
+<!--            <ArrayItems Condition="ArraySize &lt;= ArrayCapacity">-->
+<!--                <Size>ArraySize</Size>-->
+<!--                <ValuePointer Condition="AllocatorInstance.SecondaryData.Data == 0">($T1*)AllocatorInstance.InlineData</ValuePointer>-->
+<!--                <ValuePointer Condition="AllocatorInstance.SecondaryData.Data != 0">($T1*)AllocatorInstance.SecondaryData.Data</ValuePointer>-->
+<!--            </ArrayItems>-->
+<!--        </Expand>-->
+<!--    </Type>-->
+
+    <Type Name="Engine::Array&lt;*,*&gt;">
+        <DisplayString Condition="Pair.SecondVal.Size == 0">Empty</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Size &lt; 0">Invalid</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Capacity &lt; Pair.SecondVal.Size">Invalid</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Capacity &gt;= Pair.SecondVal.Size">Size={Pair.SecondVal.Size} Capacity={Pair.SecondVal.Capacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="Pair.SecondVal.Size &lt;= Pair.SecondVal.Capacity">
+                <Size>Pair.SecondVal.Size</Size>
+                <ValuePointer>($T1*)Pair.SecondVal.Data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <!-- String visualizer -->
     <Type Name="Engine::BasicStringView&lt;*,*&gt;">
         <DisplayString Condition="Str &lt;= 0">Null</DisplayString>
         <DisplayString Condition="Len == 0">Empty</DisplayString>
         <DisplayString Condition="Str &gt;= 0">Data={Str} Length={Len}</DisplayString>
-    </Type>
-
-    <Type Name="Engine::UString">
-        <DisplayString Condition="Source.ArraySize == 0">Empty</DisplayString>
-        <DisplayString Condition="Source.ArraySize &lt; 0">Invalid</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &lt; Source.ArraySize">Invalid</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data == 0">{(const char16_t*)Source.AllocatorInstance.InlineData,su}</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data != 0">{(const char16_t*)Source.AllocatorInstance.SecondaryData.Data,su}</DisplayString>
-        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data == 0">(const char16_t*)Source.AllocatorInstance.InlineData,su</StringView>
-        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data != 0">(const char16_t*)Source.AllocatorInstance.SecondaryData.Data,su</StringView>
     </Type>
 
     <Type Name="Engine::BasicString&lt;char,*,*&gt;">

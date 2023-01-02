@@ -33,14 +33,14 @@ namespace Engine
 
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>::BasicString(const BasicString& other)
-            : Pair(OneArgPlaceholder(), other.GetAllocator())
+            : Pair(OneArgPlaceholder(), other.GetAlloc())
     {
         CopyAssign(other);
     }
 
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>::BasicString(BasicString&& other) noexcept
-            : Pair(OneArgPlaceholder(), MoveTemp(other.GetAllocator()))
+            : Pair(OneArgPlaceholder(), MoveTemp(other.GetAlloc()))
     {
         MoveAssign(Forward<BasicString&&>(other));
     }
@@ -52,7 +52,7 @@ namespace Engine
         {
             auto& myVal = Pair.Second();
             CharType* ptr = myVal.UB.Ptr;
-            auto& allocator = GetAllocator();
+            auto& allocator = GetAlloc();
             std::destroy_at(myVal.UB.Ptr);
             allocator.Deallocate(ptr, myVal.Size);
         }
@@ -63,7 +63,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(const BasicString& other)
     {
-        Pair.First() = other.GetAllocator();
+        Pair.First() = other.GetAlloc();
         CopyAssign(other);
         return *this;
     }
@@ -71,7 +71,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString&& other) noexcept
     {
-        Pair.First() = MoveTemp(other.GetAllocator());
+        Pair.First() = MoveTemp(other.GetAlloc());
         MoveAssign(Forward<BasicString>(other));
         return *this;
     }
@@ -530,7 +530,7 @@ namespace Engine
             return;
         }
 
-        auto& alloc = GetAllocator();
+        auto& alloc = GetAlloc();
         CharType* ptr = alloc.Allocate(capacity);
         CharType* oldPtr = val.UB.Ptr;
         SizeType oldSize = val.Size;
@@ -813,7 +813,7 @@ namespace Engine
     void BasicString<Elem, Traits, Alloc>::BecomeLarge(SizeType capacity)
     {
         auto& myVal = Pair.Second();
-        CharType* ptr = GetAllocator().Allocate(capacity);
+        CharType* ptr = GetAlloc().Allocate(capacity);
         CharTraits::Copy(ptr, myVal.UB.Buffer, Size());
         myVal.UB.Ptr = ptr;
         myVal.MaxSize = capacity;

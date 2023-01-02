@@ -27,12 +27,12 @@ namespace Engine
 
             ElementAllocator& operator=(const ElementAllocator& other) = default;
 
-            NODISCARD ValueType* Allocate(SizeType n)
+            NODISCARD ValueType* Allocate(SizeType n) const
             {
                 return static_cast<ValueType*>(Memory::Malloc(n * sizeof(ElementType), alignof(ElementType)));
             }
 
-            constexpr void Deallocate(ValueType* ptr, SizeType n)
+            constexpr void Deallocate(ValueType* ptr, SizeType n) const
             {
                 Memory::Free(ptr);
             }

@@ -5,6 +5,7 @@
 #include "foundation/set.hpp"
 #include "foundation/map.hpp"
 #include "log/logger.hpp"
+#include "foundation/array.hpp"
 #include <vector>
 
 namespace Engine
@@ -24,6 +25,98 @@ namespace Engine
         int32 Y{ 0 };
         int32* Z{ nullptr };
     };
+
+    struct NonTrivialArrayItem
+    {
+        NonTrivialArrayItem()
+        {
+            ++AllocCounter;
+            ValuePtr = new int32(0);
+        }
+
+        NonTrivialArrayItem(int32 val)
+        {
+            ++AllocCounter;
+            ValuePtr = new int32(val);
+        }
+
+        NonTrivialArrayItem(const NonTrivialArrayItem& other)
+        {
+            ++AllocCounter;
+            ValuePtr = new int32(*other.ValuePtr);
+        }
+
+        ~NonTrivialArrayItem()
+        {
+            --AllocCounter;
+            delete ValuePtr;
+            ValuePtr = nullptr;
+        }
+
+        static int32 AllocCounter;
+        int32* ValuePtr{ nullptr };
+    };
+
+    int32 NonTrivialArrayItem::AllocCounter = 0;
+
+    TEST(ContainerTest, Array_Ctor)
+    {
+        Array<int32> array1;
+        EXPECT_TRUE(array1.Size() == 0 && array1.Capacity() == 0 && array1.Data() == nullptr);
+
+        Array<int32> array2(10);
+        EXPECT_TRUE(array2.Capacity() == 10);
+
+        int32 numbers[5] = {0, 1, 2, 3, 4};
+        Array<int32> array3(numbers, 5);
+        for (int32 i = 0; i < 5; ++i)
+        {
+            EXPECT_TRUE(array3[i] == i);
+        }
+
+        Array<int32> array4(0, 10);
+        for (int32 i = 0; i < 10; ++i)
+        {
+            EXPECT_TRUE(array4[i] == 0);
+        }
+
+        Array<int32> array5 = {0, 1, 2, 3, 4};
+        for (int32 i = 0; i < 5; ++i)
+        {
+            EXPECT_TRUE(array5[i] == i);
+        }
+
+        Array<int32> array6 = array5;
+        for (int32 i = 0; i < 5; ++i)
+        {
+            EXPECT_TRUE(array6[i] == array5[i]);
+        }
+
+        Array<int32> array7 = std::move(array6);
+        for (int32 i = 0; i < 5; ++i)
+        {
+            EXPECT_TRUE(array7[i] == array5[i]);
+        }
+        EXPECT_TRUE(array6.Size() == 0 && array6.Capacity() == 0 && array6.Data() == nullptr);
+
+        EXPECT_TRUE(std::is_trivial_v<NonTrivialArrayItem> == false);
+        Array<NonTrivialArrayItem> array8(NonTrivialArrayItem(), 5);
+        EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 5);
+        Array<NonTrivialArrayItem> array9(array8);
+        EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 10);
+        array8.Clear();
+        EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 5);
+
+        array9 = {NonTrivialArrayItem(0), NonTrivialArrayItem(1)};
+        EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 2);
+
+        Array<NonTrivialArrayItem> array10 = {NonTrivialArrayItem(2), NonTrivialArrayItem(3)};
+        array9 = array10;
+        EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 4);
+
+        array9 = std::move(array10);
+        EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 2);
+    }
 
     TEST(ContainerTest, DynamicArray_Base)
     {

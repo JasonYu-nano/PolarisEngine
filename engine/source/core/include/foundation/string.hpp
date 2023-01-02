@@ -171,10 +171,11 @@ namespace Engine
     class BasicString
     {
     public:
+        using ValueType = Elem;
         using CharType = Elem;
         using CharTraits = Traits;
         using SizeType = typename CharTraits::SizeType;
-        using AllocatorType = typename Alloc::template ElementAllocator<Elem>;
+        using AllocatorType = typename Alloc::template ElementAllocator<CharType>;
         using ViewType = BasicStringView<CharType, Traits>;
         using Iterator = StringIterator<BasicString>;
         using ConstIterator = ConstStringIterator<BasicString>;
@@ -263,6 +264,11 @@ namespace Engine
         SizeType Capacity() const
         {
             return Pair.Second().MaxSize;
+        }
+
+        AllocatorType GetAllocator() const
+        {
+            return static_cast<AllocatorType>(GetAlloc());
         }
 
         NODISCARD bool Empty() const
@@ -640,12 +646,12 @@ namespace Engine
         }
 
     protected:
-        AllocatorType& GetAllocator()
+        AllocatorType& GetAlloc()
         {
             return Pair.First();
         }
 
-        const AllocatorType& GetAllocator() const
+        const AllocatorType& GetAlloc() const
         {
             return Pair.First();
         }
