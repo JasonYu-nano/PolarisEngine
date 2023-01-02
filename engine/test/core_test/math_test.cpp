@@ -7,13 +7,17 @@
 
 namespace Engine
 {
-    TEST(MathTest, Base)
+    TEST(MathTest, GenericMath)
     {
         EXPECT_TRUE(Math::Equals(Math::Sin(Math::ToRadians(30)), Math::Cos(Math::ToRadians(60)), KINDA_SMALL_FLOAT));
         EXPECT_TRUE(Math::Equals(Math::Sin(Math::ToRadians(30)), Math::Sin(Math::ToRadians(-570)), KINDA_SMALL_FLOAT));
+        EXPECT_TRUE(Math::FloorLogTwo((uint32)33) == 5);
+        EXPECT_TRUE(Math::FloorLogTwo((uint8)31) == 4);
+        EXPECT_TRUE(Math::CeilLogTwo((uint32)33) == 6);
+        EXPECT_TRUE(Math::CeilLogTwo((uint8)31) == 5);
     }
 
-    TEST(Vector3Test, Base)
+    TEST(MathTest, Vector3)
     {
         EXPECT_TRUE(Vector3f::Zero.IsZero());
 
@@ -26,7 +30,7 @@ namespace Engine
         vec ^ Vector3f(5.2f);
     }
 
-    TEST(RotatorTest, Base)
+    TEST(MathTest, Rotator)
     {
         Rotator rotation(10.0f, 60.0f, 10.0f);
         Quat quat = rotation.ToQuaternion();
@@ -34,7 +38,7 @@ namespace Engine
         quat = Quat::Identity;
     }
 
-    TEST(MatrixTest, Base)
+    TEST(MathTest, Matrix)
     {
         Matrix M;
         Matrix N;

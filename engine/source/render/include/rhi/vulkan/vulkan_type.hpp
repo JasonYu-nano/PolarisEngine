@@ -1,8 +1,8 @@
 #pragma once
-#include "foundation/dynamic_array.hpp"
+#include "foundation/array.hpp"
 
 namespace Engine
 {
     template <typename ElementType>
-    using VkArray = DynamicArray<ElementType>;
+    using VkArray = Array<ElementType>;
 }

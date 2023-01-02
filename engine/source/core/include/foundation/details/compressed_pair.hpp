@@ -16,32 +16,21 @@ namespace Engine
         CompressedPair() = default;
 
         template <typename... ArgType2>
-        explicit CompressedPair(ZeroArgPlaceholder, ArgType2&&... arg2) : Super(), SecondVal(Forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(ZeroArgPlaceholder, ArgType2&&... arg2) : Super(), SecondVal(std::forward<ArgType2>(arg2)...) {}
 
         template <typename ArgType1, typename... ArgType2>
-        explicit CompressedPair(OneArgPlaceholder, ArgType1&& arg1, ArgType2&&... arg2) : Super(Forward<ArgType1>(arg1)), SecondVal(Forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(OneArgPlaceholder, ArgType1&& arg1, ArgType2&&... arg2) : Super(std::forward<ArgType1>(arg1)), SecondVal(std::forward<ArgType2>(arg2)...) {}
 
-        T1& First()
+        T1& GetFirst()
         {
             return *this;
         }
 
-        const T1& First() const
+        const T1& GetFirst() const
         {
             return *this;
         }
 
-        T2& Second()
-        {
-            return SecondVal;
-        }
-
-        const T2& Second() const
-        {
-            return SecondVal;
-        }
-
-    private:
         T2 SecondVal;
     };
 
@@ -49,33 +38,24 @@ namespace Engine
     class CompressedPair<T1, T2, false> final
     {
     public:
+        CompressedPair() = default;
+
         template <typename... ArgType2>
-        explicit CompressedPair(ArgType2&&... arg2) : FirstVal(), SecondVal(Forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(ZeroArgPlaceholder, ArgType2&&... arg2) : FirstVal(), SecondVal(std::forward<ArgType2>(arg2)...) {}
 
         template <typename ArgType1, typename... ArgType2>
-        explicit CompressedPair(ArgType1&& arg1, ArgType2&&... arg2) : FirstVal(Forward<ArgType1>(arg1)), SecondVal(Forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(OneArgPlaceholder, ArgType1&& arg1, ArgType2&&... arg2) : FirstVal(std::forward<ArgType1>(arg1)), SecondVal(std::forward<ArgType2>(arg2)...) {}
 
-        T1& First()
+        T1& GetFirst()
         {
             return FirstVal;
         }
 
-        const T1& First() const
+        const T1& GetFirst() const
         {
             return FirstVal;
         }
 
-        T2& Second()
-        {
-            return SecondVal;
-        }
-
-        const T2& Second() const
-        {
-            return SecondVal;
-        }
-
-    private:
         T1 FirstVal;
         T2 SecondVal;
     };

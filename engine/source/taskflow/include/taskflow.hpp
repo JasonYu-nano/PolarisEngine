@@ -7,8 +7,8 @@ namespace Engine
     class TASKFLOW_API Taskflow
     {
     public:
-        using NodeIterator = DynamicArray<GraphTaskBase*>::Iterator;
-        using ConstNodeIterator = DynamicArray<GraphTaskBase*>::ConstIterator;
+        using NodeIterator = Array<GraphTaskBase*>::Iterator;
+        using ConstNodeIterator = Array<GraphTaskBase*>::ConstIterator;
 
         ~Taskflow()
         {
@@ -80,6 +80,6 @@ namespace Engine
         bool PromiseRetrieved{ false };
         std::atomic<bool> Executable{ true };
         std::promise<void> Promise;
-        DynamicArray<GraphTaskBase*> Tasks;
+        Array<GraphTaskBase*> Tasks;
     };
 }

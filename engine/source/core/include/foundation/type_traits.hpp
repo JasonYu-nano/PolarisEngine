@@ -90,4 +90,7 @@ template <typename T>
 concept SignedIntegralType = std::is_signed_v<T> && std::is_integral_v<T>;
 
 template <typename T>
+concept UnsignedIntegralType = std::is_unsigned_v<T> && std::is_integral_v<T>;
+
+template <typename T>
 concept IntegralType = std::is_integral_v<T>;

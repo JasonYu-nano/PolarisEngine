@@ -7,7 +7,7 @@ using namespace Engine;
 #define MIN_UINT8       ((uint8)        0x00)
 #define MIN_UINT16      ((uint16)       0x0000)
 #define MIN_UINT32      ((uint32)       0x00000000)
-#define MIN_UINT64       ((uint64)       0x0000000000000000)
+#define MIN_UINT64      ((uint64)       0x0000000000000000)
 #define MIN_INT8        ((int8)         -128)
 #define MIN_INT16       ((int16)        -32768)
 #define MIN_INT32       ((int32)        0x80000000)
@@ -26,6 +26,10 @@ using namespace Engine;
 #define MAX_FLT         (3.402823466e+38F)
 #define MIN_DBL         (2.2250738585072014e-308)
 #define MAX_DBL         (1.7976931348623158e+308)
+
+#ifndef CHAR_BIT
+#define CHAR_BIT        (8)
+#endif
 
 #if PLATFORM_WINDOWS
     #define MAX_DWORD   MAX_UINT32

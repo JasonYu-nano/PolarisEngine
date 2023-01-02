@@ -5,28 +5,34 @@
 
 namespace Engine
 {
-#pragma region iterator
-    template <typename SparseIteratorType, typename KeyType>
+    template <typename ContainerType>
     class ConstSetIterator
     {
+        using SparseIteratorType = typename ContainerType::SparseArrayType::ConstIterator;
+        using ValueType = typename ContainerType::ValueType;
     public:
         explicit ConstSetIterator(const SparseIteratorType& iter)
-            : InnerIterator(iter)
+            : It(iter)
         {}
 
-        const KeyType& operator*() const { return (*InnerIterator).Element; }
+        const ValueType& operator*() const { return (*It).MyVal; }
 
-        const KeyType* operator->() const { return InnerIterator->Element; }
+        const ValueType* operator->() const { return It->MyVal; }
+
+        explicit operator bool() const
+        {
+            return (bool)It;
+        }
 
         ConstSetIterator& operator++ ()
         {
-            ++InnerIterator;
+            ++It;
             return *this;
         }
 
         friend bool operator== (const ConstSetIterator& lhs, const ConstSetIterator& rhs)
         {
-            return lhs.InnerIterator == rhs.InnerIterator;
+            return lhs.It == rhs.It;
         }
 
         friend bool operator!= (const ConstSetIterator& lhs, const ConstSetIterator& rhs)
@@ -35,21 +41,23 @@ namespace Engine
         }
 
     protected:
-        SparseIteratorType InnerIterator;
+        SparseIteratorType It;
     };
 
-    template <typename SparseIteratorType, typename KeyType>
-    class SetIterator : public ConstSetIterator<SparseIteratorType, KeyType>
+    template <typename ContainerType>
+    class SetIterator : public ConstSetIterator<ContainerType>
     {
-        using Super = ConstSetIterator<SparseIteratorType, KeyType>;
+        using Super = ConstSetIterator<ContainerType>;
+        using SparseIteratorType = typename ContainerType::SparseArrayType::ConstIterator;
+        using ValueType = typename ContainerType::ValueType;
     public:
         explicit SetIterator(const SparseIteratorType& iter)
             : Super(iter)
         {}
 
-        KeyType& operator*() const { return const_cast<KeyType&>(Super::operator *()); }
+        ValueType& operator*() const { return const_cast<ValueType&>(Super::operator *()); }
 
-        KeyType* operator->() const { return const_cast<KeyType*>(Super::operator ->()); }
+        ValueType* operator->() const { return const_cast<ValueType*>(Super::operator ->()); }
 
         SetIterator& operator++ ()
         {
@@ -59,7 +67,7 @@ namespace Engine
 
         friend bool operator== (const SetIterator& lhs, const SetIterator& rhs)
         {
-            return lhs.InnerIterator == rhs.InnerIterator;
+            return lhs.It == rhs.It;
         }
 
         friend bool operator!= (const SetIterator& lhs, const SetIterator& rhs)
@@ -68,8 +76,6 @@ namespace Engine
         }
     };
 
-#pragma endregion iterator
-
     /**
      * Determine default hash function and equals function of set key
      * @tparam Key
@@ -77,6 +83,8 @@ namespace Engine
     template <typename Key>
     struct DefaultSetKeyFunc
     {
+        using KeyType = Key;
+
         static uint32 GetHashCode(const Key& key)
         {
             return Engine::GetHashCode(key);
@@ -93,85 +101,199 @@ namespace Engine
         }
     };
 
-    /** Encapsulates the allocators used by a set in a single type. */
-    template <
-        typename InSparseArrayAllocator,
-        typename InHashAllocator,
-        uint32 ElementsPerHashBucket = 2,
-        uint32 MinHashBuckets = 8,
-        uint32 MinCountOfHashedElements = 4>
-    struct SetAllocator
+    template <typename SizeType>
+    struct SetElemIndex
     {
-        static uint32 GetNumberOfHashBuckets(uint32 hashedElementsCount)
-        {
-            if (hashedElementsCount >= MinCountOfHashedElements)
-            {
-                return Math::RoundUpToPowerOfTwo(hashedElementsCount / ElementsPerHashBucket + MinHashBuckets);
-            }
+        SetElemIndex() = default;
 
-            return 1;
-        }
-
-        typedef InSparseArrayAllocator SparseArrayAllocator;
-        typedef InHashAllocator        HashAllocator;
-    };
-
-    /** index of set in sparse array */
-    struct SetElementIndex
-    {
-        SetElementIndex() = default;
-
-        SetElementIndex(int32 index) : Index(index)
-        {}
+        SetElemIndex(SizeType index) : Index(index) {}
 
         bool IsValid() const { return Index != INDEX_NONE; }
 
-        operator int32() const
+        operator SizeType() const
         {
             return Index;
         }
 
         // Index in sparse array
-        int32 Index{ INDEX_NONE };
+        SizeType Index{ INDEX_NONE };
     };
 
-    using DefaultSetAllocator = SetAllocator<DefaultAllocator, DefaultAllocator>;
+    template <typename ValueType, typename SizeType>
+    class SetHashBucketVal
+    {
+    public:
+        SizeType Size{ 0 };
+        ValueType* Data{ nullptr };
+    };
 
-    template <typename ElementType, typename KeyFunc = DefaultSetKeyFunc<ElementType>, typename SetAllocator = DefaultSetAllocator>
+    template <typename Elem, typename Alloc>
+    class SetHashBucket
+    {
+    public:
+        using AllocatorType = Alloc::template ElementAllocator<Elem>;
+        using ValueType = typename AllocatorType::ValueType;
+        using SizeType = typename AllocatorType::SizeType;
+
+        SetHashBucket& operator= (const SetHashBucket& other)
+        {
+            ENSURE(this != &other);
+            GetAlloc() = other.GetAlloc();
+            CopyAssign(other);
+
+            return *this;
+        }
+
+        SetHashBucket& operator= (SetHashBucket&& other)
+        {
+            ENSURE(this != &other);
+            GetAlloc() = std::move(other.GetAlloc());
+            MoveAssign(std::forward<SetHashBucket>(other));
+
+            return *this;
+        }
+
+        SizeType Size() const
+        {
+            return Pair.SecondVal.Size;
+        }
+
+        ValueType* Data()
+        {
+            return Pair.SecondVal.Data;
+        }
+
+        const ValueType* Data() const
+        {
+            return Pair.SecondVal.Data;
+        }
+
+        constexpr SizeType MaxSize() const
+        {
+            return NumericLimits<SizeType>::Max();
+        }
+
+        void Resize(SizeType newSize)
+        {
+            auto& alloc = GetAlloc();
+            auto& myVal = Pair.SecondVal;
+            ValueType* newData = alloc.Allocate(newSize);
+            ConstructElements(newData, newSize);
+            DestructElements(myVal.Data, myVal.Size);
+
+            myVal.Data = newData;
+            myVal.Size = newSize;
+        }
+
+        bool CalculateGrowth(const SizeType newSize, SizeType& outSize) const
+        {
+            outSize = 1;
+            if (newSize >= MIN_HASHED_ELEMS_COUNT)
+            {
+                outSize = Math::Min(Math::RoundUpToPowerOfTwo(newSize / ELEMS_PER_BUCKET + MIN_BUCKETS), MaxSize());
+            }
+
+            return Pair.SecondVal.Size != outSize;
+        }
+
+        /** Contains the head of SetElement list */
+        ValueType& GetFirstIndex(uint32 hashCode) const
+        {
+            auto& myVal = Pair.SecondVal;
+            return ((ValueType*)myVal.Data)[GetHashIndex(hashCode)];
+        }
+
+        SizeType GetHashIndex(uint32 hashCode) const
+        {
+            // Quick mod hashCode % BucketCount, BucketCount must be 2 ^ n
+            return hashCode & (Pair.SecondVal.Size - 1);
+        }
+
+    private:
+        AllocatorType& GetAlloc() { return Pair.GetFirst(); }
+
+        const AllocatorType& GetAlloc() const { return Pair.GetFirst(); }
+
+        void CopyAssign(const SetHashBucket& other)
+        {
+            auto& otherVal = other.Pair.SecondVal;
+            auto& myVal = Pair.SecondVal;
+
+            Resize(otherVal.Size);
+            if (otherVal.Data)
+            {
+                ConstructElements(myVal.Data, otherVal.Data, myVal.Size);
+            }
+        }
+
+        void MoveAssign(SetHashBucket&& other)
+        {
+            auto& myVal = Pair.SecondVal;
+            auto& otherVal = other.Pair.SecondVal;
+
+            if (myVal.Data)
+            {
+                DestructElements(myVal.Data, myVal.Size);
+                auto& alloc = GetAlloc();
+                alloc.Deallocate(myVal.Data, myVal.Size);
+            }
+
+            myVal.Size = otherVal.Size;
+            myVal.Data = otherVal.Data;
+
+            otherVal.Data = nullptr;
+            otherVal.Size = 0;
+        }
+
+    private:
+        static constexpr SizeType ELEMS_PER_BUCKET = 2;
+        static constexpr SizeType MIN_BUCKETS = 8;
+        static constexpr SizeType MIN_HASHED_ELEMS_COUNT = 4;
+
+        CompressedPair<AllocatorType, SetHashBucketVal<ValueType, SizeType>> Pair;
+    };
+
+    template <typename Elem, typename KeyFun = DefaultSetKeyFunc<Elem>, typename Alloc = StandardAllocator<int32>>
     class Set
     {
+        template <typename T, typename U, typename V, typename W> friend class Map;
+    public:
+        using ValueType = Elem;
+        using KeyType = typename KeyFun::KeyType;
+        using SizeType = Alloc::SizeType;
+        using SetElemIndex = SetElemIndex<SizeType>;
+
         struct SetElement
         {
-            explicit SetElement(const ElementType& element)
-            {
-                Element = element;
-            }
+            explicit SetElement(const ValueType& val) : MyVal(val) {}
 
-            explicit SetElement(ElementType&& element)
-            {
-                Element = element;
-            }
+            explicit SetElement(ValueType&& val) : MyVal(std::forward<ValueType>(val)) {}
 
+            ~SetElement() = default;
+
+            ValueType MyVal;
             uint32 HashIndex = 0;
-            SetElementIndex HashNextId;
-            ElementType Element;
+            SetElemIndex HashNextId;
         };
 
-        using HashBucketType = typename SetAllocator::HashAllocator::template ElementAllocator<SetElementIndex>;
-        using SparseArrayType = SparseArray<SetElement, typename SetAllocator::SparseArrayAllocator>;
+        using HashBucketType = SetHashBucket<SetElemIndex, Alloc>;
+        using SparseArrayType = SparseArray<SetElement, Alloc>;
+        using AllocatorType = SparseArrayType::AllocatorType;
+        using BucketAllocatorType = typename Alloc::template ElementAllocator<SetElemIndex>;
+        using Iterator = SetIterator<Set>;
+        using ConstIterator = ConstSetIterator<Set>;
 
-        friend class ConstSetIterator<Set, ElementType>;
-        friend class SetIterator<Set, ElementType>;
-        template <typename K, typename V, typename T, typename U> friend class Map;
+        explicit Set(const AllocatorType& alloc = AllocatorType())
+            : Elements(alloc)
+        {}
 
-    public:
-        using Iterator = SetIterator<typename SparseArrayType::ConstIterator, ElementType>;
-        using ConstIterator = ConstSetIterator<typename SparseArrayType::ConstIterator, ElementType>;
+        Set(SizeType capacity, const AllocatorType& alloc = AllocatorType())
+            : Elements(alloc)
+        {
+            Reserve(capacity);
+        }
 
-    public:
-        Set() = default;
-
-        Set(std::initializer_list<ElementType> initializer)
+        Set(std::initializer_list<ValueType> initializer)
         {
             Append(initializer);
         }
@@ -189,88 +311,91 @@ namespace Engine
 
         Set(const Set& other)
         {
-            CopyElement(other);
+            CopyAssign(other);
         }
 
         Set(Set&& other) noexcept
         {
-            MoveElement(Forward<Set&&>(other));
+            MoveAssign(std::forward<Set>(other));
+        }
+
+        Set& operator= (std::initializer_list<ValueType> initializer)
+        {
+            Append(initializer);
+            return *this;
         }
 
         Set& operator= (const Set& other)
         {
-            ENSURE(*this != other);
-            // SetElementIndex don't need destruct
-            CopyElement(other);
+            CopyAssign(other);
             return *this;
         }
 
         Set& operator= (Set&& other) noexcept
         {
-            ENSURE(*this != other);
-            MoveElement(Forward<Set&&>(other));
+            MoveAssign(std::forward<Set>(other));
             return *this;
         }
 
         /**
          * Adds the specified element to Set.
-         * 
-         * @param T element
+         * @param elem
          */
-        void Add(const ElementType& element)
+        ValueType& Add(const ValueType& elem)
         {
-            Emplace(element);
+            return Emplace(elem);
         }
 
         /**
          * Moves the specified element to Set.
-         *
-         * @param T element
+         * @param elem
          */
-        void Add(ElementType&& element)
+        ValueType& Add(ValueType&& elem)
         {
-            Emplace(element);
+            return Emplace(std::forward<ValueType>(elem));
         }
 
-        void Append(std::initializer_list<ElementType> initializer)
+        void Append(std::initializer_list<ValueType> initializer)
         {
-            Reserve(Elements.Size() + (int32)initializer.size());
-            for (auto&& element : initializer)
+            Reserve(Elements.Size() + static_cast<SizeType>(initializer.size()));
+            for (const ValueType& element : initializer)
             {
-                Add(element);
+                Emplace(element);
             }
         }
 
         /**
          * Determines whether a Set contains the specified element.
-         * 
-         * @param T key
-         * @return boolean true if contains the specified element, otherwise false.
+         * @param key
+         * @return True if contains the specified element, otherwise false.
          */
-        template <typename KeyType>
         bool Contains(const KeyType& key) const
         {
             return FindIndex(key).IsValid();
         }
 
-        template <typename KeyType>
-        ElementType* Find(const KeyType& key) const
+        /**
+         * Finds an element with the given key in the set.
+         * @param key
+         * @return A pointer to an element with the given key.  If no element in the set has the given key, this will return nullptr.
+         */
+        ValueType* Find(const KeyType& key) const
         {
-            ElementType* ret = nullptr;
+            ValueType* ret = nullptr;
             if (Size() > 0)
             {
-                SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
+                SetElemIndex* elementIndex = &GetFirstIndex(KeyFun::GetHashCode(key));
                 while (elementIndex->IsValid())
                 {
                     auto&& setElement = Elements[elementIndex->Index];
-                    if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
+                    if (KeyFun::Equals(KeyFun::GetKey(setElement.MyVal), key))
                     {
-                        ret = const_cast<ElementType*>(&setElement.Element);
+                        ret = const_cast<ValueType*>(&setElement.MyVal);
                         break;
                     }
                     else
                     {
-                        elementIndex = const_cast<SetElementIndex*>(&setElement.HashNextId);
+                        elementIndex = const_cast<SetElemIndex*>(&setElement.HashNextId);
                     }
                 }
             }
@@ -279,21 +404,19 @@ namespace Engine
 
         /**
          * Removes the specified element from a Set.
-         * 
-         * @param T key
-         * @return boolean true if remove success.
+         * @param key
+         * @return True if remove success.
          */
-        template <typename KeyType>
         bool Remove(const KeyType& key)
         {
             bool ret = false;
             if (Size() > 0)
             {
-                SetElementIndex* elementIndex = &GetFirstIndex(KeyFunc::GetHashCode(key));
+                SetElemIndex* elementIndex = &GetFirstIndex(KeyFun::GetHashCode(key));
                 while (elementIndex->IsValid())
                 {
                     auto&& setElement = Elements[elementIndex->Index];
-                    if (KeyFunc::Equals(KeyFunc::GetKey(setElement.Element), key))
+                    if (KeyFun::Equals(KeyFun::GetKey(setElement.MyVal), key))
                     {
                         uint32 pendingRemoveIndex = elementIndex->Index;
                         elementIndex->Index = setElement.HashNextId.Index;
@@ -310,47 +433,65 @@ namespace Engine
             return ret;
         }
 
-        void Clear(int32 slack = 0)
+        /**
+         * Empties the set.
+         * @param slack The expected capacity after clear operation
+         */
+        void Clear(SizeType slack = 0)
         {
             ENSURE(slack >= 0);
             HashBucket.Resize(slack);
             Elements.Clear(slack);
         }
 
-        int32 Size() const
+        /**
+         * @return Number of elements in set.
+         */
+        SizeType Size() const
         {
             return Elements.Size();
         }
 
+        /**
+         * @return True if the set is empty and contains no elements.
+         */
         bool Empty() const
         {
             return Size() == 0;
         }
 
         /**
-         * Preallocates enough memory to contain Number elements.
-         * 
-         * @param count int32
+         * Preallocates enough memory.
+         * @param capacity
          */
-        void Reserve(int32 count)
+        void Reserve(SizeType capacity)
         {
-            if (count > static_cast<int32>(Elements.Size()))
+            if (capacity > Elements.Size())
             {
-                Elements.Reserve(count);
+                Elements.Reserve(capacity);
 
-                const uint32 newBucketCount = SetAllocator::GetNumberOfHashBuckets(static_cast<uint32>(count));
-                if (!BucketCount || BucketCount < newBucketCount)
+                SizeType newBucketSize;
+                if (HashBucket.CalculateGrowth(capacity, newBucketSize))
                 {
-                    BucketCount = newBucketCount;
-                    Rehash();
+                    Rehash(newBucketSize);
                 }
             }
         }
 
-        //TODO: impl
-        void Resize(int32 capacity)
+        /**
+        * Resizes set to given number of elements.
+        * @param newSize
+        */
+        void Resize(SizeType newSize)
         {
-            ENSURE(capacity >= 0);
+            ENSURE(newSize >= 0);
+            Elements.Resize(newSize);
+
+            SizeType newBucketSize;
+            if (HashBucket.CalculateGrowth(newSize), newBucketSize)
+            {
+                Rehash(newBucketSize);
+            }
         }
 
         Iterator begin() { return Iterator(Elements.begin()); }
@@ -362,136 +503,110 @@ namespace Engine
         ConstIterator end() const { return ConstIterator(const_cast<const SparseArrayType>(Elements).end()); }
 
     private:
-        template <typename InElementType>
-        InElementType& Emplace(InElementType&& element)
+        template <typename ElemType>
+        ValueType& Emplace(ElemType&& val)
         {
-            uint32 hashCode = KeyFunc::GetHashCode(KeyFunc::GetKey(element));
+            uint32 hashCode = KeyFun::GetHashCode(KeyFun::GetKey(val));
 
-            SetElementIndex index = FindIndex(KeyFunc::GetKey(element), hashCode);
+            SetElemIndex index = FindIndex(KeyFun::GetKey(val), hashCode);
             if (index.IsValid())
             {
                 auto&& setElement = Elements[index.Index];
-                setElement.Element.~ElementType();
-                setElement.Element = element;
-                return setElement.Element;
+                std::destroy_at(&setElement.MyVal);
+                setElement.MyVal = std::forward<ElemType>(val);
+                return setElement.MyVal;
             }
 
-
             CheckRehash(Elements.Size() + 1);
-            int32 indexInSparseArray = Elements.AddUnconstructElement();
-            SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(element);
-            LinkElement(SetElementIndex{ indexInSparseArray }, *item, hashCode);
-            return item->Element;
+            SizeType indexInSparseArray = Elements.AddUnconstructElement();
+            SetElement* item = new(Elements.Data() + indexInSparseArray) SetElement(std::forward<ElemType>(val));
+            LinkElement(SetElemIndex(indexInSparseArray), *item, hashCode);
+            return item->MyVal;
         }
 
         /** Contains key index in sparse array */
-        template <typename KeyType>
-        SetElementIndex FindIndex(const KeyType& key) const
+        SetElemIndex FindIndex(const KeyType& key) const
         {
-            return FindIndex(key, KeyFunc::GetHashCode(key));
+            return FindIndex(key, KeyFun::GetHashCode(key));
         }
 
         /** Contains key index in sparse array */
-        template <typename KeyType>
-        SetElementIndex FindIndex(const KeyType& key, uint32 hashCode) const
+        SetElemIndex FindIndex(const KeyType& key, uint32 hashCode) const
         {
             if (Elements.Size() > 0)
             {
-                for (SetElementIndex index = GetFirstIndex(hashCode); index.IsValid(); index = Elements[index].HashNextId)
+                for (SetElemIndex index = GetFirstIndex(hashCode); index.IsValid(); index = Elements[index].HashNextId)
                 {
-                    if (KeyFunc::Equals(KeyFunc::GetKey(Elements[index].Element), key))
+                    if (KeyFun::Equals(KeyFun::GetKey(Elements[index].MyVal), key))
                     {
                         // Return the first match, regardless of whether the set has multiple matches for the key or not.
                         return index;
                     }
                 }
             }
-            return SetElementIndex{};
+            return SetElemIndex{};
         }
 
         /** Contains the head of SetElement list */
-        SetElementIndex& GetFirstIndex(uint32 hashCode) const
+        SetElemIndex& GetFirstIndex(uint32 hashCode) const
         {
             ENSURE(Size() > 0);
-            return ((SetElementIndex*)HashBucket.GetAllocation())[GetHashIndex(hashCode)];
+            return HashBucket.GetFirstIndex(hashCode);
         }
 
-        uint32 GetHashIndex(uint32 hashCode) const
+        bool CheckRehash(SizeType size)
         {
-            // Quick mod hashCode % BucketCount, BucketCount must be 2 ^ n
-            return hashCode & (BucketCount - 1);
-        }
-
-        bool CheckRehash(int32 elementCount)
-        {
-            uint32 desiredBucketCount = SetAllocator::GetNumberOfHashBuckets(static_cast<uint32>(elementCount));
-            if (elementCount > 0 && (!BucketCount || BucketCount < desiredBucketCount))
+            SizeType newSize = 0;
+            if (HashBucket.CalculateGrowth(size, newSize))
             {
-                BucketCount = desiredBucketCount;
-                Rehash();
+                Rehash(newSize);
                 return true;
             }
             return false;
         }
 
-        void Rehash()
+        void Rehash(SizeType newSize)
         {
             // Free the old hash.
-            HashBucket.Resize(0);
+            HashBucket.Resize(newSize);
 
-            if (BucketCount)
+            // Add the existing elements to the new hash.
+            for (typename SparseArrayType::Iterator iter = Elements.begin(); iter != Elements.end(); ++iter)
             {
-                HashBucket.Resize(BucketCount);
-                // Init HashBucket
-                for (uint32 hashIndex = 0; hashIndex < BucketCount; ++hashIndex)
-                {
-                    ((SetElementIndex*)HashBucket.GetAllocation())[hashIndex] = SetElementIndex();
-                }
-
-                // Add the existing elements to the new hash.
-                for (typename SparseArrayType::Iterator iter = Elements.begin(); iter != Elements.end(); ++iter)
-                {
-                    LinkElement(SetElementIndex(iter.GetIndex()), *iter, KeyFunc::GetHashCode(KeyFunc::GetKey((*iter).Element)));
-                }
+                LinkElement(SetElemIndex(iter.GetIndex()), *iter, KeyFun::GetHashCode(KeyFun::GetKey((*iter).MyVal)));
             }
         }
 
-        void LinkElement(SetElementIndex elementIndex, SetElement& element, uint32 hashCode) const
+        void LinkElement(SetElemIndex index, SetElement& elem, uint32 hashCode) const
         {
             // get the index of hash bucket.
-            element.HashIndex = GetHashIndex(hashCode);
+            elem.HashIndex = HashBucket.GetHashIndex(hashCode);
 
             // Link the element into the hash bucket.
-            element.HashNextId = GetFirstIndex(hashCode);
-            GetFirstIndex(hashCode) = elementIndex;
+            elem.HashNextId = GetFirstIndex(hashCode);
+            GetFirstIndex(hashCode) = index;
         }
 
-        void CopyElement(const Set& other)
+        void CopyAssign(const Set& other)
         {
-            BucketCount = other.BucketCount;
-            HashBucket.Resize(BucketCount);
-            Memory::Memcpy(HashBucket.GetAllocation(), const_cast<byte*>(other.HashBucket.GetAllocation()), sizeof(SetElementIndex) * BucketCount);
             Elements = other.Elements;
+            HashBucket = other.HashBucket;
         }
 
-        void MoveElement(Set&& other)
+        void MoveAssign(Set&& other)
         {
-            BucketCount = other.BucketCount;
-            other.BucketCount = 0;
-            HashBucket = MoveTemp(other.HashBucket);
-            Elements = MoveTemp(other.Elements);
+            HashBucket = std::move(other.HashBucket);
+            Elements = std::move(other.Elements);
         }
 
     private:
-        /** count of hash bucket */
-        uint32 BucketCount{ 0 };
-        HashBucketType HashBucket;
         SparseArrayType Elements;
+        HashBucketType HashBucket;
     };
 }
 
 template <typename KeyType>
 void* operator new(size_t size, const typename Engine::Set<KeyType>::SetElement& element)
 {
-    return &element.Element;
+    return &element.MyVal;
 }

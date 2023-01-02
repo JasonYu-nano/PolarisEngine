@@ -32,7 +32,7 @@ namespace Engine
 
         FileTime GetFileTime(const String& path) final;
 
-        DynamicArray<String> QueryFiles(const String& searchPath, const String& regexExpr, bool recursion) final;
+        Array<String> QueryFiles(const String& searchPath, const String& regexExpr, bool recursion) final;
 
         UniquePtr<IFileHandle> OpenFile(const String& fileName, EFileAccess access, EFileShareMode mode) final;
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "global.hpp"
-#include "foundation/dynamic_array.hpp"
+#include "foundation/array.hpp"
 #include "foundation/smart_ptr.hpp"
 #include "file_system/platform_file_interface.hpp"
 #include "foundation/string.hpp"
@@ -53,11 +53,11 @@ namespace Engine
          * @param recursion recursion search or not, default false
          * @return files or directories match regex
          */
-        static DynamicArray<String> QueryFiles(const String& searchPath, const String& regex, bool recursion = false);
+        static Array<String> QueryFiles(const String& searchPath, const String& regex, bool recursion = false);
 
         static String GetEngineRootPath();
 
-        static void ReadFileToBinary(const String& fileName, DynamicArray64<uint8>& outBinary);
+        static void ReadFileToBinary(const String& fileName, Array64<uint8>& outBinary);
 
         class DirectoryIterImpl
         {

@@ -1,7 +1,6 @@
 #include "benchmark/benchmark.h"
-#include "foundation/dynamic_array.hpp"
+#include "foundation/array.hpp"
 #include "foundation/set.hpp"
-#include "foundation/ustring.hpp"
 #include "math/quaternion.hpp"
 #include <vector>
 #include <set>
@@ -11,7 +10,7 @@ using namespace Engine;
 
 static void BM_DyanmicArrayAdd(benchmark::State& state)
 {
-    DynamicArray<int32> array;
+    Array<int32> array;
     for (auto _ : state) 
     {
         for (int32 i = 0; i < 1000; i++)
@@ -39,7 +38,7 @@ static void BM_VectorAdd(benchmark::State& state)
 
 static void BM_DyanmicArrayRemove(benchmark::State& state)
 {
-    DynamicArray<int32> array;
+    Array<int32> array;
     for (int32 i = 0; i < 1000; i++)
     {
         array.Add(i);
@@ -77,7 +76,7 @@ static void BM_VectorRemove(benchmark::State& state)
 
 static void BM_DyanmicArrayLoop(benchmark::State& state)
 {
-    DynamicArray<int32> array;
+    Array<int32> array;
     for (int32 i = 0; i < 10000; i++)
     {
         array.Add(i);
@@ -215,18 +214,6 @@ static void BM_StdString(benchmark::State& state)
     }
 }
 
-static void BM_UString(benchmark::State& state)
-{
-    for (auto _ : state)
-    {
-        UString str = "abcdefg";
-        if (str != "abcdefg")
-        {
-            break;
-        }
-    }
-}
-
 static void BM_StdStringAppend(benchmark::State& state)
 {
     std::string str = "";
@@ -237,36 +224,6 @@ static void BM_StdStringAppend(benchmark::State& state)
         {
             continue;
         }
-    }
-}
-
-static void BM_UStringAppend(benchmark::State& state)
-{
-    std::string str2 = "";
-    UString str = "";
-    for (auto _ : state)
-    {
-        str.Append("1");
-        if (str.Length())
-        {
-            continue;
-        }
-    }
-}
-
-static void BM_UStringFromUtf8(benchmark::State& state)
-{
-    for (auto _ : state)
-    {
-        UString::FromUtf8("abcdedg");
-    }
-}
-
-static void BM_UStringFromLatin1(benchmark::State& state)
-{
-    for (auto _ : state)
-    {
-        UString::FromLatin1("abcdedg");
     }
 }
 
@@ -297,31 +254,25 @@ static void BM_QuatNormalize(benchmark::State& state)
     }
 }
 
-//BENCHMARK(BM_DyanmicArrayAdd);
-//BENCHMARK(BM_VectorAdd);
-//
-//BENCHMARK(BM_DyanmicArrayRemove);
-//BENCHMARK(BM_VectorRemove);
-//
-//BENCHMARK(BM_DyanmicArrayLoop);
-//BENCHMARK(BM_VectorLoop);
+BENCHMARK(BM_DyanmicArrayAdd);
+BENCHMARK(BM_VectorAdd);
 
-//BENCHMARK(BM_SetAdd);
-//BENCHMARK(BM_StlHashSetAdd);
-//BENCHMARK(BM_StlSetAdd);
-//
-//BENCHMARK(BM_SetLoop);
-//BENCHMARK(BM_StlHashSetLoop);
-//BENCHMARK(BM_StlSetLoop);
+BENCHMARK(BM_DyanmicArrayRemove);
+BENCHMARK(BM_VectorRemove);
 
-//BENCHMARK(BM_StdString);
-//BENCHMARK(BM_UString);
-//
-//BENCHMARK(BM_StdStringAppend);
-//BENCHMARK(BM_UStringAppend);
-//
-//BENCHMARK(BM_UStringFromUtf8);
-//BENCHMARK(BM_UStringFromLatin1);
+BENCHMARK(BM_DyanmicArrayLoop);
+BENCHMARK(BM_VectorLoop);
+
+BENCHMARK(BM_SetAdd);
+BENCHMARK(BM_StlHashSetAdd);
+BENCHMARK(BM_StlSetAdd);
+
+BENCHMARK(BM_SetLoop);
+BENCHMARK(BM_StlHashSetLoop);
+BENCHMARK(BM_StlSetLoop);
+
+BENCHMARK(BM_StdString);
+BENCHMARK(BM_StdStringAppend);
 
 BENCHMARK(BM_RotatorToQuat);
 BENCHMARK(BM_VectorCross);

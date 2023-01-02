@@ -78,7 +78,7 @@ namespace Engine
 
         void CreateGraphicsPipeline();
 
-        VkShaderModule CreateShaderModule(DynamicArray64<uint8> code);
+        VkShaderModule CreateShaderModule(Array64<uint8> code);
     private:
         VkInstance Instance{ nullptr };
 

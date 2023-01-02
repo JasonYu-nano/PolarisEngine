@@ -1,6 +1,6 @@
 #pragma once
 
-#include "foundation/dynamic_array.hpp"
+#include "foundation/array.hpp"
 
 namespace Engine
 {

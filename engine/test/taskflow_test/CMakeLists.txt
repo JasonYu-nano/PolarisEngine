@@ -2,7 +2,7 @@ set(target taskflow_test)
 
 set(project_dir "${CMAKE_CURRENT_LIST_DIR}")
 
-file(GLOB_RECURSE project_files *.hpp *.cpp *.natvis)
+file(GLOB_RECURSE project_files *.hpp *.cpp)
 
 add_executable(${target} ${project_files})
 

@@ -23,7 +23,7 @@ namespace Engine
     {
         ENSURE(count > 0);
         SizeType index = AddUnconstructElement(count);
-        auto data = Pair.Second().GetPtr();
+        auto data = Pair.SecondVal.GetPtr();
         for (SizeType i = 0; i < count; ++i)
         {
             CharTraits::Assign(data[i], ch);
@@ -33,14 +33,14 @@ namespace Engine
 
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>::BasicString(const BasicString& other)
-            : Pair(OneArgPlaceholder(), other.GetAllocator())
+            : Pair(OneArgPlaceholder(), other.GetAlloc())
     {
         CopyAssign(other);
     }
 
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>::BasicString(BasicString&& other) noexcept
-            : Pair(OneArgPlaceholder(), MoveTemp(other.GetAllocator()))
+            : Pair(OneArgPlaceholder(), MoveTemp(other.GetAlloc()))
     {
         MoveAssign(Forward<BasicString&&>(other));
     }
@@ -50,9 +50,9 @@ namespace Engine
     {
         if (LargeStringEngaged())
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             CharType* ptr = myVal.UB.Ptr;
-            auto& allocator = GetAllocator();
+            auto& allocator = GetAlloc();
             std::destroy_at(myVal.UB.Ptr);
             allocator.Deallocate(ptr, myVal.Size);
         }
@@ -63,7 +63,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(const BasicString& other)
     {
-        Pair.First() = other.GetAllocator();
+        Pair.GetFirst() = other.GetAlloc();
         CopyAssign(other);
         return *this;
     }
@@ -71,7 +71,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(BasicString&& other) noexcept
     {
-        Pair.First() = MoveTemp(other.GetAllocator());
+        Pair.GetFirst() = MoveTemp(other.GetAlloc());
         MoveAssign(Forward<BasicString>(other));
         return *this;
     }
@@ -173,7 +173,7 @@ namespace Engine
         pos = pos < 0 ? pos + Length() : pos;
         if (pos >= 0 && pos < Length())
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             myVal.Size = pos + 1;
             CharTraits::Assign(myVal.GetPtr() + pos, 1, CharType());
         }
@@ -249,7 +249,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Remove(SizeType pos, SizeType num)
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         auto& size = myVal.Size;
         auto len = size - 1;
         auto data = myVal.GetPtr();
@@ -342,7 +342,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::Fill(CharType ch, int32 num)
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         SizeType size = myVal.Size;
         if (size <= 1 && num <= 0)
         {
@@ -389,7 +389,7 @@ namespace Engine
                 --times;
             }
         }
-        CharTraits::Assign(ret.Pair.Second().GetPtr()[resultSize], CharType());
+        CharTraits::Assign(ret.Pair.SecondVal.GetPtr()[resultSize], CharType());
         return ret;
     }
 
@@ -414,7 +414,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     bool BasicString<Elem, Traits, Alloc>::IsUpperLatin1() const
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         const CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
@@ -429,7 +429,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     bool BasicString<Elem, Traits, Alloc>::IsLowerLatin1() const
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         const CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
@@ -444,7 +444,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::ToUpperLatin1()
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
@@ -455,7 +455,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::ToLowerLatin1()
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         CharType* data = myVal.GetPtr();
         for (SizeType i = 0; i < myVal.Size - 1; ++i)
         {
@@ -464,11 +464,11 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    DynamicArray<BasicString<Elem, Traits, Alloc>>
+    Array<BasicString<Elem, Traits, Alloc>>
     BasicString<Elem, Traits, Alloc>::Split(const ViewType& sep, ESplitBehavior behavior,
                                             ECaseSensitivity cs) const
     {
-        DynamicArray<BasicString> ret;
+        Array<BasicString> ret;
         SizeType start = 0;
         SizeType end;
         while ((end = FindStringHelper(static_cast<ViewType>(*this), start, sep, cs)) != -1)
@@ -487,11 +487,11 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    DynamicArray<BasicString<Elem, Traits, Alloc>>
+    Array<BasicString<Elem, Traits, Alloc>>
     BasicString<Elem, Traits, Alloc>::SplitAny(const ViewType& sep, ESplitBehavior behavior,
                                                ECaseSensitivity cs) const
     {
-        DynamicArray<BasicString> ret;
+        Array<BasicString> ret;
         SizeType start = 0;
         SizeType end;
         while ((end = FindAnyCharHelper(static_cast<ViewType>(*this), start, sep, cs)) != -1)
@@ -518,7 +518,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::Reserve(SizeType capacity)
     {
-        auto& val = Pair.Second();
+        auto& val = Pair.SecondVal;
         if (capacity < val.Size || capacity <= val.MaxSize)
         {
             return;
@@ -530,7 +530,7 @@ namespace Engine
             return;
         }
 
-        auto& alloc = GetAllocator();
+        auto& alloc = GetAlloc();
         CharType* ptr = alloc.Allocate(capacity);
         CharType* oldPtr = val.UB.Ptr;
         SizeType oldSize = val.Size;
@@ -543,7 +543,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::Invalidate()
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         myVal.Size = 1;
         myVal.MaxSize = INLINE_SIZE;
         myVal.UB.Buffer[0] = CharType();
@@ -553,8 +553,8 @@ namespace Engine
     void BasicString<Elem, Traits, Alloc>::MoveAssign(BasicString&& right)
     {
         ENSURE(std::addressof(*this) != std::addressof(right));
-        auto& leftVal = Pair.Second();
-        auto& rightVal = right.Pair.Second();
+        auto& leftVal = Pair.SecondVal;
+        auto& rightVal = right.Pair.SecondVal;
         int32 size = rightVal.Size;
         ENSURE(size >= 0);
         Reserve(rightVal.MaxSize);
@@ -585,8 +585,8 @@ namespace Engine
     void BasicString<Elem, Traits, Alloc>::CopyAssign(const BasicString& right)
     {
         ENSURE(this->Data() != right.Data());
-        auto& leftVal = Pair.Second();
-        auto& rightVal = right.Pair.Second();
+        auto& leftVal = Pair.SecondVal;
+        auto& rightVal = right.Pair.SecondVal;
         SizeType size = rightVal.Size;
         ENSURE(size >= 0);
         Reserve(rightVal.MaxSize);
@@ -599,7 +599,7 @@ namespace Engine
     void BasicString<Elem, Traits, Alloc>::CopyAssign(const ViewType& right)
     {
         ENSURE(this->Data() != right.Data());
-        auto& leftVal = Pair.Second();
+        auto& leftVal = Pair.SecondVal;
         SizeType len = right.Length();
         ENSURE(len >= 0);
         Reserve(len + 1);
@@ -681,7 +681,7 @@ namespace Engine
 
         Private::StringMatcher<CharType, CharTraits, SizeType> matcher(before.Data(), blen, cs);
 
-        DynamicArray<SizeType, InlineAllocator<128>> indices;
+        Array<SizeType, InlineAllocator<128>> indices;
         SizeType pos = matcher.IndexIn(source.Data(), source.Length(), 0);
 
         while (pos >= 0)
@@ -697,7 +697,7 @@ namespace Engine
             return;
         }
 
-        auto& val = source.Pair.Second();
+        auto& val = source.Pair.SecondVal;
         const CharType* afterData = after.Data();
         if (blen == alen)
         {
@@ -734,7 +734,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     typename BasicString<Elem, Traits, Alloc>::SizeType BasicString<Elem, Traits, Alloc>::AddUnconstructElement(SizeType count)
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         ENSURE(count > 0 && myVal.Size > 0);
         SizeType index = myVal.Size - 1;
         SizeType newSize = myVal.Size + count;
@@ -750,7 +750,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::InsertUnconstructElement(SizeType index, SizeType count)
     {
-        auto& myVal = Pair.Second();
+        auto& myVal = Pair.SecondVal;
         ENSURE(index >= 0 && count > 0 && index <= myVal.Size);
         SizeType oldSize = myVal.Size;
         SizeType newSize = myVal.Size + count;
@@ -790,7 +790,7 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     typename BasicString<Elem, Traits, Alloc>::SizeType BasicString<Elem, Traits, Alloc>::CalculateGrowth(const SizeType newSize) const
     {
-        const auto& myVal = Pair.Second();
+        const auto& myVal = Pair.SecondVal;
         SizeType oldCapacity = myVal.MaxSize;
         SizeType max = CharTraits::MaxSize();
 
@@ -812,8 +812,8 @@ namespace Engine
     template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::BecomeLarge(SizeType capacity)
     {
-        auto& myVal = Pair.Second();
-        CharType* ptr = GetAllocator().Allocate(capacity);
+        auto& myVal = Pair.SecondVal;
+        CharType* ptr = GetAlloc().Allocate(capacity);
         CharTraits::Copy(ptr, myVal.UB.Buffer, Size());
         myVal.UB.Ptr = ptr;
         myVal.MaxSize = capacity;

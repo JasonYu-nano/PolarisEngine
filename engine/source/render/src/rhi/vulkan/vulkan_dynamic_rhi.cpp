@@ -304,7 +304,7 @@ namespace Engine
         QueueFamilyIndices indices = FindQueueFamilies(PhysicalDevice);
 
         VkArray<VkDeviceQueueCreateInfo> queueCreationInfos;
-        Set<uint32> queueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
+        Set<uint32> queueFamilies = {indices.GraphicsFamily.value(), indices.PresentFamily.value() };
 
         float queuePriority = 1.0f;
         for (uint32 queueFamily : queueFamilies) {
@@ -547,8 +547,8 @@ namespace Engine
 
     void VulkanDynamicRHI::CreateGraphicsPipeline()
     {
-        DynamicArray64<uint8> vertShader;
-        DynamicArray64<uint8> fragShader;
+        Array64<uint8> vertShader;
+        Array64<uint8> fragShader;
         FileSystem::ReadFileToBinary(FileSystem::GetEngineRootPath() / "intermediate/generated/shader/spv/shader.vert.spv", vertShader);
         FileSystem::ReadFileToBinary(FileSystem::GetEngineRootPath() / "intermediate/generated/shader/spv/shader.frag.spv", fragShader);
 
@@ -634,7 +634,7 @@ namespace Engine
         vkDestroyShaderModule(Device, fragShaderModule, nullptr);
     }
 
-    VkShaderModule VulkanDynamicRHI::CreateShaderModule(DynamicArray64<uint8> code)
+    VkShaderModule VulkanDynamicRHI::CreateShaderModule(Array64<uint8> code)
     {
         VkShaderModuleCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

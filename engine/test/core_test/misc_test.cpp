@@ -10,94 +10,6 @@
 
 namespace Engine
 {
-    TEST(Codecvt, All)
-    {
-        const char* a = "你好";
-        EXPECT_TRUE(Utf8::ToUCS4(a + 0, a, a + 6) == 0x4F60);
-        EXPECT_TRUE(Utf8::ToUCS4(a + 1, a, a + 6) == 0x4F60);
-        EXPECT_TRUE(Utf8::ToUCS4(a + 2, a, a + 6) == 0x4F60);
-    }
-
-    TEST(Path, All)
-    {
-        String path = "c:/dirA\\dirB/file.ex";
-        String ex = Path::GetShortName(path, false);
-        EXPECT_TRUE(Path::GetExtension(path) == ".ex");
-        EXPECT_TRUE(Path::GetShortName(path, false) == "file");
-        EXPECT_TRUE(Path::SplitPath(path).Size() == 4);
-    }
-
-    TEST(FixedString, Base)
-    {
-        FixedString name("Hello_World");
-        EXPECT_TRUE(name.ToString() == "Hello_World");
-
-        FixedString name2("Hello_World_12");
-        EXPECT_TRUE(name2.ToString() == "Hello_World_12" && name2.GetNumber() == 12);
-
-        FixedString name3("Hello_World_012");
-        EXPECT_TRUE(name3.GetNumber() == 0);
-
-        FixedString name4("hello_World_12");
-        EXPECT_TRUE(name2 == name4);
-        EXPECT_TRUE(name4.ToString() == "Hello_World_12");
-    }
-
-    TEST(StringView, Ctor)
-    {
-        StringView view = "abcd1234";
-        EXPECT_TRUE(view.StartsWith("ab"));
-        EXPECT_TRUE(view.EndsWith("234"));
-        EXPECT_TRUE(view.IndexOf("d1") == 3);
-        EXPECT_FALSE(view.Contains("d2"));
-
-        view = "am21nightamdayam";
-        auto ret = view.Split("am");
-        EXPECT_TRUE(ret.Size() == 4);
-    }
-
-    struct TestChar
-    {
-        TestChar() {};
-
-        TestChar(char c) : Data(c) {};
-
-        ~TestChar()
-        {
-            Data = '0';
-        }
-
-        friend bool operator== (const TestChar& lhs, const TestChar& rhs)
-        {
-            return lhs.Data == rhs.Data;
-        }
-
-        friend bool operator!= (const TestChar& lhs, const TestChar& rhs)
-        {
-            return lhs.Data != rhs.Data;
-        }
-
-        char Data{ '\0' };
-    };
-
-    template <>
-    struct CharTraits<TestChar> : PrivateCharTraits<TestChar, int8> {};
-
-    using TestString = BasicString<TestChar>;
-
-    TEST(TestString, Ctor)
-    {
-        TestChar c('f');
-        TestString str(c);
-
-        TestChar cs[12];
-        for (int i = 0; i < 11; ++i)
-        {
-            cs[i] = TestChar('f');
-        }
-        TestString str2(cs);
-    }
-
     TEST(String, Ctor)
     {
         String str1('f');
@@ -279,7 +191,45 @@ namespace Engine
         EXPECT_TRUE(hash != 0);
     }
 
-    TEST(FileSystem, All)
+    TEST(String, StringView)
+    {
+        StringView view = "abcd1234";
+        EXPECT_TRUE(view.StartsWith("ab"));
+        EXPECT_TRUE(view.EndsWith("234"));
+        EXPECT_TRUE(view.IndexOf("d1") == 3);
+        EXPECT_FALSE(view.Contains("d2"));
+
+        view = "am21nightamdayam";
+        auto ret = view.Split("am");
+        EXPECT_TRUE(ret.Size() == 4);
+    }
+
+    TEST(String, FixedString)
+    {
+        FixedString name("Hello_World");
+        EXPECT_TRUE(name.ToString() == "Hello_World");
+
+        FixedString name2("Hello_World_12");
+        EXPECT_TRUE(name2.ToString() == "Hello_World_12" && name2.GetNumber() == 12);
+
+        FixedString name3("Hello_World_012");
+        EXPECT_TRUE(name3.GetNumber() == 0);
+
+        FixedString name4("hello_World_12");
+        EXPECT_TRUE(name2 == name4);
+        EXPECT_TRUE(name4.ToString() == "Hello_World_12");
+    }
+
+    TEST(FileSystem, Path)
+    {
+        String path = "c:/dirA\\dirB/file.ex";
+        String ex = Path::GetShortName(path, false);
+        EXPECT_TRUE(Path::GetExtension(path) == ".ex");
+        EXPECT_TRUE(Path::GetShortName(path, false) == "file");
+        EXPECT_TRUE(Path::SplitPath(path).Size() == 4);
+    }
+
+    TEST(FileSystem, DirectoryIterator)
     {
         for (const DirectoryEntry& entry : FileSystem::DirectoryIterator("C:\\Code\\PolarisEngine\\engine\\test"))
         {

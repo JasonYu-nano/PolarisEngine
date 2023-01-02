@@ -6,7 +6,6 @@
 
 namespace Engine
 {
-#pragma region iterator
     template <typename PairIterType, typename PairType>
     class ConstMapIterator
     {
@@ -18,6 +17,11 @@ namespace Engine
         const PairType& operator*() const { return *PairIter; }
 
         const PairType* operator->() const { return &(*PairIter); }
+
+        explicit operator bool() const
+        {
+            return (bool)PairIter;
+        }
 
         ConstMapIterator& operator++ ()
         {
@@ -56,7 +60,6 @@ namespace Engine
             return *this;
         }
     };
-#pragma endregion iterator
 
     template <typename KeyType, typename ValueType>
     class Pair
@@ -64,7 +67,7 @@ namespace Engine
     public:
         Pair() = default;
 
-        Pair(KeyType key, ValueType value)
+        Pair(const KeyType& key, const ValueType& value)
             : Key(key)
             , Value(value)
         {}
@@ -85,9 +88,12 @@ namespace Engine
         ValueType Value;
     };
 
-    template <typename KeyType, typename ValueType>
-    struct MapDefaultHashFunc
+    template <typename Key, typename Value>
+    struct MapDefaultHashFun
     {
+        using KeyType = Key;
+        using ValueType = Value;
+
         static uint32 GetHashCode(const KeyType& key)
         {
             return Engine::GetHashCode(key);
@@ -104,18 +110,26 @@ namespace Engine
         }
     };
 
-    template <typename KeyType, typename ValueType, typename KeyFunc = MapDefaultHashFunc<KeyType, ValueType>, typename MapAllocator = DefaultSetAllocator>
+    template <typename Key, typename Value, typename KeyFun = MapDefaultHashFun<Key, Value>, typename Alloc = StandardAllocator<int32>>
     class Map
     {
-        using TPairType = Pair<KeyType, ValueType>;
-        using TPairContainer = Set<TPairType, KeyFunc, MapAllocator>;
     public:
-        using ConstIterator = ConstMapIterator<typename TPairContainer::ConstIterator, TPairType>;
-        using Iterator = MapIterator<typename TPairContainer::ConstIterator, TPairType>;
+        using KeyType = Key;
+        using ValueType = Value;
+        using PairType = Pair<KeyType, ValueType>;
+        using AllocatorType = Alloc::template ElementAllocator<PairType>;
+        using SizeType = typename AllocatorType::SizeType;
+        using SetType = Set<PairType, KeyFun, Alloc>;
+        using ConstIterator = ConstMapIterator<typename SetType::ConstIterator, PairType>;
+        using Iterator = MapIterator<typename SetType::ConstIterator, PairType>;
     public:
-        Map() = default;
+        explicit Map() = default;
 
-        Map(std::initializer_list<TPairType> initializer)
+        Map(SizeType capacity)
+            : Pairs(capacity)
+        {}
+
+        Map(std::initializer_list<PairType> initializer)
         {
             for (const auto& pair : initializer)
             {
@@ -125,7 +139,13 @@ namespace Engine
 
         Map(const Map& other) : Pairs(other.Pairs) {}
 
-        Map(Map&& other) noexcept : Pairs(MoveTemp(other.Pairs)) {}
+        Map(Map&& other) noexcept : Pairs(std::move(other.Pairs)) {}
+
+        Map& operator= (std::initializer_list<PairType> initializer)
+        {
+            Pairs.Append(initializer);
+            return *this;
+        }
 
         Map& operator= (const Map& other)
         {
@@ -137,7 +157,7 @@ namespace Engine
         Map& operator= (Map&& other) noexcept
         {
             ENSURE(this != &other);
-            Pairs = MoveTemp(other.Pairs);
+            Pairs = std::move(other.Pairs);
             return *this;
         }
 
@@ -148,17 +168,17 @@ namespace Engine
 
         ValueType& Add(const KeyType& key, ValueType&& value)
         {
-            return Emplace(key, value);
+            return Emplace(key, std::forward<ValueType>(value));
         }
 
         ValueType& Add(KeyType&& key, const ValueType& value)
         {
-            return Emplace(key, value);
+            return Emplace(std::forward<KeyType>(key), value);
         }
 
         ValueType& Add(KeyType&& key, ValueType&& value)
         {
-            return Emplace(key, value);
+            return Emplace(std::forward<KeyType>(key), std::forward<ValueType>(value));
         }
 
         ValueType& FindOrAdd(const KeyType& key, const ValueType& value)
@@ -168,26 +188,40 @@ namespace Engine
 
         ValueType& FindOrAdd(const KeyType& key, ValueType&& value)
         {
-            return FindOrAddImpl(key, value);
+            return FindOrAddImpl(key, std::forward<ValueType>(value));
         }
 
         ValueType& FindOrAdd(KeyType&& key, const ValueType& value)
         {
-            return FindOrAddImpl(key, value);
+            return FindOrAddImpl(std::forward<KeyType>(key), value);
         }
 
         ValueType& FindOrAdd(KeyType&& key, ValueType&& value)
         {
-            return FindOrAddImpl(key, value);
+            return FindOrAddImpl(std::forward<KeyType>(key), std::forward<ValueType>(value));
         }
 
         ValueType* Find(const KeyType& key) const
         {
-            if (TPairType* pair = Pairs.Find(key))
+            if (PairType* pair = Pairs.Find(key))
             {
                 return &pair->Value;
             }
             return nullptr;
+        }
+
+        ValueType& FindRef(const KeyType& key)
+        {
+            PairType* pair = Pairs.Find(key);
+            ENSURE(pair);
+            return pair->Value;
+        }
+
+        const ValueType& FindRef(const KeyType& key) const
+        {
+            PairType* pair = Pairs.Find(key);
+            ENSURE(pair);
+            return pair->Value;
         }
 
         bool Contains(const KeyType& key) const
@@ -200,12 +234,12 @@ namespace Engine
             return Pairs.Remove(key);
         }
 
-        void Clear(int32 slack = 0)
+        void Clear(SizeType slack = 0)
         {
             Pairs.Clear(slack);
         }
 
-        int32 Size() const
+        SizeType Size() const
         {
             return Pairs.Size();
         }
@@ -229,28 +263,28 @@ namespace Engine
         {
             return ConstIterator(Pairs.begin());
         }
-    protected:
-        template <typename InKeyType, typename InValueType>
-        ValueType& Emplace(InKeyType&& key, InValueType&& value)
+
+    private:
+        template <typename AnyKeyType, typename AnyValueType>
+        ValueType& Emplace(AnyKeyType&& key, AnyValueType&& value)
         {
-            return Pairs.Emplace(Pair(Forward<InKeyType>(key), Forward<InValueType>(value))).Value;
+            return Pairs.Emplace(Pair(std::forward<AnyKeyType>(key), std::forward<AnyValueType>(value))).Value;
         }
 
-        //TODO: Calculate hash value twice here
-        template <typename InKeyType, typename InValueType>
-        InValueType& FindOrAddImpl(InKeyType&& key, InValueType&& value)
+        template <typename AnyKeyType, typename AnyValueType>
+        ValueType& FindOrAddImpl(AnyKeyType&& key, AnyValueType&& value)
         {
-            if (TPairType* pair = Pairs.Find(Forward<InKeyType>(key)))
+            if (PairType* pair = Pairs.Find(std::forward<AnyKeyType>(key)))
             {
                 return pair->Value;
             }
             else
             {
-                return Emplace(Forward<InKeyType>(key), Forward<InValueType>(value));
+                return Emplace(std::forward<AnyKeyType>(key), std::forward<AnyValueType>(value));
             }
         }
 
     private:
-        TPairContainer Pairs;
+        SetType Pairs;
     };
 }

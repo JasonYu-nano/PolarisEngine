@@ -58,7 +58,7 @@ namespace Engine
 
         HANDLE Handle{ nullptr };
         String NormalizedPath;
-        DynamicArray<String> RecursionDirectories;
+        Array<String> RecursionDirectories;
     };
 
     typedef WindowsFileHandle PlatformFileHandle;

@@ -112,10 +112,10 @@ namespace Engine
         return ret;
     }
 
-    DynamicArray<String>
+    Array<String>
     WindowsPlatformFile::QueryFiles(const String& searchPath, const String& regexExpr, bool recursion)
     {
-        DynamicArray<String> ret;
+        Array<String> ret;
 
         std::regex pattern(regexExpr.Data());
 

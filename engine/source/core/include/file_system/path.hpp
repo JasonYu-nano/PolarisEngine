@@ -23,7 +23,7 @@ namespace Engine
          */
         static String GetShortName(const String& path, bool withExtension = true);
 
-        static DynamicArray<String> SplitPath(const String& path);
+        static Array<String> SplitPath(const String& path);
 
         static String Normalize(const String& path);
     };

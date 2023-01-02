@@ -1,9 +1,9 @@
 #pragma once
 
 #include <bit>
+#include <cmath>
 #include "definitions_core.hpp"
 #include "foundation/type_traits.hpp"
-#include <cmath>
 
 namespace Engine
 {
@@ -106,34 +106,79 @@ namespace Engine
             return ((a - 1) / multiple + 1) * multiple;
         }
 
-        static uint32 FloorLog2(uint32 value)
+        template <UnsignedIntegralType T>
+        static constexpr T FloorLogTwo(T x)
         {
-            // see http://codinggorilla.domemtech.com/?p=81 or http://en.wikipedia.org/wiki/Binary_logarithm but modified to return 0 for a input value of 0
-            // 686ms on test data
-            uint32 pos = 0;
-            if (value >= 1 << 16) { value >>= 16; pos += 16; }
-            if (value >= 1 << 8) { value >>= 8; pos += 8; }
-            if (value >= 1 << 4) { value >>= 4; pos += 4; }
-            if (value >= 1 << 2) { value >>= 2; pos += 2; }
-            if (value >= 1 << 1) { pos += 1; }
-            return (value == 0) ? 0 : pos;
+            // For x > 0, FloorLogTwo(y) returns floor(log(x)/log(2)).
+
+            int y = 0;
+
+            while (x > 1)
+            {
+                y +=  1;
+                x >>= 1;
+            }
+
+            return y;
         }
 
-        static uint32 CountLeadingZeros(uint32 value)
+        template <UnsignedIntegralType T>
+        static constexpr T CeilLogTwo(T x)
         {
-            if (value == 0) return 32;
-            return 31 - FloorLog2(value);
+            // For x > 0, CeilLogTwo(y) returns ceil(log(x)/log(2)).
+            int y = 0;
+            int r = 0;
+
+            while (x > 1)
+            {
+                if (x & 1)
+                    r = 1;
+
+                y +=  1;
+                x >>= 1;
+            }
+
+            return y + r;
         }
 
-        static uint32 CeilLogTwo(uint32 value)
+        template <typename T>
+        static constexpr T CountLeadingZeros(T val)
         {
-            int32 bitMask = ((int32)(CountLeadingZeros(value) << 26)) >> 31;
-            return (32 - CountLeadingZeros(value - 1)) & (~bitMask);
+            return std::countl_zero(val);
         }
 
-        static uint32 RoundUpToPowerOfTwo(uint32 value)
+        template <typename T>
+        static constexpr T CountTrailingZeros(T val)
         {
-            return 1 << CeilLogTwo(value);
+            return std::countr_zero(val);
+        }
+
+        template <IntegralType T>
+        static constexpr bool IsPowerOfTwo(std::make_unsigned_t<T> value)
+        {
+            return value != 0 && (value & (value - 1)) == 0;
+        }
+
+        template <IntegralType T>
+        static T RoundUpToPowerOfTwo(T value)
+        {
+            if (IsPowerOfTwo<T>(value))
+            {
+                return value;
+            }
+
+            if (value == 0)
+            {
+                return 1;
+            }
+
+            --value;
+            for (uint64 i = 1; i < sizeof(uint64) * CHAR_BIT; i *= 2)
+            {
+                value |= value >> i;
+            }
+
+            return value + 1;
         }
 
         template <typename T>
@@ -150,15 +195,5 @@ namespace Engine
 
             return value;
         }
-
-        constexpr static inline uint32 CountTrailingZeroBits(uint32 v) noexcept
-        {
-#if defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
-            return std::countr_zero(v);
-#else
-    return QtPrivate::qConstexprCountTrailingZeroBits(v);
-#endif
-        }
     };
-
 }

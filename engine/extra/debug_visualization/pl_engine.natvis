@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <!-- Array visualizer -->
-    <Type Name="Engine::DynamicArray&lt;*,Engine::InlineAllocator&lt;*&gt; &gt;">
+    <Type Name="Engine::DynamicArray&lt;*,Engine::InlineAllocator_Deprecated&lt;*&gt; &gt;">
         <DisplayString Condition="ArraySize == 0">Empty</DisplayString>
         <DisplayString Condition="ArraySize &lt; 0">Invalid</DisplayString>
         <DisplayString Condition="ArrayCapacity &lt; ArraySize">Invalid</DisplayString>
@@ -28,21 +28,64 @@
         </Expand>
     </Type>
 
+    <!-- Array visualizer -->
+    <Type Name="Engine::Array&lt;*,*&gt;">
+        <DisplayString Condition="Pair.SecondVal.Size == 0">Empty</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Size &lt; 0">Invalid</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Capacity &lt; Pair.SecondVal.Size">Invalid</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Capacity &gt;= Pair.SecondVal.Size">Size={Pair.SecondVal.Size} Capacity={Pair.SecondVal.Capacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="Pair.SecondVal.Size &lt;= Pair.SecondVal.Capacity">
+                <Size>Pair.SecondVal.Size</Size>
+                <ValuePointer>($T1*)Pair.SecondVal.Data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <!-- BitArray visualizer -->
+    <Type Name="Engine::BitArray&lt;*&gt;">
+        <DisplayString Condition="Pair.SecondVal.Size == 0">Empty</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Size &lt; 0">Invalid</DisplayString>
+        <DisplayString Condition="Pair.SecondVal.Size &gt; 0">Size={Pair.SecondVal.Size}, Capacity={Pair.SecondVal.Capacity}</DisplayString>
+        <Expand>
+            <IndexListItems Condition="Pair.SecondVal.Size &gt; 0">
+                <Size>Pair.SecondVal.Size</Size>
+                <ValueNode Condition="(Pair.SecondVal.Data != 0) &amp;&amp; (Pair.SecondVal.Data[$i/32]&gt;&gt;($i%32) &amp; 1) != 0">1</ValueNode>
+                <ValueNode Condition="(Pair.SecondVal.Data != 0) &amp;&amp; (Pair.SecondVal.Data[$i/32]&gt;&gt;($i%32) &amp; 1) == 0">0</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+
+    <!-- SparseArray visualizer -->
+    <Type Name="Engine::SparseArray&lt;*,*&gt;">
+        <DisplayString Condition="ElemNodes.Pair.SecondVal.Size - FreeElemCount &lt;= 0">Empty</DisplayString>
+        <DisplayString Condition="ElemNodes.Pair.SecondVal.Capacity &lt; ElemNodes.Pair.SecondVal.Size">Invalid</DisplayString>
+        <DisplayString Condition="ElemNodes.Pair.SecondVal.Capacity &gt;= ElemNodes.Pair.SecondVal.Size">Size={ElemNodes.Pair.SecondVal.Size - FreeElemCount} Capacity={ElemNodes.Pair.SecondVal.Capacity}</DisplayString>
+        <Expand>
+            <IndexListItems Condition="ElemNodes.Pair.SecondVal.Size &gt; 0 &amp;&amp; ElemNodes.Pair.SecondVal.Size &lt;= ElemNodes.Pair.SecondVal.Capacity">
+                <Size>ElemNodes.Pair.SecondVal.Size</Size>
+                <ValueNode Condition="(AllocateFlags.Pair.SecondVal.Data != 0) &amp;&amp; (AllocateFlags.Pair.SecondVal.Data[$i/32]&gt;&gt;($i%32) &amp; 1) != 0">*reinterpret_cast&lt;ValueType*&gt;(ElemNodes.Pair.SecondVal.Data + $i)</ValueNode>
+                <ValueNode Condition="(AllocateFlags.Pair.SecondVal.Data != 0) &amp;&amp; (AllocateFlags.Pair.SecondVal.Data[$i/32]&gt;&gt;($i%32) &amp; 1) == 0">"Invalid",sb</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+
+    <!-- HashBucket visualizer -->
+    <Type Name="Engine::SetHashBucket&lt;*,*&gt;">
+        <DisplayString>Size={Pair.SecondVal.Size}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Size>Pair.SecondVal.Size</Size>
+                <ValuePointer>($T1*)Pair.SecondVal.Data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <!-- String visualizer -->
     <Type Name="Engine::BasicStringView&lt;*,*&gt;">
         <DisplayString Condition="Str &lt;= 0">Null</DisplayString>
         <DisplayString Condition="Len == 0">Empty</DisplayString>
         <DisplayString Condition="Str &gt;= 0">Data={Str} Length={Len}</DisplayString>
-    </Type>
-
-    <Type Name="Engine::UString">
-        <DisplayString Condition="Source.ArraySize == 0">Empty</DisplayString>
-        <DisplayString Condition="Source.ArraySize &lt; 0">Invalid</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &lt; Source.ArraySize">Invalid</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data == 0">{(const char16_t*)Source.AllocatorInstance.InlineData,su}</DisplayString>
-        <DisplayString Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data != 0">{(const char16_t*)Source.AllocatorInstance.SecondaryData.Data,su}</DisplayString>
-        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data == 0">(const char16_t*)Source.AllocatorInstance.InlineData,su</StringView>
-        <StringView Condition="Source.ArrayCapacity &gt;= Source.ArraySize &amp;&amp; Source.AllocatorInstance.SecondaryData.Data != 0">(const char16_t*)Source.AllocatorInstance.SecondaryData.Data,su</StringView>
     </Type>
 
     <Type Name="Engine::BasicString&lt;char,*,*&gt;">

@@ -21,7 +21,7 @@ namespace Engine
 
     bool FileSystem::MakeDirTree(const String& path)
     {
-        DynamicArray<String> dirs = Path::SplitPath(path);
+        Array<String> dirs = Path::SplitPath(path);
         if (dirs.Size() <= 0)
         {
             return false;
@@ -65,7 +65,7 @@ namespace Engine
         return true;
     }
 
-    DynamicArray<String> FileSystem::QueryFiles(const String& searchPath, const String& regex, bool recursion)
+    Array<String> FileSystem::QueryFiles(const String& searchPath, const String& regex, bool recursion)
     {
         return PlatformFile->QueryFiles(searchPath, regex, recursion);
     }
@@ -79,7 +79,7 @@ namespace Engine
     UniquePtr<IPlatformFile> FileSystem::PlatformFile = MakeUnique<WindowsPlatformFile>();
 #endif
 
-    void FileSystem::ReadFileToBinary(const String& fileName, DynamicArray64<uint8>& outBinary)
+    void FileSystem::ReadFileToBinary(const String& fileName, Array64<uint8>& outBinary)
     {
         UniquePtr<IFileHandle> handle = PlatformFile->OpenFile(fileName, EFileAccess::Read, EFileShareMode::Read);
         int64 fileSize = handle->GetSize();

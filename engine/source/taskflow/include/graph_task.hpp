@@ -20,8 +20,8 @@ namespace Engine
 
     protected:
         std::atomic<int32> WaitingPrerequisites;
-        DynamicArray<GraphTaskBase*> Prerequisites;
-        DynamicArray<GraphTaskBase*> Subsequences;
+        Array<GraphTaskBase*> Prerequisites;
+        Array<GraphTaskBase*> Subsequences;
     };
 
     TASKFLOW_API inline GraphTaskBase& operator --(GraphTaskBase& task, int)

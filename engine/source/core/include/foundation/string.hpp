@@ -132,7 +132,7 @@ namespace Engine
 
         StringIterator operator++ (int32)
         {
-            IndexIterator temp = *this;
+            StringIterator temp = *this;
             Super::operator++();
             return temp;
         }
@@ -145,7 +145,7 @@ namespace Engine
 
         StringIterator operator-- (int32)
         {
-            IndexIterator temp = *this;
+            StringIterator temp = *this;
             Super::operator--();
             return temp;
         }
@@ -171,10 +171,11 @@ namespace Engine
     class BasicString
     {
     public:
+        using ValueType = Elem;
         using CharType = Elem;
         using CharTraits = Traits;
         using SizeType = typename CharTraits::SizeType;
-        using AllocatorType = typename Alloc::template ElementAllocator<Elem>;
+        using AllocatorType = typename Alloc::template ElementAllocator<CharType>;
         using ViewType = BasicStringView<CharType, Traits>;
         using Iterator = StringIterator<BasicString>;
         using ConstIterator = ConstStringIterator<BasicString>;
@@ -231,13 +232,13 @@ namespace Engine
         const CharType& operator[] (SizeType index) const
         {
             ENSURE(index < Length());
-            return *(Pair.Second().GetPtr() + index);
+            return *(Pair.SecondVal.GetPtr() + index);
         }
 
         CharType& operator[] (SizeType index)
         {
             ENSURE(index < Length());
-            return *(Pair.Second().GetPtr() + index);
+            return *(Pair.SecondVal.GetPtr() + index);
         }
 
         explicit operator ViewType() const
@@ -247,12 +248,12 @@ namespace Engine
 
         CharType* Data()
         {
-            return Pair.Second().GetPtr();
+            return Pair.SecondVal.GetPtr();
         }
 
         const CharType* Data() const
         {
-            return Pair.Second().GetPtr();
+            return Pair.SecondVal.GetPtr();
         }
 
         SizeType Length() const
@@ -262,7 +263,12 @@ namespace Engine
 
         SizeType Capacity() const
         {
-            return Pair.Second().MaxSize;
+            return Pair.SecondVal.MaxSize;
+        }
+
+        AllocatorType GetAllocator() const
+        {
+            return static_cast<AllocatorType>(GetAlloc());
         }
 
         NODISCARD bool Empty() const
@@ -527,36 +533,36 @@ namespace Engine
 
         void ToLowerLatin1();
 
-        DynamicArray<BasicString> Split(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
+        Array<BasicString> Split(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        DynamicArray<BasicString> Split(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> Split(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(static_cast<ViewType>(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> Split(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> Split(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(ViewType(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> Split(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> Split(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(ViewType(std::addressof(sep), 1), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
+        Array<BasicString> SplitAny(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        DynamicArray<BasicString> SplitAny(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> SplitAny(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(static_cast<ViewType>(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> SplitAny(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(ViewType(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> SplitAny(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(ViewType(std::addressof(sep), 1), behavior, cs);
         }
@@ -590,7 +596,7 @@ namespace Engine
 
         Iterator rbegin()
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             return Iterator(*this, Length() - 1);
         }
 
@@ -616,7 +622,7 @@ namespace Engine
 
         ConstIterator cend()
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             return ConstIterator(*this, Length());
         }
 
@@ -640,24 +646,24 @@ namespace Engine
         }
 
     protected:
-        AllocatorType& GetAllocator()
+        AllocatorType& GetAlloc()
         {
-            return Pair.First();
+            return Pair.GetFirst();
         }
 
-        const AllocatorType& GetAllocator() const
+        const AllocatorType& GetAlloc() const
         {
-            return Pair.First();
+            return Pair.GetFirst();
         }
 
         SizeType Size() const
         {
-            return Pair.Second().Size;
+            return Pair.SecondVal.Size;
         }
 
         bool LargeStringEngaged() const
         {
-            return Pair.Second().LargeStringEngaged();
+            return Pair.SecondVal.LargeStringEngaged();
         }
 
         template <typename... Args>
