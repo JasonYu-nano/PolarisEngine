@@ -290,48 +290,48 @@ namespace Engine
 
         /**
          * Add an element at end
-         * @param element
+         * @param elem
          */
-        void Add(const ValueType& element)
+        void Add(const ValueType& elem)
         {
-            ENSURE(AddressCheck(&element));
-            EmplaceBack(element);
+            ENSURE(AddressCheck(&elem));
+            EmplaceBack(elem);
         };
 
         /**
          * Move an element to end
-         * @param element
+         * @param elem
          */
-        void Add(ValueType&& element)
+        void Add(ValueType&& elem)
         {
-            ENSURE(AddressCheck(&element));
-            EmplaceBack(std::forward<ValueType>(element));
+            ENSURE(AddressCheck(&elem));
+            EmplaceBack(std::forward<ValueType>(elem));
         }
 
-        void Add(const ValueType* elements, SizeType count)
+        void Add(const ValueType* elems, SizeType size)
         {
-            SizeType index = AddUnconstructElement(count);
-            ConstructElements(Data() + index, elements, count);
+            SizeType index = AddUnconstructElement(size);
+            ConstructElements(Data() + index, elems, size);
         }
 
         /**
          * Add an element use default constuctor, return the reference of element.
          * @return Reference of element
          */
-        Elem& AddDefault()
+        ValueType& AddDefault()
         {
             EmplaceBack();
             return Data()[Size() - 1];
         }
 
-        bool AddUnique(const ValueType& element)
+        bool AddUnique(const ValueType& elem)
         {
             bool isUnique = true;
-            const ValueType* data = Data();
+            auto& myVal = Pair.Second();
 
-            for (SizeType idx = 0; idx < Size(); ++idx)
+            for (SizeType idx = 0; idx < myVal.Size; ++idx)
             {
-                if (data[idx] == element)
+                if (myVal.Data[idx] == elem)
                 {
                     isUnique = false;
                     break;
@@ -340,20 +340,20 @@ namespace Engine
 
             if (isUnique)
             {
-                Add(element);
+                Add(elem);
             }
 
             return isUnique;
         }
 
-        bool AddUnique(Elem&& element)
+        bool AddUnique(ValueType&& elem)
         {
             bool isUnique = true;
-            const Elem* data = Data();
+            auto& myVal = Pair.Second();
 
-            for (SizeType idx = 0; idx < Size(); ++idx)
+            for (SizeType idx = 0; idx < myVal.Size; ++idx)
             {
-                if (data[idx] == element)
+                if (myVal.Data[idx] == elem)
                 {
                     isUnique = false;
                     break;
@@ -362,50 +362,50 @@ namespace Engine
 
             if (isUnique)
             {
-                Add(std::forward<Elem>(element));
+                Add(std::forward<ValueType>(elem));
             }
 
             return isUnique;
         }
 
-        void Push(const Elem& element)
+        void Push(const ValueType& elem)
         {
-            Add(element);
+            Add(elem);
         }
 
-        void Push(Elem&& element)
+        void Push(ValueType&& elem)
         {
-            Add(std::forward<Elem>(element));
+            Add(std::forward<ValueType>(elem));
         }
 
         /**
          * Inset element at specifier position
          * @param index
-         * @param element
+         * @param elem
          */
-        void Insert(SizeType index, const Elem& element)
+        void Insert(SizeType index, const ValueType& elem)
         {
-            ENSURE(AddressCheck(&element) && 0 <=index && index <= Size());
-            EmplaceAt(index, element);
+            ENSURE(AddressCheck(&elem) && 0 <=index && index <= Size());
+            EmplaceAt(index, elem);
         };
 
         /**
          * Inset element at specifier position
          * @param index
-         * @param element
+         * @param elem
          */
-        void Insert(SizeType index, ValueType&& element)
+        void Insert(SizeType index, ValueType&& elem)
         {
-            ENSURE(AddressCheck(&element) && 0 <=index && index <= Size());
-            EmplaceAt(index, std::forward<ValueType>(element));
+            ENSURE(AddressCheck(&elem) && 0 <=index && index <= Size());
+            EmplaceAt(index, std::forward<ValueType>(elem));
         };
 
-        void Insert(SizeType index, const ValueType* elements, SizeType size)
+        void Insert(SizeType index, const ValueType* elems, SizeType size)
         {
             auto& myVal = Pair.Second();
-            ENSURE(AddressCheck(elements) && 0 <=index && index <= myVal.Size && size > 0);
+            ENSURE(AddressCheck(elems) && 0 <= index && index <= myVal.Size && size > 0);
             InsertUnconstructElement(index, size);
-            ConstructElements(myVal.Data + index, elements, size);
+            ConstructElements(myVal.Data + index, elems, size);
         };
 
         /**
@@ -421,7 +421,7 @@ namespace Engine
             SizeType countToMove = myVal.Size - index - 1;
             if (countToMove)
             {
-                Memory::Memmove(myVal.Data + index, myVal.Data + index + 1, countToMove * sizeof(Elem));
+                Memory::Memmove(myVal.Data + index, myVal.Data + index + 1, countToMove * sizeof(ValueType));
             }
             myVal.Size -= 1;
             //TODO: check need shink
@@ -555,6 +555,30 @@ namespace Engine
         bool Empty() const
         {
             return Size() == 0;
+        }
+
+        ValueType& Last()
+        {
+            auto& myVal = Pair.Second();
+            ENSURE(myVal.Size > 0);
+            return myVal.Data[myVal.Size - 1];
+        }
+
+        const ValueType& Last() const
+        {
+            auto& myVal = Pair.Second();
+            ENSURE(myVal.Size > 0);
+            return myVal.Data[myVal.Size - 1];
+        }
+
+        ValueType& Top()
+        {
+            return Last();
+        }
+
+        const ValueType& Top() const
+        {
+            return Last();
         }
 
         AllocatorType GetAllocator() const

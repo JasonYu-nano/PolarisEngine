@@ -53,6 +53,16 @@ namespace Engine
             ValuePtr = nullptr;
         }
 
+        bool operator== (const NonTrivialArrayItem& other) const
+        {
+            return *ValuePtr == *other.ValuePtr;
+        }
+
+        bool operator!= (const NonTrivialArrayItem& other) const
+        {
+            return *ValuePtr != *other.ValuePtr;
+        }
+
         static int32 AllocCounter;
         int32* ValuePtr{ nullptr };
     };
@@ -116,6 +126,49 @@ namespace Engine
 
         array9 = std::move(array10);
         EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 2);
+    }
+
+    TEST(ContainerTest, Array_Add)
+    {
+        Array<NonTrivialArrayItem> array;
+        auto item = NonTrivialArrayItem(0);
+        array.Add(item);
+        array.Add({1});
+
+        NonTrivialArrayItem items[2] = {NonTrivialArrayItem(2), NonTrivialArrayItem(3)};
+        array.Add(items, 2);
+
+        for (int32 i = 0; i < 4; ++i)
+        {
+            EXPECT_TRUE(*array[i].ValuePtr == i);
+        }
+
+        array.AddDefault();
+        EXPECT_TRUE(*array.Last().ValuePtr == 0);
+        *array.Last().ValuePtr = 4;
+
+        EXPECT_TRUE(array.AddUnique(item) == false);
+        EXPECT_TRUE(array.AddUnique({5}) == true);
+
+        array.Push({6});
+
+        for (int32 i = 0; i < 6; ++i)
+        {
+            EXPECT_TRUE(*array[i].ValuePtr == i);
+        }
+
+        array.Insert(0, {-1});
+        for (int32 i = 0; i < 6; ++i)
+        {
+            EXPECT_TRUE(*array[i].ValuePtr == i - 1);
+        }
+
+        NonTrivialArrayItem items2[] = {NonTrivialArrayItem(-3), NonTrivialArrayItem(-2)};
+        array.Insert(0, items2, 2);
+        for (int32 i = 0; i < 6; ++i)
+        {
+            EXPECT_TRUE(*array[i].ValuePtr == i - 3);
+        }
     }
 
     TEST(ContainerTest, DynamicArray_Base)
