@@ -171,6 +171,43 @@ namespace Engine
         }
     }
 
+    TEST(ContainerTest, Array_Remove)
+    {
+        Array<NonTrivialArrayItem> array;
+        NonTrivialArrayItem items[3] = {NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2)};
+        array.Add(items, 3);
+
+        array.Remove(2, 1);
+        ENSURE(*array.Last().ValuePtr == 1);
+
+        array.Add({2});
+        array.Remove(0, 2);
+        ENSURE(*array.Last().ValuePtr == 2);
+
+        array.Add({3});
+        array.Add({4});
+        array.Remove({3});
+        ENSURE(*array[1].ValuePtr == 4);
+
+        array.RemoveMatch([](const NonTrivialArrayItem& item){
+            return *item.ValuePtr == 4;
+        });
+        ENSURE(*array.Last().ValuePtr == 2);
+
+        array.Add({3});
+        array.Add({4});
+        array.RemoveAt(2);
+        ENSURE(*array.Last().ValuePtr == 3);
+
+        array.Add({4});
+        array.RemoveAtSwap(0);
+        ENSURE(*array.Last().ValuePtr == 3);
+
+        array.Add({4});
+        auto elem = array.Pop();
+        ENSURE(*elem.ValuePtr == 4);
+    }
+
     TEST(ContainerTest, DynamicArray_Base)
     {
         DynamicArray<int> array(10);

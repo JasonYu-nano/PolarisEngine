@@ -424,7 +424,6 @@ namespace Engine
                 Memory::Memmove(myVal.Data + index, myVal.Data + index + 1, countToMove * sizeof(ValueType));
             }
             myVal.Size -= 1;
-            //TODO: check need shink
         }
 
         void RemoveAtSwap(SizeType index)
@@ -435,7 +434,7 @@ namespace Engine
             myVal.Size -= 1;
             if (index != myVal.Size)
             {
-                Memory::Memmove(myVal.Size + index, myVal.Data + myVal.Size, sizeof(ValueType));
+                Memory::Memmove(myVal.Data + index, myVal.Data + myVal.Size, sizeof(ValueType));
             }
         }
 
@@ -451,20 +450,20 @@ namespace Engine
             }) > 0;
         }
 
-        void Remove(SizeType first, SizeType last)
+        void Remove(SizeType index, SizeType num)
         {
-            ENSURE(IsValidIndex(first) && IsValidIndex(last));
-            if (first <= last)
+            SizeType end = index + num - 1;
+            ENSURE(IsValidIndex(index) && IsValidIndex(end));
+            if (num > 0)
             {
                 auto& myVal = Pair.Second();
-                SizeType removeCount = last - first + 1;
-                DestructElements(Data() + first, removeCount);
-                SizeType countToMove = myVal.Size - last - 1;
+                DestructElements(Data() + index, num);
+                SizeType countToMove = myVal.Size - end - 1;
                 if (countToMove)
                 {
-                    Memory::Memmove(myVal.Data + first, myVal.Data + last + 1, countToMove * sizeof(ValueType));
+                    Memory::Memmove(myVal.Data + index, myVal.Data + end + 1, countToMove * sizeof(ValueType));
                 }
-                myVal.Size -= removeCount;
+                myVal.Size -= num;
             }
         }
 
