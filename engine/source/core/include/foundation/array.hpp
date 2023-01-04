@@ -10,21 +10,24 @@
 
 namespace Engine
 {
-    template <typename ContainerType, typename ElementType, typename SizeType>
+    template <typename ContainerType>
     class ConstArrayIterator
     {
     public:
+        using ValueType = typename ContainerType::ValueType;
+        using SizeType = typename ContainerType::SizeType;
+
         ConstArrayIterator(const ContainerType& container, SizeType index)
             : Container(container)
             , Index(index)
         {}
 
-        const ElementType& operator* () const
+        const ValueType& operator* () const
         {
             return Container[Index];
         }
 
-        const ElementType* operator-> () const
+        const ValueType* operator-> () const
         {
             return &Container[Index];
         }
@@ -80,24 +83,27 @@ namespace Engine
         SizeType Index;
     };
 
-    template <typename ContainerType, typename ElementType, typename SizeType>
-    class ArrayIterator : public ConstArrayIterator<ContainerType, ElementType, SizeType>
+    template <typename ContainerType>
+    class ArrayIterator : public ConstArrayIterator<ContainerType>
     {
-        using Super = ConstArrayIterator<ContainerType, ElementType, SizeType>;
+        using Super = ConstArrayIterator<ContainerType>;
 
     public:
+        using ValueType = Super::ValueType;
+        using SizeType = Super::SizeType;
+
         ArrayIterator(const ContainerType& container, SizeType index)
                 : Super(container, index)
         {}
 
-        ElementType& operator* () const
+        ValueType& operator* () const
         {
-            return const_cast<ElementType&>(Super::operator*());
+            return const_cast<ValueType&>(Super::operator*());
         }
 
-        ElementType* operator-> () const
+        ValueType* operator-> () const
         {
-            return const_cast<ElementType*>(Super::operator->());
+            return const_cast<ValueType*>(Super::operator->());
         }
 
         ArrayIterator& operator++ ()
@@ -164,8 +170,8 @@ namespace Engine
         using AllocatorType = typename Alloc::template ElementAllocator<Elem>;
         using ValueType = typename AllocatorType::ValueType;
         using SizeType = typename AllocatorType::SizeType;
-        using ConstIterator = ConstArrayIterator<Array, Elem, SizeType>;
-        using Iterator = ArrayIterator<Array, Elem, SizeType>;
+        using ConstIterator = ConstArrayIterator<Array>;
+        using Iterator = ArrayIterator<Array>;
 
     private:
         using SecondaryVal = ArrayVal<ValueType, SizeType, ValueType*>;
@@ -244,7 +250,7 @@ namespace Engine
         }
 
         template <typename OtherAllocator>
-        Array& operator=(const Array<Elem, OtherAllocator>& other)
+        Array& operator=(const Array<ValueType, OtherAllocator>& other)
         {
             auto& otherVal = other.Pair.Second();
             CopyElement(otherVal.Data, otherVal.Size);
@@ -440,13 +446,13 @@ namespace Engine
 
         /**
          * Remove all elements equals param
-         * @param element
+         * @param elem
          * @return has element been removed
          */
-        bool Remove(const Elem& element)
+        bool Remove(const ValueType& elem)
         {
-            return RemoveMatch([&element](const Elem& inElement) {
-                return element == inElement;
+            return RemoveMatch([&elem](const ValueType& val) {
+                return elem == val;
             }) > 0;
         }
 
@@ -472,7 +478,7 @@ namespace Engine
          * @param predicate
          * @return count of elements been removed
          */
-        SizeType RemoveMatch(std::function<bool(const Elem& element)> predicate)
+        SizeType RemoveMatch(std::function<bool(const ValueType& elem)> predicate)
         {
             auto& myVal = Pair.Second();
             if (myVal.Size <= 0)
@@ -484,8 +490,8 @@ namespace Engine
             SizeType matchCount = 0;
             while (searchCount > 0)
             {
-                ValueType* element = Data() + searchCount - 1;
-                if (predicate(*element))
+                ValueType* elems = Data() + searchCount - 1;
+                if (predicate(*elems))
                 {
                     RemoveAt(searchCount - 1);
                     matchCount++;
@@ -520,18 +526,18 @@ namespace Engine
             }
         }
 
-        Elem& At(SizeType index)
+        ValueType& At(SizeType index)
         {
             ENSURE(BoundCheck() && IsValidIndex(index));
             return *(Data() + index);
         }
 
-        Elem* Data()
+        ValueType* Data()
         {
             return Pair.Second().Data;
         }
 
-        const Elem* Data() const
+        const ValueType* Data() const
         {
             return Pair.Second().Data;
         }
@@ -637,7 +643,6 @@ namespace Engine
         {
             return index < Size();
         }
-
 
         Iterator begin()
         {
@@ -879,7 +884,7 @@ namespace Engine
             return Pair.First();
         }
 
-    protected:
+    private:
         static constexpr bool CAN_MEMORY_COPY = std::is_trivially_copyable_v<ValueType>;
 
         CompressedPair<AllocatorType, SecondaryVal> Pair;

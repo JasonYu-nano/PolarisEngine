@@ -178,34 +178,98 @@ namespace Engine
         array.Add(items, 3);
 
         array.Remove(2, 1);
-        ENSURE(*array.Last().ValuePtr == 1);
+        EXPECT_TRUE(*array.Last().ValuePtr == 1);
 
         array.Add({2});
         array.Remove(0, 2);
-        ENSURE(*array.Last().ValuePtr == 2);
+        EXPECT_TRUE(*array.Last().ValuePtr == 2);
 
         array.Add({3});
         array.Add({4});
         array.Remove({3});
-        ENSURE(*array[1].ValuePtr == 4);
+        EXPECT_TRUE(*array[1].ValuePtr == 4);
 
         array.RemoveMatch([](const NonTrivialArrayItem& item){
             return *item.ValuePtr == 4;
         });
-        ENSURE(*array.Last().ValuePtr == 2);
+        EXPECT_TRUE(*array.Last().ValuePtr == 2);
 
         array.Add({3});
         array.Add({4});
         array.RemoveAt(2);
-        ENSURE(*array.Last().ValuePtr == 3);
+        EXPECT_TRUE(*array.Last().ValuePtr == 3);
 
         array.Add({4});
         array.RemoveAtSwap(0);
-        ENSURE(*array.Last().ValuePtr == 3);
+        EXPECT_TRUE(*array.Last().ValuePtr == 3);
 
         array.Add({4});
         auto elem = array.Pop();
-        ENSURE(*elem.ValuePtr == 4);
+        EXPECT_TRUE(*elem.ValuePtr == 4);
+    }
+
+    TEST(ContainerTest, Array_Resize)
+    {
+        Array<NonTrivialArrayItem> array;
+        EXPECT_TRUE(array.Empty());
+
+        array.Reserve(5);
+        EXPECT_TRUE(array.Capacity() == 5);
+
+        array.Reserve(3);
+        EXPECT_TRUE(array.Capacity() == 5);
+
+        array.Resize(3);
+        EXPECT_TRUE(array.Capacity() == 5);
+        EXPECT_TRUE(array.Size() == 3);
+
+        auto item = NonTrivialArrayItem(1);
+        array.Resize(2, item);
+        EXPECT_TRUE(*array.Top().ValuePtr == 0);
+
+        array.Resize(3, item);
+        EXPECT_TRUE(*array.Top().ValuePtr == 1);
+    }
+
+    TEST(ContainerTest, Array_Iterator)
+    {
+        Array<int32> array = {0, 1, 2, 3, 4, 5};
+
+        int32 idx = 0;
+        for (const int32& item : array)
+        {
+            EXPECT_TRUE(item == idx);
+            ++idx;
+        }
+
+        for (auto it = array.rbegin(); (bool)it; --it)
+        {
+            EXPECT_TRUE(it.GetIndex() == *it);
+        }
+
+        for (auto it = array.rbegin(); it != array.rend(); --it)
+        {
+            EXPECT_TRUE(it.GetIndex() == *it);
+        }
+
+        for (auto it = array.cbegin(); it != array.cend(); ++it)
+        {
+            EXPECT_TRUE(it.GetIndex() == *it);
+        }
+
+        for (auto it = array.crbegin(); it != array.crend(); --it)
+        {
+            EXPECT_TRUE(it.GetIndex() == *it);
+        }
+
+        for (auto it = array.begin(); it != array.end(); ++it)
+        {
+            if (*it == 2 || *it == 0)
+            {
+                it.RemoveSelf();
+            }
+        }
+        EXPECT_TRUE(array[0] == 1 && array[3] == 5);
     }
 
     TEST(ContainerTest, DynamicArray_Base)
