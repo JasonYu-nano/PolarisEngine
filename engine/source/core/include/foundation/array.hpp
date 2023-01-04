@@ -179,47 +179,55 @@ namespace Engine
     public:
         Array() = default;
 
-        explicit Array(SizeType capacity)
+        explicit Array(SizeType capacity, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
             Reserve(capacity);
         }
 
-        Array(const ValueType* ptr, SizeType size)
+        Array(const ValueType* ptr, SizeType size, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
             CopyElement(ptr, size);
         }
 
-        Array(const ValueType& initVal, SizeType count)
+        Array(const ValueType& initVal, SizeType count, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
             Resize(count, initVal);
         }
 
-        Array(std::initializer_list<ValueType> initializer)
+        Array(std::initializer_list<ValueType> initializer, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
             CopyElement(initializer.begin(), static_cast<SizeType>(initializer.size()));
         };
 
         Array(const Array& other)
+            : Pair(OneArgPlaceholder(), other.GetAlloc())
         {
-            auto& otherVal = other.Pair.Second();
+            auto& otherVal = other.Pair.SecondVal;
             CopyElement(otherVal.Data, otherVal.Size);
         }
 
         Array(Array&& other) noexcept
+            : Pair(OneArgPlaceholder(), std::move(other.GetAlloc()))
         {
             MoveElement(std::forward<Array>(other));
         }
 
         Array(const Array& other, SizeType extraSlack)
+            : Pair(OneArgPlaceholder(), other.GetAlloc())
         {
-            auto& otherVal = other.Pair.Second();
+            auto& otherVal = other.Pair.SecondVal;
             CopyElement(otherVal.Data, otherVal.Size, extraSlack);
         }
 
         template <typename OtherAllocator>
-        explicit Array(const Array<ValueType, OtherAllocator>& other)
+        explicit Array(const Array<ValueType, OtherAllocator>& other, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
-            auto& otherVal = other.Pair.Second();
+            auto& otherVal = other.Pair.SecondVal;
             CopyElement(otherVal.Data, otherVal.Size);
         }
 
@@ -237,13 +245,15 @@ namespace Engine
         Array& operator=(const Array& other)
         {
             ENSURE(this != &other);
-            auto& otherVal = other.Pair.Second();
+            GetAlloc() = other.GetAlloc();
+            auto& otherVal = other.Pair.SecondVal;
             CopyElement(otherVal.Data, otherVal.Size);
             return *this;
         }
 
         Array& operator=(Array&& other) noexcept
         {
+            GetAlloc() = std::move(other.GetAlloc());
             ENSURE(this != &other);
             MoveElement(std::forward<Array>(other));
             return *this;
@@ -252,15 +262,15 @@ namespace Engine
         template <typename OtherAllocator>
         Array& operator=(const Array<ValueType, OtherAllocator>& other)
         {
-            auto& otherVal = other.Pair.Second();
+            auto& otherVal = other.Pair.SecondVal;
             CopyElement(otherVal.Data, otherVal.Size);
             return *this;
         }
 
         bool operator== (const Array& other) const
         {
-            auto& myVal = Pair.Second();
-            auto& otherVal = other.Pair.Second();
+            auto& myVal = Pair.SecondVal;
+            auto& otherVal = other.Pair.SecondVal;
             if (myVal.Size != otherVal.Size)
             {
                 return false;
@@ -333,7 +343,7 @@ namespace Engine
         bool AddUnique(const ValueType& elem)
         {
             bool isUnique = true;
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
 
             for (SizeType idx = 0; idx < myVal.Size; ++idx)
             {
@@ -355,7 +365,7 @@ namespace Engine
         bool AddUnique(ValueType&& elem)
         {
             bool isUnique = true;
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
 
             for (SizeType idx = 0; idx < myVal.Size; ++idx)
             {
@@ -408,7 +418,7 @@ namespace Engine
 
         void Insert(SizeType index, const ValueType* elems, SizeType size)
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             ENSURE(AddressCheck(elems) && 0 <= index && index <= myVal.Size && size > 0);
             InsertUnconstructElement(index, size);
             ConstructElements(myVal.Data + index, elems, size);
@@ -421,7 +431,7 @@ namespace Engine
         void RemoveAt(SizeType index)
         {
             ENSURE(IsValidIndex(index));
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             DestructElements(myVal.Data + index, 1);
 
             SizeType countToMove = myVal.Size - index - 1;
@@ -435,7 +445,7 @@ namespace Engine
         void RemoveAtSwap(SizeType index)
         {
             ENSURE(IsValidIndex(index));
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             DestructElements(myVal.Data + index, 1);
             myVal.Size -= 1;
             if (index != myVal.Size)
@@ -462,7 +472,7 @@ namespace Engine
             ENSURE(IsValidIndex(index) && IsValidIndex(end));
             if (num > 0)
             {
-                auto& myVal = Pair.Second();
+                auto& myVal = Pair.SecondVal;
                 DestructElements(Data() + index, num);
                 SizeType countToMove = myVal.Size - end - 1;
                 if (countToMove)
@@ -480,7 +490,7 @@ namespace Engine
          */
         SizeType RemoveMatch(std::function<bool(const ValueType& elem)> predicate)
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             if (myVal.Size <= 0)
             {
                 return 0;
@@ -504,7 +514,7 @@ namespace Engine
 
         ValueType Pop()
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             ENSURE(myVal.Size > 0);
             ValueType last = At(myVal.Size - 1);
             RemoveAt(myVal.Size - 1);
@@ -517,7 +527,7 @@ namespace Engine
          */
         void Clear(SizeType slack = 0)
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             DestructElements(myVal.Data, myVal.Size);
             myVal.Size = 0;
             if (myVal.Capacity != slack)
@@ -534,22 +544,22 @@ namespace Engine
 
         ValueType* Data()
         {
-            return Pair.Second().Data;
+            return Pair.SecondVal.Data;
         }
 
         const ValueType* Data() const
         {
-            return Pair.Second().Data;
+            return Pair.SecondVal.Data;
         }
 
         SizeType Size() const
         {
-            return Pair.Second().Size;
+            return Pair.SecondVal.Size;
         }
 
         SizeType Capacity() const
         {
-            return Pair.Second().Capacity;
+            return Pair.SecondVal.Capacity;
         }
 
         constexpr SizeType MaxSize() const
@@ -564,14 +574,14 @@ namespace Engine
 
         ValueType& Last()
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             ENSURE(myVal.Size > 0);
             return myVal.Data[myVal.Size - 1];
         }
 
         const ValueType& Last() const
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             ENSURE(myVal.Size > 0);
             return myVal.Data[myVal.Size - 1];
         }
@@ -594,7 +604,7 @@ namespace Engine
         void Resize(SizeType newSize)
         {
             ENSURE(newSize >= 0);
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             if (newSize < myVal.Size)
             {
                 DestructElements(myVal.Data + newSize, myVal.Size - newSize);
@@ -613,7 +623,7 @@ namespace Engine
         void Resize(SizeType newSize, const ValueType& val)
         {
             ENSURE(newSize >= 0);
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             if (newSize < myVal.Size)
             {
                 DestructElements(myVal.Data + newSize, myVal.Size - newSize);
@@ -631,7 +641,7 @@ namespace Engine
 
         void Reserve(SizeType newCapacity)
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             if (newCapacity > myVal.Capacity)
             {
                 ENSURE(newCapacity <= MaxSize());
@@ -727,7 +737,7 @@ namespace Engine
         SizeType AddUnconstructElement(SizeType count)
         {
             ENSURE(count > 0);
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             SizeType oldSize = myVal.Size;
             myVal.Size += count;
             if (myVal.Size > myVal.Capacity)
@@ -739,7 +749,7 @@ namespace Engine
 
         void InsertUnconstructElement(SizeType index, SizeType count)
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             ENSURE(index >= 0 && count > 0 && index <= myVal.Size);
             SizeType oldSize = myVal.Size;
             myVal.Size += count;
@@ -754,7 +764,7 @@ namespace Engine
 
         void Expansion(SizeType destSize = -1)
         {
-            destSize = destSize >= 0 ? destSize : Pair.Second().Size;
+            destSize = destSize >= 0 ? destSize : Pair.SecondVal.Size;
             SizeType newCapacity = CalculateGrowth(destSize);
             ENSURE(destSize <= newCapacity);
             Reallocate(newCapacity);
@@ -782,13 +792,13 @@ namespace Engine
 
         bool BoundCheck() const
         {
-            const auto& myVal = Pair.Second();
+            const auto& myVal = Pair.SecondVal;
             return myVal.Size >= 0 && myVal.Size <= myVal.Capacity;
         }
 
         bool AddressCheck(const ValueType* address) const
         {
-            const auto& myVal = Pair.Second();
+            const auto& myVal = Pair.SecondVal;
             return address < myVal.Data || address >= myVal.Data + myVal.Capacity;
         }
 
@@ -823,7 +833,7 @@ namespace Engine
         void CopyElement(const ValueType* data, SizeType size, SizeType extraSlack = 0)
         {
             ENSURE(data && size > 0 && extraSlack >= 0);
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             if (myVal.Data)
             {
                 DestructElements(myVal.Data, myVal.Size);
@@ -839,8 +849,8 @@ namespace Engine
 
         void MoveElement(Array&& other)
         {
-            auto& myVal = Pair.Second();
-            auto& otherVal = other.Pair.Second();
+            auto& myVal = Pair.SecondVal;
+            auto& otherVal = other.Pair.SecondVal;
 
             if (myVal.Data)
             {
@@ -860,8 +870,8 @@ namespace Engine
 
         void Reallocate(SizeType newCapacity)
         {
-            auto& myVal = Pair.Second();
-            auto& alloc = Pair.First();
+            auto& myVal = Pair.SecondVal;
+            auto& alloc = Pair.GetFirst();
 
             ValueType* newPtr = alloc.Allocate(newCapacity);
             if (myVal.Data)
@@ -876,12 +886,12 @@ namespace Engine
 
         AllocatorType& GetAlloc()
         {
-            return Pair.First();
+            return Pair.GetFirst();
         }
 
         const AllocatorType& GetAlloc() const
         {
-            return Pair.First();
+            return Pair.GetFirst();
         }
 
     private:

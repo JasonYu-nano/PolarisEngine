@@ -232,13 +232,13 @@ namespace Engine
         const CharType& operator[] (SizeType index) const
         {
             ENSURE(index < Length());
-            return *(Pair.Second().GetPtr() + index);
+            return *(Pair.SecondVal.GetPtr() + index);
         }
 
         CharType& operator[] (SizeType index)
         {
             ENSURE(index < Length());
-            return *(Pair.Second().GetPtr() + index);
+            return *(Pair.SecondVal.GetPtr() + index);
         }
 
         explicit operator ViewType() const
@@ -248,12 +248,12 @@ namespace Engine
 
         CharType* Data()
         {
-            return Pair.Second().GetPtr();
+            return Pair.SecondVal.GetPtr();
         }
 
         const CharType* Data() const
         {
-            return Pair.Second().GetPtr();
+            return Pair.SecondVal.GetPtr();
         }
 
         SizeType Length() const
@@ -263,7 +263,7 @@ namespace Engine
 
         SizeType Capacity() const
         {
-            return Pair.Second().MaxSize;
+            return Pair.SecondVal.MaxSize;
         }
 
         AllocatorType GetAllocator() const
@@ -596,7 +596,7 @@ namespace Engine
 
         Iterator rbegin()
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             return Iterator(*this, Length() - 1);
         }
 
@@ -622,7 +622,7 @@ namespace Engine
 
         ConstIterator cend()
         {
-            auto& myVal = Pair.Second();
+            auto& myVal = Pair.SecondVal;
             return ConstIterator(*this, Length());
         }
 
@@ -648,22 +648,22 @@ namespace Engine
     protected:
         AllocatorType& GetAlloc()
         {
-            return Pair.First();
+            return Pair.GetFirst();
         }
 
         const AllocatorType& GetAlloc() const
         {
-            return Pair.First();
+            return Pair.GetFirst();
         }
 
         SizeType Size() const
         {
-            return Pair.Second().Size;
+            return Pair.SecondVal.Size;
         }
 
         bool LargeStringEngaged() const
         {
-            return Pair.Second().LargeStringEngaged();
+            return Pair.SecondVal.LargeStringEngaged();
         }
 
         template <typename... Args>
