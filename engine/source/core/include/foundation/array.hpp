@@ -527,12 +527,16 @@ namespace Engine
          */
         void Clear(SizeType slack = 0)
         {
-            auto& myVal = Pair.SecondVal;
-            DestructElements(myVal.Data, myVal.Size);
-            myVal.Size = 0;
-            if (myVal.Capacity != slack)
+            if (slack == 0)
             {
-                Reserve(slack);
+                Tidy();
+            }
+            else
+            {
+                auto& myVal = Pair.SecondVal;
+                DestructElements(myVal.Data, myVal.Size);
+                myVal.Size = 0;
+                Reallocate(slack);
             }
         }
 
@@ -646,6 +650,22 @@ namespace Engine
             {
                 ENSURE(newCapacity <= MaxSize());
                 Reallocate(newCapacity);
+            }
+        }
+
+        void Shrink()
+        {
+            auto& myVal = Pair.SecondVal;
+            if (myVal.Size < myVal.Capacity)
+            {
+                if (myVal.Size <= 0)
+                {
+                    Tidy();
+                }
+                else
+                {
+                    Reallocate(myVal.Size);
+                }
             }
         }
 
@@ -882,6 +902,21 @@ namespace Engine
 
             myVal.Data = newPtr;
             myVal.Capacity = newCapacity;
+        }
+
+        void Tidy()
+        {
+            auto& myVal = Pair.SecondVal;
+            if (myVal.Data)
+            {
+                DestructElements(myVal.Data, myVal.Size);
+                auto& alloc = GetAlloc();
+                alloc.Deallocate(myVal.Data, myVal.Capacity);
+            }
+
+            myVal.Data = nullptr;
+            myVal.Size = 0;
+            myVal.Capacity = 0;
         }
 
         AllocatorType& GetAlloc()

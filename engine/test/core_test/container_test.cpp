@@ -216,6 +216,10 @@ namespace Engine
         array.Reserve(5);
         EXPECT_TRUE(array.Capacity() == 5);
 
+        array.Shrink();
+        EXPECT_TRUE(array.Capacity() == 0);
+
+        array.Reserve(5);
         array.Reserve(3);
         EXPECT_TRUE(array.Capacity() == 5);
 
@@ -229,6 +233,10 @@ namespace Engine
 
         array.Resize(3, item);
         EXPECT_TRUE(*array.Top().ValuePtr == 1);
+
+        array.Reserve(10);
+        array.Shrink();
+        EXPECT_TRUE(array.Capacity() == 3);
     }
 
     TEST(ContainerTest, Array_Iterator)
