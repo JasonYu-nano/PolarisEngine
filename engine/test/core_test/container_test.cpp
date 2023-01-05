@@ -293,6 +293,20 @@ namespace Engine
         EXPECT_TRUE(array[0] == 1 && array[3] == 5);
     }
 
+    TEST(ContainerTest, BitArray_Ctor)
+    {
+        BitArray array(10);
+        BitArray array2(true, 10);
+        BitArray array3(false, 10);
+
+        bool list[5] = { true, false, true, false, true};
+        BitArray array4(list, 5);
+        EXPECT_TRUE(array4.Size() == 5);
+
+        BitArray array5 = {false, true, false, true, false};
+        EXPECT_TRUE(array5.Size() == 5);
+    }
+
     TEST(ContainerTest, DynamicArray_Base)
     {
         DynamicArray<int> array(10);
@@ -416,33 +430,33 @@ namespace Engine
 
     TEST(ContainerTest, BitArray_Base)
     {
-        BitArray array(10);
+        BitArrayDeprecated array(10);
         EXPECT_TRUE(array.Capacity() == 32);
         array.Add(true);
         EXPECT_TRUE(array[0]);
         array[0] = false;
         EXPECT_TRUE(!array[0]);
 
-        BitArray array2(true, 10);
+        BitArrayDeprecated array2(true, 10);
         EXPECT_TRUE(array2.Size() == 10);
         EXPECT_TRUE(array2[0] == true);
         EXPECT_TRUE(array2[9] == true);
 
-        BitArray array3{true, true, false};
+        BitArrayDeprecated array3{true, true, false};
         array3.Insert(1, false);
         EXPECT_TRUE(array3[1] == false && array3[2] == true && array3[3] == false);
         array3 = {false};
         EXPECT_TRUE(array3[0] == false);
         EXPECT_TRUE(array3.GetElementCount() == 1);
 
-        BitArray array4(array3);
+        BitArrayDeprecated array4(array3);
         EXPECT_TRUE(array3 == array4);
     }
 
     TEST(ContainerTest, BitArray_Iterator)
     {
-        BitArray array = {true, false, true, false, true, false};
-        BitArray<>::Iterator iter = array.begin();
+        BitArrayDeprecated array = {true, false, true, false, true, false};
+        BitArrayDeprecated<>::Iterator iter = array.begin();
         (*iter) = false;
         EXPECT_TRUE(array[0] == false);
         for (BitRef value : array)

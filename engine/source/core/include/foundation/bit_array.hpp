@@ -1,8 +1,10 @@
 #pragma once
+
 #include "definitions_core.hpp"
 #include "global.hpp"
 #include "memory/allocator_policies.hpp"
 #include "math/generic_math.hpp"
+#include "foundation/details/compressed_pair.hpp"
 
 namespace Engine
 {
@@ -296,10 +298,27 @@ namespace Engine
     };
 #pragma endregion iterator
 
-    template <typename Allocator = DefaultAllocator>
+    template<typename ValueType, typename SizeType, typename Pointer>
+    class BitArrayVal
+    {
+    public:
+        BitArrayVal() = default;
+
+        ~BitArrayVal() = default;
+
+        Pointer Data{ nullptr };
+        SizeType Size{ 0 };
+        SizeType Capacity{ 0 };
+    };
+
+    template <typename Alloc = StandardAllocator<int32>>
     class BitArray
     {
     public:
+        using AllocatorType = typename Alloc::template ElementAllocator<uint32>;
+        using ValueType = typename AllocatorType::ValueType;
+        using SizeType = typename AllocatorType::SizeType;
+
         /** A const iterator always move to next 'true' index */
         using ConstValidIterator = ConstBitValidIterator<BitArray>;
         /** An iterator always move to next 'true' index */
@@ -309,50 +328,53 @@ namespace Engine
         /** An iterator move to next index */
         using Iterator = BitIndexIterator<BitArray>;
 
-        using AllocatorType = DefaultAllocator::ElementAllocator<int32>;
+    protected:
+        using USizeType = std::make_unsigned_t<SizeType>;
+        using SecondaryVal = BitArrayVal<ValueType, SizeType, ValueType*>;
+
     public:
-        BitArray() 
-            : ArrayCapacity(AllocatorInstance.GetDefaultSize() * kElementBits)
-        {
-            AllocatorInstance.Resize(Math::DivideAndCeil(ArrayCapacity, kElementBits));
-        };
+        BitArray() = default;
 
-        explicit BitArray(int32 capacity)
-            : ArrayCapacity(Math::Max(Math::CeilToMultiple(capacity, kElementBits),
-                 AllocatorInstance.GetDefaultSize() * kElementBits))
+        explicit BitArray(SizeType capacity, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
-            AllocatorInstance.Resize(Math::DivideAndCeil(ArrayCapacity, kElementBits));
+            Reserve(capacity);
         }
 
-        BitArray(bool defaultValue, int32 count)
+        BitArray(bool val, SizeType size, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
-            AddBits(count);
-            SetBits(Data(), defaultValue, GetElementCount());
+            Resize(size, val);
         }
 
-        BitArray(const bool* ptr, int32 count)
+        BitArray(const bool* ptr, SizeType size, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
-            ENSURE(count >= 0);
-            Resize(Math::CeilToMultiple(count, kElementBits));
-            InitBits(ptr, count);
+            if (size > 0)
+            {
+                Reserve(size);
+                InitBits(ptr, size);
+            }
         }
 
         BitArray(std::initializer_list<bool> initializer)
         {
-            int32 count = static_cast<int32>(initializer.size());
-            ENSURE(count >= 0);
-            Resize(Math::CeilToMultiple(count, kElementBits));
-            InitBits(initializer.begin(), count);
+            SizeType size = static_cast<SizeType>(initializer.size());
+            if (size > 0)
+            {
+                Reserve(size);
+                InitBits(initializer.begin(), size);
+            }
         }
 
         BitArray(const BitArray& other)
         {
-            CopyBits(const_cast<uint32*>(other.Data()), other.Size());
+            CopyBits(const_cast<ValueType*>(other.Data()), other.Size());
         }
 
         BitArray(BitArray&& other) noexcept
         {
-            MoveArray(Forward<BitArray>(other));
+            MoveArray(std::forward<BitArray>(other));
         }
 
         template <typename OtherAllocator>
@@ -366,16 +388,16 @@ namespace Engine
             Clear(0);
         }
 
-        BitRef operator[] (int32 index)
+        BitRef operator[] (SizeType index)
         {
-            ENSURE(0 <= index && index < ArraySize);
-            return BitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
+            ENSURE(0 <= index && index < Size());
+            return BitRef(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
         }
 
-        ConstBitRef operator[] (int32 index) const
+        ConstBitRef operator[] (SizeType index) const
         {
-            ENSURE(0 <= index && index < ArraySize);
-            return ConstBitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
+            ENSURE(0 <= index && index < Size());
+            return ConstBitRef(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
         }
 
         BitArray& operator= (std::initializer_list<bool> initializer)
@@ -395,7 +417,7 @@ namespace Engine
         BitArray& operator= (BitArray&& other) noexcept
         {
             ENSURE(this != &other);
-            MoveArray(Forward<BitArray>(other));
+            MoveArray(std::forward<BitArray>(other));
             return *this;
         }
 
@@ -407,6 +429,512 @@ namespace Engine
         }
 
         bool operator== (const BitArray& other) const
+        {
+            auto& myVal = Pair.SecondVal;
+            auto& otherVal = other.Pair.SecondVal;
+            if (myVal.Size != otherVal.Size)
+            {
+                return false;
+            }
+
+            return Memory::Memcmp(myVal.Data, otherVal.Data, GetElementCount() * sizeof(ValueType));
+        }
+
+        bool operator!= (const BitArray& other) const
+        {
+            return !(*this == other);
+        }
+
+        void Add(bool value)
+        {
+            SizeType index = AddBits(1);
+            ValueType& data = Data()[index / ELEMENT_BITS_NUM];
+            SizeType bitOffset = (index % ELEMENT_BITS_NUM);
+            data = (data & ~(1 << bitOffset)) | (((ValueType)value) << bitOffset);
+        }
+
+        void Insert(int32 index, bool value)
+        {
+            ENSURE(0 <= index && index <= Size());
+            InsertBits(index, 1);
+
+            // Work out which uint32 index to set from, and how many
+            SizeType startIndex = index / ELEMENT_BITS_NUM;
+            SizeType count = (index + 1 + (ELEMENT_BITS_NUM - 1)) / ELEMENT_BITS_NUM - startIndex;
+
+            // Work out masks for the start/end of the sequence
+            USizeType startMask = kFullWordMask << (index % ELEMENT_BITS_NUM);
+            USizeType endMask = kFullWordMask >> (ELEMENT_BITS_NUM - (index + 1) % ELEMENT_BITS_NUM) % ELEMENT_BITS_NUM;
+
+            ValueType* data = Data() + startIndex;
+            if (value)
+            {
+                if (count == 1)
+                {
+                    *data |= startMask & endMask;
+                }
+                else
+                {
+                    *data++ |= startMask;
+                    count -= 2;
+                    while (count != 0)
+                    {
+                        *data++ = ~0;
+                        --count;
+                    }
+                    *data |= endMask;
+                }
+            }
+            else
+            {
+                if (count == 1)
+                {
+                    *data &= ~(startMask & endMask);
+                }
+                else
+                {
+                    *data++ &= ~startMask;
+                    count -= 2;
+                    while (count != 0)
+                    {
+                        *data++ = 0;
+                        --count;
+                    }
+                    *data &= ~endMask;
+                }
+            }
+        }
+
+        void Resize(SizeType newSize)
+        {
+            ENSURE(newSize >= 0);
+            auto& myVal = Pair.SecondVal;
+            //const SizeType newCapacity = Math::CeilToMultiple(newSize, ELEMENT_BITS_NUM);
+            if (newSize != myVal.Capacity)
+            {
+                Reallocate(newSize);
+            }
+        }
+
+        void Resize(SizeType newSize, bool val)
+        {
+            ENSURE(newSize >= 0);
+            auto& myVal = Pair.SecondVal;
+            //const SizeType newCapacity = Math::CeilToMultiple(newSize, ELEMENT_BITS_NUM);
+            if (newSize > myVal.Size)
+            {
+                SizeType oldSize = myVal.Size;
+                Reserve(newSize);
+
+                SizeType lastIdx = myVal.Size <= 0 ? -1 : (myVal.Size - 1) / ELEMENT_BITS_NUM;
+                SizeType elemCount = myVal.Capacity / ELEMENT_BITS_NUM;
+                if (lastIdx > 0)
+                {
+                    ValueType& data = myVal.Data[lastIdx];
+                    SizeType bitOffset = (myVal.Size % ELEMENT_BITS_NUM);
+                    if (val)
+                    {
+                        data = (data | ~(1 << bitOffset));
+                    }
+                    else
+                    {
+                        data = (data & (1 << bitOffset));
+                    }
+                }
+
+                while (++lastIdx < elemCount)
+                {
+                    myVal.Data[lastIdx] = val ? ~0u : 0u;
+                }
+            }
+
+            myVal.Size = newSize;
+        }
+
+        void Reserve(SizeType newCapacity)
+        {
+            auto& myVal = Pair.SecondVal;
+            if (newCapacity > myVal.Capacity)
+            {
+                Reallocate(newCapacity);
+            }
+        }
+
+        void Clear(int32 slack = 0)
+        {
+            Pair.SecondVal.Size = 0;
+            Resize(slack);
+        }
+
+        SizeType Size() const { return Pair.SecondVal.Size;  }
+
+        SizeType GetElementCount() const
+        {
+            return Math::DivideAndCeil(Size(), ELEMENT_BITS_NUM);
+        }
+
+        SizeType Capacity() const { return Pair.SecondVal.Capacity; }
+
+        constexpr SizeType MaxSize() const
+        {
+            return NumericLimits<SizeType>::Max();
+        }
+
+        ValueType* Data()
+        {
+            return Pair.SecondVal.Data;
+        }
+
+        const ValueType* Data() const
+        {
+            return Pair.SecondVal.Data;
+        }
+
+        ValidIterator CreateValidIterator(SizeType startIndex = 0)
+        {
+            ENSURE(startIndex >= 0 && startIndex <= Size());
+            return ValidIterator(*this, startIndex);
+        }
+
+        ConstValidIterator CreateValidIterator(SizeType startIndex = 0) const
+        {
+            ENSURE(startIndex >= 0 && startIndex <= Size());
+            return ConstValidIterator(*this, 0);
+        }
+
+        Iterator begin()
+        {
+            return Iterator(*this, 0);
+        }
+
+        ConstIterator begin() const
+        {
+            return ConstIterator(*this, 0);
+        }
+
+        Iterator end()
+        {
+            return Iterator(*this, Size());
+        }
+
+        ConstIterator end() const
+        {
+            return ConstIterator(*this, Size());
+        }
+    private:
+        AllocatorType& GetAllocator()
+        {
+            return Pair.GetFirst();
+        }
+
+        const AllocatorType& GetAllocator() const
+        {
+            return Pair.GetFirst();
+        }
+
+        void InitBits(const bool* ptr, SizeType size)
+        {
+            ENSURE(size > 0);
+            for (SizeType idx = 0; idx < size; ++idx)
+            {
+                Add(ptr[idx]);
+            }
+        }
+
+        SizeType AddBits(SizeType count)
+        {
+            ENSURE(count > 0);
+            auto& myVal = Pair.SecondVal;
+            SizeType index = myVal.Size;
+            myVal.Size += count;
+            if (myVal.Size > myVal.Capacity)
+            {
+                Expansion(myVal.Size);
+            }
+            return index;
+        }
+
+        void InsertBits(SizeType index, SizeType count)
+        {
+            auto& myVal = Pair.SecondVal;
+            ENSURE(index >= 0 && index <= myVal.Size);
+            SizeType oldCount = myVal.Size;
+            myVal.Size += count;
+            if (myVal.Size > myVal.Capacity)
+            {
+                Expansion(myVal.Size);
+            }
+
+            SizeType shiftCount = oldCount - index;
+            if (shiftCount > 0)
+            {
+                Memory::MemmoveBits(myVal.Data, index + count, myVal.Data, index, shiftCount);
+            }
+        }
+
+        void CopyBits(ValueType* data, int32 size)
+        {
+            ENSURE(size > 0);
+            Clear(size);
+            auto& myVal = Pair.SecondVal;
+            myVal.Size = size;
+            if (size > 0)
+            {
+                Memory::Memcpy(myVal.Data, data, GetElementCount() * sizeof(ValueType));
+            }
+        }
+
+        void SetBits(ValueType* dest, bool value, SizeType size)
+        {
+            const SizeType elemCount = Math::DivideAndCeil(size, ELEMENT_BITS_NUM);
+            if (elemCount > 8)
+            {
+                Memory::Memset(dest, value ? 0xff : 0, elemCount * sizeof(ValueType));
+            }
+            else
+            {
+                ValueType elem = value ? ~0u : 0u;
+                for (SizeType i = 0; i < elemCount; ++i)
+                {
+                    dest[i] = elem;
+                }
+            }
+        }
+
+        void MoveArray(BitArray&& other)
+        {
+            auto& myVal = Pair.SecondVal;
+            auto& otherVal = other.Pair.SecondVal;
+            if (myVal.Data)
+            {
+                //TODO: Destruct?
+                auto& alloc = GetAllocator();
+                alloc.Deallocate(myVal.Data, myVal.Capacity);
+            }
+
+            myVal.Size = otherVal.Size;
+            myVal.Capacity = otherVal.Capacity;
+            myVal.Data = otherVal.Data;
+            otherVal.Data = nullptr;
+            otherVal.Size = 0;
+            otherVal.Capacity = 0;
+        }
+
+        void Expansion(SizeType destSize = -1)
+        {
+            destSize = destSize >= 0 ? destSize : Pair.SecondVal.Size;
+            SizeType capacity = CalculateGrowth(destSize);
+            ENSURE(destSize <= capacity);
+            Reallocate(capacity);
+        }
+
+        SizeType CalculateGrowth(const SizeType newSize) const
+        {
+            SizeType oldCapacity = Capacity();
+            SizeType max = MaxSize();
+
+            if (oldCapacity > max - oldCapacity / 2)
+            {
+                return max;
+            }
+
+            const SizeType geometric = oldCapacity + oldCapacity / 2;
+
+            if (geometric < newSize)
+            {
+                return newSize;
+            }
+
+            return geometric;
+        }
+
+        void NormalizeOffset(uint32* data, int32& offset)
+        {
+            if ((offset < 0) | (ELEMENT_BITS_NUM <= offset))
+            {
+                data += (offset / ELEMENT_BITS_NUM);
+                offset = offset % ELEMENT_BITS_NUM;
+                if (offset < 0)
+                {
+                    --data;
+                    offset += ELEMENT_BITS_NUM;
+                }
+            }
+        }
+
+        void Reallocate(SizeType newCapacity)
+        {
+            auto& myVal = Pair.SecondVal;
+            auto& alloc = Pair.GetFirst();
+
+            SizeType elemCount = Math::DivideAndCeil(newCapacity, ELEMENT_BITS_NUM);
+            newCapacity = elemCount * ELEMENT_BITS_NUM;
+
+            ValueType* newPtr = alloc.Allocate(elemCount);
+            if (myVal.Data)
+            {
+                Memory::Memmove(newPtr, myVal.Data, myVal.Size);
+                alloc.Deallocate(myVal.Data, myVal.Capacity);
+            }
+
+            myVal.Data = newPtr;
+            myVal.Capacity = newCapacity;
+        }
+
+    private:
+        static constexpr int32 ELEMENT_BITS_NUM = sizeof(ValueType) * 8;
+
+        CompressedPair<AllocatorType, SecondaryVal> Pair;
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    template <typename Allocator = DefaultAllocator>
+    class BitArrayDeprecated
+    {
+    public:
+        /** A const iterator always move to next 'true' index */
+        using ConstValidIterator = ConstBitValidIterator<BitArrayDeprecated>;
+        /** An iterator always move to next 'true' index */
+        using ValidIterator = BitValidIterator<BitArrayDeprecated>;
+        /** A const iterator move to next index */
+        using ConstIterator = ConstBitIndexIterator<BitArrayDeprecated>;
+        /** An iterator move to next index */
+        using Iterator = BitIndexIterator<BitArrayDeprecated>;
+
+        using AllocatorType = DefaultAllocator::ElementAllocator<int32>;
+    public:
+        BitArrayDeprecated()
+            : ArrayCapacity(AllocatorInstance.GetDefaultSize() * kElementBits)
+        {
+            AllocatorInstance.Resize(Math::DivideAndCeil(ArrayCapacity, kElementBits));
+        };
+
+        explicit BitArrayDeprecated(int32 capacity)
+            : ArrayCapacity(Math::Max(Math::CeilToMultiple(capacity, kElementBits),
+                 AllocatorInstance.GetDefaultSize() * kElementBits))
+        {
+            AllocatorInstance.Resize(Math::DivideAndCeil(ArrayCapacity, kElementBits));
+        }
+
+        BitArrayDeprecated(bool defaultValue, int32 count)
+        {
+            AddBits(count);
+            SetBits(Data(), defaultValue, GetElementCount());
+        }
+
+        BitArrayDeprecated(const bool* ptr, int32 count)
+        {
+            ENSURE(count >= 0);
+            Resize(Math::CeilToMultiple(count, kElementBits));
+            InitBits(ptr, count);
+        }
+
+        BitArrayDeprecated(std::initializer_list<bool> initializer)
+        {
+            int32 count = static_cast<int32>(initializer.size());
+            ENSURE(count >= 0);
+            Resize(Math::CeilToMultiple(count, kElementBits));
+            InitBits(initializer.begin(), count);
+        }
+
+        BitArrayDeprecated(const BitArrayDeprecated& other)
+        {
+            CopyBits(const_cast<uint32*>(other.Data()), other.Size());
+        }
+
+        BitArrayDeprecated(BitArrayDeprecated&& other) noexcept
+        {
+            MoveArray(Forward<BitArrayDeprecated>(other));
+        }
+
+        template <typename OtherAllocator>
+        explicit BitArrayDeprecated(const BitArrayDeprecated<OtherAllocator>& other)
+        {
+            CopyBits(other.Data(), other.Size());
+        }
+
+        ~BitArrayDeprecated()
+        {
+            Clear(0);
+        }
+
+        BitRef operator[] (int32 index)
+        {
+            ENSURE(0 <= index && index < ArraySize);
+            return BitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
+        }
+
+        ConstBitRef operator[] (int32 index) const
+        {
+            ENSURE(0 <= index && index < ArraySize);
+            return ConstBitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
+        }
+
+        BitArrayDeprecated& operator= (std::initializer_list<bool> initializer)
+        {
+            Clear(static_cast<int32>(initializer.size()));
+            InitBits(initializer.begin(), static_cast<int32>(initializer.size()));
+            return *this;
+        }
+
+        BitArrayDeprecated& operator= (const BitArrayDeprecated& other)
+        {
+            ENSURE(this != &other);
+            CopyBits(const_cast<uint32*>(other.Data()), other.Size());
+            return *this;
+        }
+
+        BitArrayDeprecated& operator= (BitArrayDeprecated&& other) noexcept
+        {
+            ENSURE(this != &other);
+            MoveArray(Forward<BitArrayDeprecated>(other));
+            return *this;
+        }
+
+        template <typename OtherAllocator>
+        BitArrayDeprecated& operator= (const BitArrayDeprecated<OtherAllocator>& other)
+        {
+            CopyBits(other.Data(), other.Size());
+            return *this;
+        }
+
+        bool operator== (const BitArrayDeprecated& other) const
         {
             if (ArraySize != other.ArraySize)
             {
@@ -616,7 +1144,7 @@ namespace Engine
             }
         }
 
-        void MoveArray(BitArray&& other)
+        void MoveArray(BitArrayDeprecated&& other)
         {
             AllocatorInstance = MoveTemp(other.AllocatorInstance);
             ArraySize = other.ArraySize;

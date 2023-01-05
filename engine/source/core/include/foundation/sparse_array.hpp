@@ -90,7 +90,7 @@ namespace Engine
         };
 
         using TDynamicArray = DynamicArray<ElementLinkNode, Allocator>;
-        using TBitArray = BitArray<DefaultAllocator>;
+        using TBitArray = BitArrayDeprecated<DefaultAllocator>;
 
         template <typename T, typename U, typename V> friend class Set;
 
