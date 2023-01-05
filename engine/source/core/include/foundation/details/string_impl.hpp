@@ -681,7 +681,7 @@ namespace Engine
 
         Private::StringMatcher<CharType, CharTraits, SizeType> matcher(before.Data(), blen, cs);
 
-        DynamicArray<SizeType, InlineAllocator<128>> indices;
+        DynamicArray<SizeType, InlineAllocator_Deprecated<128>> indices;
         SizeType pos = matcher.IndexIn(source.Data(), source.Length(), 0);
 
         while (pos >= 0)

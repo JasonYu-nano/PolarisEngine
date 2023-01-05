@@ -128,6 +128,19 @@ namespace Engine
         EXPECT_TRUE(NonTrivialArrayItem::AllocCounter == 2);
     }
 
+    TEST(ContainerTest, Array_CtorOtherAlloc)
+    {
+        Array<NonTrivialArrayItem, InlineAllocator<5>> array;
+        array.Add({0});
+        array.Add({1});
+        array.Reserve(6);
+        array.Add({2});
+        array.RemoveAt(2);
+
+        Array<NonTrivialArrayItem, InlineAllocator<5>> array2 = array;
+        Array<NonTrivialArrayItem, InlineAllocator<5>> array3 = std::move(array2);
+    }
+
     TEST(ContainerTest, Array_Add)
     {
         Array<NonTrivialArrayItem> array;
@@ -361,7 +374,7 @@ namespace Engine
         DynamicArray<int> array2 = {5, 4, 3, 2, 1};
         EXPECT_TRUE(array == array2);
 
-        DynamicArray<int, InlineAllocator<5>> inlineArray = {5, 4, 3, 2, 1};
+        DynamicArray<int, InlineAllocator_Deprecated<5>> inlineArray = {5, 4, 3, 2, 1};
         EXPECT_TRUE(inlineArray.Capacity() == 5);
     }
 

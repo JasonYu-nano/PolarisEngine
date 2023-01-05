@@ -38,11 +38,13 @@ namespace Engine
     class CompressedPair<T1, T2, false> final
     {
     public:
+        CompressedPair() = default;
+
         template <typename... ArgType2>
-        explicit CompressedPair(ArgType2&&... arg2) : FirstVal(), SecondVal(std::forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(ZeroArgPlaceholder, ArgType2&&... arg2) : FirstVal(), SecondVal(std::forward<ArgType2>(arg2)...) {}
 
         template <typename ArgType1, typename... ArgType2>
-        explicit CompressedPair(ArgType1&& arg1, ArgType2&&... arg2) : FirstVal(std::forward<ArgType1>(arg1)), SecondVal(std::forward<ArgType2>(arg2)...) {}
+        explicit CompressedPair(OneArgPlaceholder, ArgType1&& arg1, ArgType2&&... arg2) : FirstVal(std::forward<ArgType1>(arg1)), SecondVal(std::forward<ArgType2>(arg2)...) {}
 
         T1& GetFirst()
         {

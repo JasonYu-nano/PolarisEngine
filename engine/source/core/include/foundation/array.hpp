@@ -875,7 +875,7 @@ namespace Engine
             if (myVal.Data)
             {
                 DestructElements(myVal.Data, myVal.Size);
-                const auto& alloc = GetAlloc();
+                auto& alloc = GetAlloc();
                 alloc.Deallocate(myVal.Data, myVal.Capacity);
             }
 

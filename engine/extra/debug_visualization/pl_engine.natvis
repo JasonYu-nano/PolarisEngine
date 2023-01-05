@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <!-- Array visualizer -->
-    <Type Name="Engine::DynamicArray&lt;*,Engine::InlineAllocator&lt;*&gt; &gt;">
+    <Type Name="Engine::DynamicArray&lt;*,Engine::InlineAllocator_Deprecated&lt;*&gt; &gt;">
         <DisplayString Condition="ArraySize == 0">Empty</DisplayString>
         <DisplayString Condition="ArraySize &lt; 0">Invalid</DisplayString>
         <DisplayString Condition="ArrayCapacity &lt; ArraySize">Invalid</DisplayString>
@@ -27,20 +27,6 @@
             </ArrayItems>
         </Expand>
     </Type>
-
-<!--    <Type Name="Engine::Array&lt;*,Engine::InlineAllocator&lt;*&gt; &gt;">-->
-<!--        <DisplayString Condition="ArraySize == 0">Empty</DisplayString>-->
-<!--        <DisplayString Condition="ArraySize &lt; 0">Invalid</DisplayString>-->
-<!--        <DisplayString Condition="ArrayCapacity &lt; ArraySize">Invalid</DisplayString>-->
-<!--        <DisplayString Condition="ArrayCapacity &gt;= ArraySize">Size={ArraySize} Capacity={ArrayCapacity}</DisplayString>-->
-<!--        <Expand>-->
-<!--            <ArrayItems Condition="ArraySize &lt;= ArrayCapacity">-->
-<!--                <Size>ArraySize</Size>-->
-<!--                <ValuePointer Condition="AllocatorInstance.SecondaryData.Data == 0">($T1*)AllocatorInstance.InlineData</ValuePointer>-->
-<!--                <ValuePointer Condition="AllocatorInstance.SecondaryData.Data != 0">($T1*)AllocatorInstance.SecondaryData.Data</ValuePointer>-->
-<!--            </ArrayItems>-->
-<!--        </Expand>-->
-<!--    </Type>-->
 
     <Type Name="Engine::Array&lt;*,*&gt;">
         <DisplayString Condition="Pair.SecondVal.Size == 0">Empty</DisplayString>
