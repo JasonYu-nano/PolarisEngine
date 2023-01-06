@@ -12,10 +12,11 @@ namespace Engine
     constexpr int32 kElementBitsLogTwo = (int32)5;
     constexpr uint32 kFullWordMask = (uint32)-1;
 
+    template <typename ValueType>
     class BitRef
     {
     public:
-        BitRef(uint32& data, uint32 mask)
+        BitRef(ValueType& data, ValueType mask)
             : Data(data)
             , Mask(mask)
         {}
@@ -27,7 +28,7 @@ namespace Engine
 
         BitRef& operator= (bool value)
         {
-            uint32& data = const_cast<uint32&>(Data);
+            ValueType& data = const_cast<ValueType&>(Data);
             if (value)
             {
                 data |= Mask;
@@ -39,14 +40,15 @@ namespace Engine
             return* this;
         }
     private:
-        const uint32& Data;
-        uint32 Mask;
+        const ValueType& Data;
+        ValueType Mask;
     };
 
+    template <typename ValueType>
     class ConstBitRef
     {
     public:
-        ConstBitRef(const uint32& data, uint32 mask)
+        ConstBitRef(const ValueType& data, ValueType mask)
             : Data(data)
             , Mask(mask)
         {}
@@ -56,26 +58,27 @@ namespace Engine
             return (Data & Mask) != 0;
         }
 
-        explicit operator BitRef() const
+        explicit operator BitRef<ValueType>() const
         {
-            return BitRef(const_cast<uint32&>(Data), Mask);
+            return BitRef<ValueType>(const_cast<ValueType&>(Data), Mask);
         }
     private:
-        const uint32& Data;
-        uint32 Mask;
+        const ValueType& Data;
+        ValueType Mask;
     };
 
 #pragma region iterator
+    template <typename SizeType>
     class RelativeBitRef
     {
     public:
-         explicit RelativeBitRef(int32 BitIndex)
+         explicit RelativeBitRef(SizeType BitIndex)
             : Index(BitIndex >> kElementBitsLogTwo)
             , Mask(1 << (BitIndex & (kElementBits - 1)))
         {}
 
-        int32 Index;
-        uint32 Mask;
+        SizeType Index;
+        std::make_unsigned_t<SizeType> Mask;
     };
 
     /**
@@ -83,14 +86,18 @@ namespace Engine
      * @tparam ContainerType
      */
     template <typename ContainerType>
-    class ConstBitValidIterator : public RelativeBitRef
+    class ConstBitValidIterator : public RelativeBitRef<typename ContainerType::SizeType>
     {
+        using Super = RelativeBitRef<typename ContainerType::SizeType>;
+        using ValueType = typename ContainerType::ValueType;
+        using SizeType = typename ContainerType::SizeType;
+        using USizeType = std::make_unsigned_t<SizeType>;
     public:
-        explicit ConstBitValidIterator(const ContainerType& container, int32 startIndex = 0)
-            : RelativeBitRef(startIndex)
+        explicit ConstBitValidIterator(const ContainerType& container, SizeType startIndex = 0)
+            : Super(startIndex)
             , Container(container)
-            , UnvisitedBitMask((~0U) << (startIndex & (kElementBits - 1)))
             , CurrentBitIndex(startIndex)
+            , UnvisitedBitMask((~0U) << (startIndex & (kElementBits - 1)))
             , BaseBitIndex(startIndex & ~(kElementBits - 1))
         {
             if (startIndex != Container.Size())
@@ -99,7 +106,7 @@ namespace Engine
             }
         }
 
-        ConstBitRef operator* () const
+        ConstBitRef<ValueType> operator* () const
         {
             return Container[CurrentBitIndex];
         }
@@ -112,7 +119,7 @@ namespace Engine
         ConstBitValidIterator& operator++()
         {
             // Mark the current bit as visited.
-            UnvisitedBitMask &= ~Mask;
+            UnvisitedBitMask &= ~this->Mask;
 
             // Contains the first set bit that hasn't been visited yet.
             FindFirstSetBit();
@@ -120,7 +127,7 @@ namespace Engine
             return *this;
         }
 
-        int32 GetIndex() const { return CurrentBitIndex; }
+        SizeType GetIndex() const { return CurrentBitIndex; }
 
         friend bool operator==(const ConstBitValidIterator& lhs, const ConstBitValidIterator& rhs)
         {
@@ -135,36 +142,36 @@ namespace Engine
     private:
         void FindFirstSetBit()
         {
-            const uint32* rawData = Container.Data();
-            const int32 arrayCount = Container.Size();
-            const int32 lastDWORDIndex = (arrayCount - 1) / kElementBits;
+            const ValueType* rawData = Container.Data();
+            const SizeType arrayCount = Container.Size();
+            const SizeType lastDWORDIndex = (arrayCount - 1) / kElementBits;
 
             // Advance to the next non-zero uint32.
-            uint32 remainingBitMask = rawData[Index] & UnvisitedBitMask;
+            ValueType remainingBitMask = rawData[this->Index] & UnvisitedBitMask;
             while (!remainingBitMask)
             {
-                ++Index;
+                ++this->Index;
                 BaseBitIndex += kElementBits;
-                if (Index > lastDWORDIndex)
+                if (this->Index > lastDWORDIndex)
                 {
                     // We've advanced past the end of the array.
                     CurrentBitIndex = arrayCount;
                     return;
                 }
 
-                remainingBitMask = rawData[Index];
+                remainingBitMask = rawData[this->Index];
                 UnvisitedBitMask = ~0;
             }
 
             // This operation has the effect of unsetting the lowest set bit of BitMask
-            const uint32 newRemainingBitMask = remainingBitMask & (remainingBitMask - 1);
+            const ValueType newRemainingBitMask = remainingBitMask & (remainingBitMask - 1);
 
             // This operation XORs the above mask with the original mask, which has the effect
             // of returning only the bits which differ; specifically, the lowest bit
-            Mask = newRemainingBitMask ^ remainingBitMask;
+            this->Mask = newRemainingBitMask ^ remainingBitMask;
 
             // If the Nth bit was the lowest set bit of BitMask, then this gives us N
-            CurrentBitIndex = BaseBitIndex + kElementBits - 1 - Math::CountLeadingZeros(Mask);
+            CurrentBitIndex = BaseBitIndex + kElementBits - 1 - Math::CountLeadingZeros(this->Mask);
 
             // If we've accidentally iterated off the end of an array but still within the same DWORD
             // then set the index to the last index of the array
@@ -175,9 +182,9 @@ namespace Engine
         }
     protected:
         const ContainerType& Container;
-        uint32 UnvisitedBitMask;
-        int32 CurrentBitIndex;
-        uint32 BaseBitIndex;
+        SizeType CurrentBitIndex;
+        USizeType UnvisitedBitMask;
+        USizeType BaseBitIndex;
     };
 
     /**
@@ -188,14 +195,16 @@ namespace Engine
     class BitValidIterator : public ConstBitValidIterator<ContainerType>
     {
         using Super = ConstBitValidIterator<ContainerType>;
+        using ValueType = typename ContainerType::ValueType;
+        using SizeType = typename ContainerType::SizeType;
     public:
-        BitValidIterator(ContainerType& container, uint32 startIndex = 0)
+        BitValidIterator(ContainerType& container, SizeType startIndex = 0)
             : Super(container, startIndex)
         {}
 
-        BitRef operator* () const
+        BitRef<ValueType> operator* () const
         {
-            return static_cast<BitRef>(this->Container[this->CurrentBitIndex]);
+            return static_cast<BitRef<ValueType>>(this->Container[this->CurrentBitIndex]);
         }
 
         BitValidIterator& operator++()
@@ -204,7 +213,7 @@ namespace Engine
             return *this;
         }
 
-        int32 GetIndex() const { return Super::GetIndex(); }
+        SizeType GetIndex() const { return Super::GetIndex(); }
 
         friend bool operator==(const BitValidIterator& lhs, const BitValidIterator& rhs)
         {
@@ -220,13 +229,15 @@ namespace Engine
     template <typename ContainerType>
     class ConstBitIndexIterator
     {
+        using ValueType = typename ContainerType::ValueType;
+        using SizeType = typename ContainerType::SizeType;
     public:
-        explicit ConstBitIndexIterator(const ContainerType& container, int32 index = 0)
+        explicit ConstBitIndexIterator(const ContainerType& container, SizeType index = 0)
             : Container(container)
             , Index(index)
         {}
 
-        ConstBitRef operator* () const
+        ConstBitRef<ValueType> operator* () const
         {
             return Container[Index];
         }
@@ -243,7 +254,7 @@ namespace Engine
             return *this;
         }
 
-        int32 GetIndex() const { return Index; }
+        SizeType GetIndex() const { return Index; }
 
         friend bool operator==(const ConstBitIndexIterator& lhs, const ConstBitIndexIterator& rhs)
         {
@@ -256,20 +267,22 @@ namespace Engine
         }
     protected:
         const ContainerType& Container;
-        uint32 Index;
+        SizeType Index;
     };
 
     template <typename ContainerType>
     class BitIndexIterator : public ConstBitIndexIterator<ContainerType>
     {
         using Super = ConstBitIndexIterator<ContainerType>;
+        using ValueType = typename ContainerType::ValueType;
+        using SizeType = typename ContainerType::SizeType;
     public:
-        explicit BitIndexIterator(const ContainerType& container, int32 index = 0) : Super(container, index)
+        explicit BitIndexIterator(const ContainerType& container, SizeType index = 0) : Super(container, index)
         {}
 
-        BitRef operator* () const
+        BitRef<ValueType> operator* () const
         {
-            return static_cast<BitRef>(this->Container[this->Index]);
+            return static_cast<BitRef<uint32>>(this->Container[this->Index]);
         }
 
         BitIndexIterator& operator++ ()
@@ -284,7 +297,7 @@ namespace Engine
             return *this;
         }
 
-        int32 GetIndex() const { return this->Index; }
+        SizeType GetIndex() const { return this->Index; }
 
         friend bool operator==(const BitIndexIterator& lhs, const BitIndexIterator& rhs)
         {
@@ -357,7 +370,8 @@ namespace Engine
             }
         }
 
-        BitArray(std::initializer_list<bool> initializer)
+        BitArray(std::initializer_list<bool> initializer, const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
         {
             SizeType size = static_cast<SizeType>(initializer.size());
             if (size > 0)
@@ -368,11 +382,13 @@ namespace Engine
         }
 
         BitArray(const BitArray& other)
+            : Pair(OneArgPlaceholder(), other.GetAlloc())
         {
             CopyBits(const_cast<ValueType*>(other.Data()), other.Size());
         }
 
         BitArray(BitArray&& other) noexcept
+            : Pair(OneArgPlaceholder(), std::move(other.GetAlloc()))
         {
             MoveArray(std::forward<BitArray>(other));
         }
@@ -388,16 +404,16 @@ namespace Engine
             Clear(0);
         }
 
-        BitRef operator[] (SizeType index)
+        BitRef<ValueType> operator[] (SizeType index)
         {
             ENSURE(0 <= index && index < Size());
-            return BitRef(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
+            return BitRef<ValueType>(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
         }
 
-        ConstBitRef operator[] (SizeType index) const
+        ConstBitRef<ValueType> operator[] (SizeType index) const
         {
             ENSURE(0 <= index && index < Size());
-            return ConstBitRef(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
+            return ConstBitRef<ValueType>(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
         }
 
         BitArray& operator= (std::initializer_list<bool> initializer)
@@ -410,6 +426,7 @@ namespace Engine
         BitArray& operator= (const BitArray& other)
         {
             ENSURE(this != &other);
+            GetAlloc() = other.GetAlloc();
             CopyBits(const_cast<uint32*>(other.Data()), other.Size());
             return *this;
         }
@@ -417,6 +434,7 @@ namespace Engine
         BitArray& operator= (BitArray&& other) noexcept
         {
             ENSURE(this != &other);
+            GetAlloc() = std::move(other.GetAlloc());
             MoveArray(std::forward<BitArray>(other));
             return *this;
         }
@@ -437,7 +455,23 @@ namespace Engine
                 return false;
             }
 
-            return Memory::Memcmp(myVal.Data, otherVal.Data, GetElementCount() * sizeof(ValueType));
+            if (myVal.Size % ELEMENT_BITS_NUM == 0)
+            {
+                return Memory::Memcmp(myVal.Data, otherVal.Data, myVal.Size / ELEMENT_BITS_NUM * sizeof(ValueType));
+            }
+
+            SizeType elemCount = myVal.Size / ELEMENT_BITS_NUM;
+            if (Memory::Memcmp(myVal.Data, otherVal.Data, elemCount * sizeof(ValueType)) == false)
+            {
+                return false;
+            }
+
+            SizeType offset = (myVal.Size - 1) % ELEMENT_BITS_NUM;
+            ValueType mask = (~0u << (offset + 1));
+            SizeType curIdx = (myVal.Size - 1) / ELEMENT_BITS_NUM;
+            const ValueType& myData = myVal.Data[curIdx];
+            const ValueType& otherData = otherVal.Data[curIdx];
+            return (myData | mask) == (otherData | mask);
         }
 
         bool operator!= (const BitArray& other) const
@@ -453,7 +487,7 @@ namespace Engine
             data = (data & ~(1 << bitOffset)) | (((ValueType)value) << bitOffset);
         }
 
-        void Insert(int32 index, bool value)
+        void Insert(SizeType index, bool value)
         {
             ENSURE(0 <= index && index <= Size());
             InsertBits(index, 1);
@@ -507,44 +541,36 @@ namespace Engine
 
         void Resize(SizeType newSize)
         {
-            ENSURE(newSize >= 0);
-            auto& myVal = Pair.SecondVal;
-            //const SizeType newCapacity = Math::CeilToMultiple(newSize, ELEMENT_BITS_NUM);
-            if (newSize != myVal.Capacity)
-            {
-                Reallocate(newSize);
-            }
+            Resize(newSize, false);
         }
 
         void Resize(SizeType newSize, bool val)
         {
             ENSURE(newSize >= 0);
             auto& myVal = Pair.SecondVal;
-            //const SizeType newCapacity = Math::CeilToMultiple(newSize, ELEMENT_BITS_NUM);
             if (newSize > myVal.Size)
             {
-                SizeType oldSize = myVal.Size;
                 Reserve(newSize);
 
-                SizeType lastIdx = myVal.Size <= 0 ? -1 : (myVal.Size - 1) / ELEMENT_BITS_NUM;
-                SizeType elemCount = myVal.Capacity / ELEMENT_BITS_NUM;
-                if (lastIdx > 0)
+                SizeType curIdx = myVal.Size <= 0 ? -1 : (myVal.Size - 1) / ELEMENT_BITS_NUM;
+                SizeType elemCount = Math::DivideAndCeil(newSize, ELEMENT_BITS_NUM);
+                if (myVal.Size > 0)
                 {
-                    ValueType& data = myVal.Data[lastIdx];
-                    SizeType bitOffset = (myVal.Size % ELEMENT_BITS_NUM);
+                    ValueType& data = myVal.Data[curIdx];
+                    SizeType bitOffset = ((myVal.Size - 1) % ELEMENT_BITS_NUM);
                     if (val)
                     {
-                        data = (data | ~(1 << bitOffset));
+                        data = (data | ~0u << (bitOffset + 1));
                     }
                     else
                     {
-                        data = (data & (1 << bitOffset));
+                        data = (data & ((1 << bitOffset) - 1));
                     }
                 }
 
-                while (++lastIdx < elemCount)
+                while (++curIdx < elemCount)
                 {
-                    myVal.Data[lastIdx] = val ? ~0u : 0u;
+                    myVal.Data[curIdx] = val ? ~0u : 0u;
                 }
             }
 
@@ -562,8 +588,15 @@ namespace Engine
 
         void Clear(int32 slack = 0)
         {
-            Pair.SecondVal.Size = 0;
-            Resize(slack);
+            if (slack == 0)
+            {
+                Tidy();
+            }
+            else
+            {
+                Pair.SecondVal.Size = 0;
+                Reallocate(slack);
+            }
         }
 
         SizeType Size() const { return Pair.SecondVal.Size;  }
@@ -588,6 +621,11 @@ namespace Engine
         const ValueType* Data() const
         {
             return Pair.SecondVal.Data;
+        }
+
+        AllocatorType GetAllocator() const
+        {
+            return static_cast<AllocatorType>(GetAlloc());
         }
 
         ValidIterator CreateValidIterator(SizeType startIndex = 0)
@@ -622,12 +660,12 @@ namespace Engine
             return ConstIterator(*this, Size());
         }
     private:
-        AllocatorType& GetAllocator()
+        AllocatorType& GetAlloc()
         {
             return Pair.GetFirst();
         }
 
-        const AllocatorType& GetAllocator() const
+        const AllocatorType& GetAlloc() const
         {
             return Pair.GetFirst();
         }
@@ -672,7 +710,7 @@ namespace Engine
             }
         }
 
-        void CopyBits(ValueType* data, int32 size)
+        void CopyBits(ValueType* data, SizeType size)
         {
             ENSURE(size > 0);
             Clear(size);
@@ -707,8 +745,7 @@ namespace Engine
             auto& otherVal = other.Pair.SecondVal;
             if (myVal.Data)
             {
-                //TODO: Destruct?
-                auto& alloc = GetAllocator();
+                auto& alloc = GetAlloc();
                 alloc.Deallocate(myVal.Data, myVal.Capacity);
             }
 
@@ -781,6 +818,19 @@ namespace Engine
             myVal.Capacity = newCapacity;
         }
 
+        void Tidy()
+        {
+            auto& myVal = Pair.SecondVal;
+            if (myVal.Data)
+            {
+                auto& alloc = GetAlloc();
+                alloc.Deallocate(myVal.Data, myVal.Capacity);
+            }
+            myVal.Size = 0;
+            myVal.Capacity = 0;
+            myVal.Data = nullptr;
+        }
+
     private:
         static constexpr int32 ELEMENT_BITS_NUM = sizeof(ValueType) * 8;
 
@@ -828,6 +878,9 @@ namespace Engine
     class BitArrayDeprecated
     {
     public:
+        using SizeType = int32;
+        using ValueType = uint32;
+
         /** A const iterator always move to next 'true' index */
         using ConstValidIterator = ConstBitValidIterator<BitArrayDeprecated>;
         /** An iterator always move to next 'true' index */
@@ -894,16 +947,16 @@ namespace Engine
             Clear(0);
         }
 
-        BitRef operator[] (int32 index)
+        BitRef<uint32> operator[] (int32 index)
         {
             ENSURE(0 <= index && index < ArraySize);
-            return BitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
+            return BitRef<uint32>(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
         }
 
-        ConstBitRef operator[] (int32 index) const
+        ConstBitRef<uint32> operator[] (int32 index) const
         {
             ENSURE(0 <= index && index < ArraySize);
-            return ConstBitRef(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
+            return ConstBitRef<uint32>(Data()[index / kElementBits], 1 << (index & (kElementBits - 1)));
         }
 
         BitArrayDeprecated& operator= (std::initializer_list<bool> initializer)

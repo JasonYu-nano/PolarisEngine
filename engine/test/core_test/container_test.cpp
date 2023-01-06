@@ -302,9 +302,49 @@ namespace Engine
         bool list[5] = { true, false, true, false, true};
         BitArray array4(list, 5);
         EXPECT_TRUE(array4.Size() == 5);
+        EXPECT_TRUE(array4[0] == true && array4[1] == false && array4[2] == true && array4[3] == false && array4[4] == true);
 
         BitArray array5 = {false, true, false, true, false};
         EXPECT_TRUE(array5.Size() == 5);
+        EXPECT_TRUE(array5[0] == false && array5[1] == true && array5[2] == false && array5[3] == true && array5[4] == false);
+
+        array4.Resize(10, true);
+        array5.Resize(10, false);
+
+        BitArray array6(array4);
+        BitArray array7(std::move(array5));
+        EXPECT_TRUE(array5.Size() == 0 && array5.Capacity() == 0);
+        EXPECT_TRUE(array6[0] == true && array6[1] == false && array6[2] == true && array6[3] == false && array6[4] == true);
+        EXPECT_TRUE(array7[0] == false && array7[1] == true && array7[2] == false && array7[3] == true && array7[4] == false);
+
+        EXPECT_TRUE(array6 == array4);
+    }
+
+    TEST(ContainerTest, BitArray_Add)
+    {
+        BitArray array = {true, false, true, false};
+        array.Insert(1, true);
+        EXPECT_TRUE(array[1] == true);
+
+        array.Insert(5, true);
+        EXPECT_TRUE(array[5] == true);
+    }
+
+    TEST(ContainerTest, BitArray_Iterator)
+    {
+        BitArray array = {true, false, true, false};
+        bool compareVal = true;
+        for (auto val : array)
+        {
+            EXPECT_TRUE(val == compareVal);
+            compareVal = !compareVal;
+        }
+
+        for (auto it = array.CreateValidIterator(); (bool)it; ++it)
+        {
+            EXPECT_TRUE(*it);
+            EXPECT_TRUE(it.GetIndex() % 2 == 0);
+        }
     }
 
     TEST(ContainerTest, DynamicArray_Base)
@@ -453,7 +493,7 @@ namespace Engine
         EXPECT_TRUE(array3 == array4);
     }
 
-    TEST(ContainerTest, BitArray_Iterator)
+    TEST(ContainerTest, BitArrayDeprecated_Iterator)
     {
         BitArrayDeprecated array = {true, false, true, false, true, false};
         BitArrayDeprecated<>::Iterator iter = array.begin();
