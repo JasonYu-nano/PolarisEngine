@@ -164,6 +164,7 @@ namespace Engine
     template <typename Elem, typename Alloc = StandardAllocator<int32>>
     class Array
     {
+        template <typename T, typename U> friend class SparseArray_Deprecated;
         template <typename T, typename U> friend class SparseArray;
 
     public:
@@ -177,7 +178,9 @@ namespace Engine
         using SecondaryVal = ArrayVal<ValueType, SizeType, ValueType*>;
 
     public:
-        Array() = default;
+        Array(const AllocatorType& alloc = AllocatorType())
+            : Pair(OneArgPlaceholder(), alloc)
+        {}
 
         explicit Array(SizeType capacity, const AllocatorType& alloc = AllocatorType())
             : Pair(OneArgPlaceholder(), alloc)

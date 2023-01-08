@@ -12,6 +12,7 @@ namespace Engine
     class StandardAllocator
     {
     public:
+        using SizeType = IntType;
 
         template <typename ElementType>
         class ElementAllocator
@@ -45,6 +46,7 @@ namespace Engine
     {
         static_assert(InlineSize > 0, "InlineSize must over 0");
     public:
+        using SizeType = Type;
 
         template <typename Elem>
         class ElementAllocator

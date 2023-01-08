@@ -147,7 +147,7 @@ namespace Engine
     template <typename ElementType, typename Allocator = DefaultAllocator>
     class DynamicArray
     {
-        template <typename T, typename U> friend class SparseArray;
+        template <typename T, typename U> friend class SparseArray_Deprecated;
 
     protected:
         using AllocatorType = typename Allocator::template ElementAllocator<ElementType>;

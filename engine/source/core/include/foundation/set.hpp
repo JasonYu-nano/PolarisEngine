@@ -158,7 +158,7 @@ namespace Engine
         };
 
         using HashBucketType = typename SetAllocator::HashAllocator::template ElementAllocator<SetElementIndex>;
-        using SparseArrayType = SparseArray<SetElement, typename SetAllocator::SparseArrayAllocator>;
+        using SparseArrayType = SparseArray_Deprecated<SetElement, typename SetAllocator::SparseArrayAllocator>;
 
         friend class ConstSetIterator<Set, ElementType>;
         friend class SetIterator<Set, ElementType>;

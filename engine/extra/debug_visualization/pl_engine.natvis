@@ -41,6 +41,19 @@
         </Expand>
     </Type>
 
+    <Type Name="Engine::SparseArray&lt;*,*&gt;">
+        <DisplayString Condition="ElemNodes.Pair.SecondVal.Size == 0">Empty</DisplayString>
+        <DisplayString Condition="ElemNodes.Pair.SecondVal.Size &lt; 0">Invalid</DisplayString>
+        <DisplayString Condition="ElemNodes.Pair.SecondVal.Capacity &lt; ElemNodes.Pair.SecondVal.Size">Invalid</DisplayString>
+        <DisplayString Condition="ElemNodes.Pair.SecondVal.Capacity &gt;= ElemNodes.Pair.SecondVal.Size">Size={ElemNodes.Pair.SecondVal.Size - FreeElemCount} Capacity={ElemNodes.Pair.SecondVal.Capacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="ElemNodes.Pair.SecondVal.Size &lt;= ElemNodes.Pair.SecondVal.Capacity">
+                <Size>ElemNodes.Pair.SecondVal.Size</Size>
+                <ValuePointer>($T1*)ElemNodes.Pair.SecondVal.Data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <!-- String visualizer -->
     <Type Name="Engine::BasicStringView&lt;*,*&gt;">
         <DisplayString Condition="Str &lt;= 0">Null</DisplayString>

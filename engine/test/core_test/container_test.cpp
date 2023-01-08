@@ -63,6 +63,16 @@ namespace Engine
             return *ValuePtr != *other.ValuePtr;
         }
 
+        bool operator== (int32 val) const
+        {
+            return *ValuePtr == val;
+        }
+
+        bool operator!= (int32 val) const
+        {
+            return *ValuePtr != val;
+        }
+
         static int32 AllocCounter;
         int32* ValuePtr{ nullptr };
     };
@@ -347,6 +357,54 @@ namespace Engine
         }
     }
 
+    TEST(ContainerTest, SparseArray_Ctor)
+    {
+        SparseArray<NonTrivialArrayItem> array(10);
+        EXPECT_TRUE(array.Capacity() == 10);
+
+        NonTrivialArrayItem items[3] = {NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2)};
+        SparseArray<NonTrivialArrayItem> array1(items, 3);
+
+        EXPECT_TRUE(array1[0] == 0 && array1[1] == 1 && array1[2] == 2);
+    }
+
+    TEST(ContainerTest, SparseArray_Add)
+    {
+        SparseArray<NonTrivialArrayItem> array(10);
+        array.Add({0});
+        array.Add({1});
+        array.Add({2});
+        EXPECT_TRUE(array[0] == 0 && array[1] == 1 && array[2] == 2);
+
+        array.RemoveAt(1);
+        array.Add({3});
+        EXPECT_TRUE(array[1] == 3);
+
+        array.RemoveAt(2);
+        array.Insert(3, {4});
+        EXPECT_TRUE(array[3] == 4);
+
+        EXPECT_FALSE(array.HasValue(2));
+    }
+
+    TEST(ContainerTest, SparseArray_Iter)
+    {
+        SparseArray<NonTrivialArrayItem> array(10);
+        array.Add({0});
+        array.Add({1});
+        array.Add({2});
+        array.RemoveAt(1);
+        array.RemoveAt(2);
+        array.Insert(3, {4});
+
+        int32 count = 0;
+        for (auto& val : array)
+        {
+            ++count;
+        }
+        EXPECT_TRUE(count = 2);
+    }
+
     TEST(ContainerTest, DynamicArray_Base)
     {
         DynamicArray<int> array(10);
@@ -512,7 +570,7 @@ namespace Engine
 
     TEST(ContainerTest, SparseArray_Base)
     {
-        SparseArray<int32> array(8);
+        SparseArray_Deprecated<int32> array(8);
         uint32 index1 = array.Add(-20);
         uint32 index2 = array.Add(11);
         EXPECT_TRUE(index1 == 0 && index2 && 1);
@@ -523,7 +581,7 @@ namespace Engine
         EXPECT_TRUE(array[0] == 6 && array[1] == 11);
         array.RemoveAt(2); //{6, 11, null, -1}
 
-        SparseArray<int32> array2 = {6, 11, -1};
+        SparseArray_Deprecated<int32> array2 = {6, 11, -1};
         EXPECT_FALSE(array == array2);
 
         array2.Insert(3, -1); //{6, 11, -1, -1}
@@ -534,7 +592,7 @@ namespace Engine
 
     TEST(ContainerTest, SparseArray_Iterator)
     {
-        SparseArray<int32> array(8);
+        SparseArray_Deprecated<int32> array(8);
         uint32 index1 = array.Add(-20);
         uint32 index2 = array.Add(11);
         array.Add(15);
@@ -545,7 +603,7 @@ namespace Engine
         {
         }
 
-        for (SparseArray<int32>::ConstIterator iter = array.begin(); iter != array.end(); ++iter)
+        for (SparseArray_Deprecated<int32>::ConstIterator iter = array.begin(); iter != array.end(); ++iter)
         {
         }
     }

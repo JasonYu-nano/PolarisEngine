@@ -67,7 +67,6 @@ namespace Engine
         ValueType Mask;
     };
 
-#pragma region iterator
     template <typename SizeType>
     class RelativeBitRef
     {
@@ -309,7 +308,6 @@ namespace Engine
             return !(lhs == rhs);
         }
     };
-#pragma endregion iterator
 
     template<typename ValueType, typename SizeType, typename Pointer>
     class BitArrayVal
