@@ -83,26 +83,6 @@ namespace Engine
         }
     };
 
-//    template <typename ValueType>
-//    class SparseArrayLinkNode
-//    {
-//    public:
-//        ~SparseArrayLinkNode() {};
-//
-//        union _U
-//        {
-//            _U() {};
-//            ~_U() {};
-//
-//            ValueType Val;
-//            struct
-//            {
-//                int32 PrevIndex;
-//                int32 NextIndex;
-//            };
-//        } U;
-//    };
-
     template <typename Elem, typename Alloc = StandardAllocator<int32>>
     class SparseArray
     {
