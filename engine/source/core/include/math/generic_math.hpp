@@ -131,10 +131,37 @@ namespace Engine
             return (32 - CountLeadingZeros(value - 1)) & (~bitMask);
         }
 
-        static uint32 RoundUpToPowerOfTwo(uint32 value)
+        template <IntegralType T>
+        static constexpr bool IsPowerOfTwo(std::make_unsigned_t<T> value)
         {
-            return 1 << CeilLogTwo(value);
+            return value != 0 && (value & (value - 1)) == 0;
         }
+
+        template <IntegralType T>
+        static T RoundUpToPowerOfTwo(T value) {
+            if(IsPowerOfTwo<T>(value))
+            {
+                return value;
+            }
+
+            if(value == 0)
+            {
+                return 1;
+            }
+
+            --value;
+            for(uint64 i = 1; i < sizeof(uint64) * CHAR_BIT; i *= 2)
+            {
+                value |= value >> i;
+            }
+
+            return value + 1;
+        }
+
+//        static uint32 RoundUpToPowerOfTwo(uint32 value)
+//        {
+//            return 1 << CeilLogTwo(value);
+//        }
 
         template <typename T>
         static T Clamp(const T& value, const T& min, const T& max)
