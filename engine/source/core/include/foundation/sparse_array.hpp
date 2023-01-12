@@ -92,10 +92,7 @@ namespace Engine
 
         union _SparseArrayLinkNode
         {
-            _SparseArrayLinkNode() {};
-            ~_SparseArrayLinkNode() {};
-
-            ValueType Val;
+            UntypedData<ValueType> Val;
             struct
             {
                 SizeType PrevIndex;
@@ -227,13 +224,13 @@ namespace Engine
         ValueType& operator[] (SizeType index)
         {
             ENSURE(0 <=index && AllocateFlags[index]);
-            return ElemNodes[index].Val;
+            return *ElemNodes[index].Val.GetData();
         }
 
         const ValueType& operator[] (SizeType index) const
         {
             ENSURE(0 <= index && AllocateFlags[index]);
-            return ElemNodes[index].Val;
+            return *ElemNodes[index].Val.GetData();
         }
 
         SizeType Add(const ValueType& elem)
