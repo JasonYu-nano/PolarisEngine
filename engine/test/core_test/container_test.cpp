@@ -366,6 +366,12 @@ namespace Engine
         SparseArray<NonTrivialArrayItem> array1(items, 3);
 
         EXPECT_TRUE(array1[0] == 0 && array1[1] == 1 && array1[2] == 2);
+
+        SparseArray<NonTrivialArrayItem> array2(array1);
+        EXPECT_TRUE(array2[0] == 0 && array2[1] == 1 && array2[2] == 2);
+
+        SparseArray<NonTrivialArrayItem> array3(std::move(array1));
+        EXPECT_TRUE(array3[0] == 0 && array3[1] == 1 && array3[2] == 2);
     }
 
     TEST(ContainerTest, SparseArray_Add)

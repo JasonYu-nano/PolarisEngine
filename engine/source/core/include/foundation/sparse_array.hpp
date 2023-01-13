@@ -116,22 +116,20 @@ namespace Engine
             : AllocateFlags()
             , ElemNodes(alloc)
         {
-            CopyElement(ptr, size);
+            CopyAssign(ptr, size);
         }
 
         SparseArray(std::initializer_list<ValueType> initializer, const AllocatorType& alloc = AllocatorType())
             : AllocateFlags()
             , ElemNodes(alloc)
         {
-            CopyElement(initializer.begin(), static_cast<SizeType>(initializer.size()));
+            CopyAssign(initializer.begin(), static_cast<SizeType>(initializer.size()));
         }
 
         SparseArray(const SparseArray& other)
-            : FirstFreeNodeIndex(other.FirstFreeNodeIndex)
-            , FreeElemCount(other.FreeElemCount)
-            , AllocateFlags(other.AllocateFlags)
-            , ElemNodes(other.ElemNodes)
-        {}
+        {
+            CopyAssign(other);
+        }
 
         SparseArray(SparseArray&& other) noexcept
             : FirstFreeNodeIndex(other.FirstFreeNodeIndex)
@@ -159,28 +157,20 @@ namespace Engine
         SparseArray& operator= (std::initializer_list<ValueType> initializer)
         {
             Clear(initializer.size());
-            CopyElement(initializer.begin(), static_cast<SizeType>(initializer.size()));
+            CopyAssign(initializer.begin(), static_cast<SizeType>(initializer.size()));
         }
 
         SparseArray& operator= (const SparseArray& other)
         {
             ENSURE(this != &other);
-            FirstFreeNodeIndex = other.FirstFreeNodeIndex;
-            FreeElemCount = other.FreeElemCount;
-            AllocateFlags = other.AllocateFlags;
-            ElemNodes = other.ElemNodes;
+            CopyAssign(other);
             return *this;
         }
 
         SparseArray& operator= (SparseArray&& other) noexcept
         {
             ENSURE(this != &other);
-            FirstFreeNodeIndex = other.FirstFreeNodeIndex;
-            other.FirstFreeNodeIndex = INDEX_NONE;
-            FreeElemCount = other.FreeElemCount;
-            other.FreeElemCount = 0;
-            AllocateFlags = std::move(other.AllocateFlags);
-            ElemNodes = std::move(other.ElemNodes);
+            MoveAssign(std::forward<SparseArray>(other));
             return *this;
         }
 
@@ -397,16 +387,6 @@ namespace Engine
             return index;
         }
 
-        void CopyElement(const ValueType* data, SizeType size)
-        {
-            ENSURE(size >= 0);
-            Reserve(size);
-            for (SizeType idx = 0; idx < size; ++idx)
-            {
-                Add(data[idx]);
-            }
-        }
-
         SizeType AddUnconstructElement()
         {
             SizeType index = INDEX_NONE;
@@ -481,9 +461,67 @@ namespace Engine
             FreeElemCount++;
         }
 
+        void CopyAssign(const SparseArray& other)
+        {
+            FirstFreeNodeIndex = other.FirstFreeNodeIndex;
+            FreeElemCount = other.FreeElemCount;
+            AllocateFlags = other.AllocateFlags;
+            ElemNodes.GetAlloc() = other.ElemNodes.GetAlloc();
+
+            if constexpr (std::is_trivially_copyable_v<ValueType>)
+            {
+                // Just memory copy
+                ElemNodes = other.ElemNodes;
+                return;
+            }
+
+            SizeType otherSize = other.ElemNodes.Size();
+            ElemNodes.Reserve(other.ElemNodes.Capacity());
+            ElemNodes.AddUnconstructElement(otherSize);
+            NodeType* destData = ElemNodes.Data();
+            const NodeType* srcData = other.ElemNodes.Data();
+
+            for (SizeType idx = 0; idx < otherSize; ++idx)
+            {
+                NodeType& dest = destData[idx];
+                const NodeType& src = srcData[idx];
+
+                if (other.HasValue(idx))
+                {
+                    new(&dest.Val) ValueType(*src.Val.GetData());
+                }
+                else
+                {
+                    dest.NextIndex = src.NextIndex;
+                    dest.PrevIndex = dest.PrevIndex;
+                }
+            }
+        }
+
+        void CopyAssign(const ValueType* data, SizeType size)
+        {
+            ENSURE(size >= 0);
+            Reserve(size);
+            for (SizeType idx = 0; idx < size; ++idx)
+            {
+                Add(data[idx]);
+            }
+        }
+
+        void MoveAssign(SparseArray&& other)
+        {
+            FirstFreeNodeIndex = other.FirstFreeNodeIndex;
+            FreeElemCount = other.FreeElemCount;
+            AllocateFlags = std::move(other.AllocateFlags);
+            ElemNodes = std::move(other.ElemNodes);
+
+            other.FirstFreeNodeIndex = INDEX_NONE;
+            other.FreeElemCount = 0;
+        }
+
     private:
         SizeType FirstFreeNodeIndex{ (SizeType)INDEX_NONE };
-        SizeType FreeElemCount{0 };
+        SizeType FreeElemCount{ 0 };
         BitArrayType AllocateFlags;
         ArrayType ElemNodes;
     };
