@@ -46,11 +46,30 @@ namespace Engine
             ValuePtr = new int32(*other.ValuePtr);
         }
 
+        NonTrivialArrayItem(NonTrivialArrayItem&& other) noexcept
+        {
+            ValuePtr = other.ValuePtr;
+            other.ValuePtr = nullptr;
+        }
+
         ~NonTrivialArrayItem()
         {
             --AllocCounter;
             delete ValuePtr;
             ValuePtr = nullptr;
+        }
+
+        NonTrivialArrayItem& operator=(const NonTrivialArrayItem& other)
+        {
+            *ValuePtr = *other.ValuePtr;
+            return *this;
+        }
+
+        NonTrivialArrayItem& operator=(NonTrivialArrayItem&& other)
+        {
+            ValuePtr = other.ValuePtr;
+            other.ValuePtr = nullptr;
+            return *this;
         }
 
         bool operator== (const NonTrivialArrayItem& other) const
@@ -71,6 +90,11 @@ namespace Engine
         bool operator!= (int32 val) const
         {
             return *ValuePtr != val;
+        }
+
+        uint32 GetHashCode() const
+        {
+            return *ValuePtr;
         }
 
         static int32 AllocCounter;
@@ -411,6 +435,46 @@ namespace Engine
         EXPECT_TRUE(count = 2);
     }
 
+    TEST(ContainerTest, Set_Ctor)
+    {
+        Set<NonTrivialArrayItem> set(10);
+
+        Set<NonTrivialArrayItem> set1 = { NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2) };
+
+        Set<NonTrivialArrayItem> set2(set1);
+
+        Set<NonTrivialArrayItem> set3(set);
+
+        Set<NonTrivialArrayItem> set4(std::move(set));
+    }
+
+    TEST(ContainerTest, Set_Modify)
+    {
+        Set<NonTrivialArrayItem> set = { NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2) };
+        set.Add(NonTrivialArrayItem{0});
+        EXPECT_TRUE(set.Contains(NonTrivialArrayItem{0}));
+
+        NonTrivialArrayItem* item = set.Find(NonTrivialArrayItem{1});
+        EXPECT_TRUE(item != nullptr);
+
+        set.Remove(NonTrivialArrayItem{1});
+
+        item = set.Find(NonTrivialArrayItem{1});
+        EXPECT_TRUE(item == nullptr);
+    }
+
+    TEST(ContainerTest, Set_Iterator)
+    {
+        Set<NonTrivialArrayItem> set = { NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2) };
+
+        int32 count = 0;
+        for (auto&& item : set)
+        {
+           ++count;
+        }
+        EXPECT_TRUE(count == 3);
+    }
+
     TEST(ContainerTest, DynamicArray_Base)
     {
         DynamicArray<int> array(10);
@@ -616,13 +680,13 @@ namespace Engine
 
     TEST(ContainerTest, Set_Base)
     {
-        Set<int32> set;
+        Set_Deprecated<int32> set;
         set.Add(1);
         set.Add(2);
         set.Add(-3);
         set.Add(2);
 
-        Set<int32> set2 = MoveTemp(set);
+        Set_Deprecated<int32> set2 = MoveTemp(set);
         EXPECT_TRUE(set.Size() == 0);
         EXPECT_TRUE(set2.Contains(1));
         EXPECT_TRUE(set2.Contains(2));
@@ -658,18 +722,18 @@ namespace Engine
 
     TEST(ContainerTest, Set_Ptr)
     {
-        Set<TestA*> set;
+        Set_Deprecated<TestA*> set;
         TestA* item = new TestA();
         set.Add(item);
         set.Add(item);
         EXPECT_TRUE(set.Contains(item));
     }
 
-    TEST(ContainerTest, Set_Iterator)
+    TEST(ContainerTest, SetDeprecated_Iterator)
     {
-        Set<int32> kSet{ 4, 6, 9, 3 };
+        Set_Deprecated<int32> kSet{4, 6, 9, 3 };
 
-        for (Set<int32>::ConstIterator iter = kSet.begin(); iter != kSet.end(); ++iter)
+        for (Set_Deprecated<int32>::ConstIterator iter = kSet.begin(); iter != kSet.end(); ++iter)
         {
             EXPECT_TRUE(kSet.Contains(*iter));
         }

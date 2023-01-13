@@ -70,6 +70,17 @@
         </Expand>
     </Type>
 
+    <!-- HashBucket visualizer -->
+    <Type Name="Engine::SetHashBucket&lt;*,*&gt;">
+        <DisplayString>Size={Pair.SecondVal.Size}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Size>Pair.SecondVal.Size</Size>
+                <ValuePointer>($T1*)Pair.SecondVal.Data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <!-- String visualizer -->
     <Type Name="Engine::BasicStringView&lt;*,*&gt;">
         <DisplayString Condition="Str &lt;= 0">Null</DisplayString>

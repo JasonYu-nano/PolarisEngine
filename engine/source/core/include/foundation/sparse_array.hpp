@@ -24,6 +24,11 @@ namespace Engine
 
         const ValueType* operator->() const { return &Container[GetIndex()]; }
 
+        explicit operator bool() const
+        {
+            return (bool)BitIterator;
+        }
+
         ConstSparseIterator& operator++ ()
         {
             ++BitIterator;
@@ -86,12 +91,23 @@ namespace Engine
     template <typename Elem, typename Alloc = StandardAllocator<int32>>
     class SparseArray
     {
+        template <typename T, typename U, typename V> friend class Set;
     public:
         using ValueType = Elem;
         using SizeType = typename Alloc::SizeType;
 
         union _SparseArrayLinkNode
         {
+            ValueType& GetVal()
+            {
+                return *Val.GetData();
+            }
+
+            const ValueType& GetVal() const
+            {
+                return *Val.GetData();
+            }
+
             UntypedData<ValueType> Val;
             struct
             {
@@ -106,6 +122,11 @@ namespace Engine
         using BitArrayType = BitArray<StandardAllocator<SizeType>>;
         using ConstIterator = ConstSparseIterator<SparseArray>;
         using Iterator = SparseIterator<SparseArray>;
+
+        explicit SparseArray(const AllocatorType& alloc = AllocatorType())
+            : AllocateFlags()
+            , ElemNodes(alloc)
+        {}
 
         explicit SparseArray(SizeType capacity, const AllocatorType& alloc = AllocatorType())
             : AllocateFlags(capacity)
@@ -573,7 +594,7 @@ namespace Engine
         using ValueType = ElementType;
         using SizeType = int32;
 
-        template <typename T, typename U, typename V> friend class Set;
+        template <typename T, typename U, typename V> friend class Set_Deprecated;
 
     public:
         using ConstIterator = ConstSparseIterator<SparseArray_Deprecated>;

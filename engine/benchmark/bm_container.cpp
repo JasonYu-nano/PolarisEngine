@@ -117,7 +117,7 @@ static void BM_SetAdd(benchmark::State& state)
 {
     for (auto _ : state)
     {
-        Set<uint32> mySet;
+        Set_Deprecated<uint32> mySet;
         for (uint32 i = 0; i < 1000; i++)
         {
             mySet.Add(i);
@@ -151,7 +151,7 @@ static void BM_StlSetAdd(benchmark::State& state)
 
 static void BM_SetLoop(benchmark::State& state)
 {
-    Set<uint32> mySet;
+    Set_Deprecated<uint32> mySet;
     for (uint32 i = 1000; i > 0; i--)
     {
         mySet.Add(i);

@@ -256,8 +256,8 @@ namespace Engine
 
         Array& operator=(Array&& other) noexcept
         {
-            GetAlloc() = std::move(other.GetAlloc());
             ENSURE(this != &other);
+            GetAlloc() = std::move(other.GetAlloc());
             MoveElement(std::forward<Array>(other));
             return *this;
         }
@@ -823,34 +823,6 @@ namespace Engine
         {
             const auto& myVal = Pair.SecondVal;
             return address < myVal.Data || address >= myVal.Data + myVal.Capacity;
-        }
-
-        void ConstructElements(ValueType* dest, const ValueType* src, SizeType size)
-        {
-            if constexpr (CAN_MEMORY_COPY)
-            {
-                Memory::Memcpy((void*)dest, (void*)src, sizeof(ValueType) * size);
-            }
-            else
-            {
-                while (size > 0)
-                {
-                    new(dest) ValueType(*src);
-                    ++dest;
-                    ++src;
-                    --size;
-                }
-            }
-        }
-
-        void DestructElements(ValueType* elems, SizeType size)
-        {
-            while (size)
-            {
-                std::destroy_at(elems);
-                ++elems;
-                --size;
-            }
         }
 
         void CopyElement(const ValueType* data, SizeType size, SizeType extraSlack = 0)

@@ -108,7 +108,7 @@ namespace Engine
     class Map
     {
         using TPairType = Pair<KeyType, ValueType>;
-        using TPairContainer = Set<TPairType, KeyFunc, MapAllocator>;
+        using TPairContainer = Set_Deprecated<TPairType, KeyFunc, MapAllocator>;
     public:
         using ConstIterator = ConstMapIterator<typename TPairContainer::ConstIterator, TPairType>;
         using Iterator = MapIterator<typename TPairContainer::ConstIterator, TPairType>;

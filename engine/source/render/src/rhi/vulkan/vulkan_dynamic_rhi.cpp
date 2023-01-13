@@ -304,7 +304,7 @@ namespace Engine
         QueueFamilyIndices indices = FindQueueFamilies(PhysicalDevice);
 
         VkArray<VkDeviceQueueCreateInfo> queueCreationInfos;
-        Set<uint32> queueFamilies = { indices.GraphicsFamily.value(), indices.PresentFamily.value() };
+        Set_Deprecated<uint32> queueFamilies = {indices.GraphicsFamily.value(), indices.PresentFamily.value() };
 
         float queuePriority = 1.0f;
         for (uint32 queueFamily : queueFamilies) {
@@ -371,7 +371,7 @@ namespace Engine
         VkExtensionProperties* availableExtensions = new VkExtensionProperties[extensionCount];
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions);
 
-        Set<std::string> requiredExtensions(DeviceExtensions.begin(), DeviceExtensions.end());
+        Set_Deprecated<std::string> requiredExtensions(DeviceExtensions.begin(), DeviceExtensions.end());
 
         for (uint32 idx = 0; idx < extensionCount; ++idx)
         {

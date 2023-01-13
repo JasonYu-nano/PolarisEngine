@@ -1,6 +1,7 @@
 #pragma once
 
 #include "memory/platform_memory.hpp"
+#include <xmemory>
 
 namespace Engine
 {
@@ -48,6 +49,46 @@ namespace Engine
         /** get global malloc object, thread unsafe */
         static IMalloc* GetGMalloc();
     };
+
+    template <typename ValueType, typename SizeType>
+    void ConstructElements(ValueType* dest, SizeType size)
+    {
+        for (SizeType index = 0; index < size; ++index)
+        {
+            new(dest + index) ValueType();
+        }
+    }
+
+    template <typename ValueType, typename SizeType>
+    void ConstructElements(ValueType* dest, const ValueType* src, SizeType size)
+    {
+        if constexpr (std::is_trivially_copyable_v<ValueType>)
+        {
+            Memory::Memcpy(dest, (void*)src, sizeof(ValueType) * size);
+        }
+        else
+        {
+            while (size > 0)
+            {
+                new(dest) ValueType(*src);
+                ++dest;
+                ++src;
+                --size;
+            }
+        }
+    }
+
+    template <typename ValueType, typename SizeType>
+    void DestructElements(ValueType* src, SizeType size)
+    {
+        ENSURE(src != nullptr || size <= 0);
+        while (size)
+        {
+            std::destroy_at(src);
+            ++src;
+            --size;
+        }
+    }
 }
 
 CORE_API extern Engine::IMalloc* GMalloc;
