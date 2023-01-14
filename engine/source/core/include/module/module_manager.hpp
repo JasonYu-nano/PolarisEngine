@@ -61,7 +61,7 @@ namespace Engine
 
         void Shutdown();
 
-        Map<FixedString, IModuleInterface*> CachedModule;
+        Map_Deprecated<FixedString, IModuleInterface*> CachedModule;
         std::shared_mutex ModuleRWMutex;
     };
 }

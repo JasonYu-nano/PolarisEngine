@@ -475,6 +475,68 @@ namespace Engine
         EXPECT_TRUE(count == 3);
     }
 
+    TEST(ContainerTest, Map_Ctor)
+    {
+        Map<int32, NonTrivialArrayItem> map(10);
+        Map<int32, NonTrivialArrayItem> map1 = {{0, NonTrivialArrayItem(0)}, {1, NonTrivialArrayItem(1)}, {2, NonTrivialArrayItem(2)}};
+        EXPECT_TRUE(map1.FindRef(0) == 0);
+        EXPECT_TRUE(map1.FindRef(1) == 1);
+        EXPECT_TRUE(map1.FindRef(2) == 2);
+
+        Map<int32, NonTrivialArrayItem> map2(map1);
+        EXPECT_TRUE(map2.FindRef(0) == 0);
+        EXPECT_TRUE(map2.FindRef(1) == 1);
+        EXPECT_TRUE(map2.FindRef(2) == 2);
+
+        Map<int32, NonTrivialArrayItem> map3(std::move(map1));
+        EXPECT_TRUE(map3.FindRef(0) == 0);
+        EXPECT_TRUE(map3.FindRef(1) == 1);
+        EXPECT_TRUE(map3.FindRef(2) == 2);
+    }
+
+    TEST(ContainerTest, Map_Modify)
+    {
+        Map<int32, NonTrivialArrayItem> map(10);
+        map.Add(0, NonTrivialArrayItem(0));
+        EXPECT_TRUE(map.FindRef(0) == 0);
+
+        NonTrivialArrayItem item(1);
+        map.Add(1, item);
+        EXPECT_TRUE(map.FindRef(1) == 1);
+
+        int32 key = 1;
+        map.Add(key, NonTrivialArrayItem(2));
+        EXPECT_TRUE(map.FindRef(1) == 2);
+
+        map.FindOrAdd(2, NonTrivialArrayItem(2));
+        EXPECT_TRUE(map.FindRef(2) == 2);
+
+        map.FindOrAdd(2, NonTrivialArrayItem(3));
+        EXPECT_TRUE(map.FindRef(2) == 2);
+
+        EXPECT_TRUE(map.Contains(2));
+
+        map.Remove(1);
+        EXPECT_FALSE(map.Contains(1));
+
+        EXPECT_TRUE(map.Size() == 2);
+    }
+
+    TEST(ContainerTest, Map_Iterator)
+    {
+        Map<int32, NonTrivialArrayItem> map = {{0, NonTrivialArrayItem(0)}, {1, NonTrivialArrayItem(1)}, {2, NonTrivialArrayItem(2)}};
+
+        for (auto&& pair : map)
+        {
+            EXPECT_TRUE(pair.Key == pair.Value);
+        }
+
+        for (auto it = map.begin(); (bool)it; ++it)
+        {
+            EXPECT_TRUE(it->Key == it->Value);
+        }
+    }
+
     TEST(ContainerTest, DynamicArray_Base)
     {
         DynamicArray<int> array(10);
@@ -741,7 +803,7 @@ namespace Engine
 
     TEST(ContainerTest, Map_Base)
     {
-        Map<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {1, 1.6f}};
+        Map_Deprecated<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {1, 1.6f}};
         EXPECT_TRUE(*(map.Find(1)) == 1.6f);
         EXPECT_TRUE(*(map.Find(2)) == 2.5f);
 
@@ -752,22 +814,22 @@ namespace Engine
         map.Remove(1);
         EXPECT_TRUE(map.Find(1) == nullptr);
 
-        Map<int32, float> map2 = MoveTemp(map);
+        Map_Deprecated<int32, float> map2 = MoveTemp(map);
         EXPECT_TRUE(*map2.Find(2) == 2.5f);
         EXPECT_TRUE(map.Size() == 0 && map2.Size() == 1);
         map2.Clear(2);
         EXPECT_TRUE(map2.Size() == 0);
     }
 
-    TEST(ContainerTest, Map_Iterator)
+    TEST(ContainerTest, Map1_Iterator)
     {
-        Map<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {3, 1.6f}};
+        Map_Deprecated<int32, float> map = {{1, 1.5f}, {2, 2.5f}, {3, 1.6f}};
         for (const auto& pair : map)
         {
             LOG_INFO("", "key:{0} value:{1}", pair.Key, pair.Value);
         }
 
-        for (Map<int32, float>::ConstIterator iter = map.begin(); iter != map.end(); ++iter)
+        for (Map_Deprecated<int32, float>::ConstIterator iter = map.begin(); iter != map.end(); ++iter)
         {
             LOG_INFO("", "key:{0} value:{1}", iter->Key, iter->Value);
         }

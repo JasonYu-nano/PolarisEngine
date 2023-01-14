@@ -76,8 +76,6 @@ namespace Engine
         }
     };
 
-#pragma endregion iterator
-
     /**
      * Determine default hash function and equals function of set key
      * @tparam Key
@@ -242,7 +240,7 @@ namespace Engine
                 outSize = Math::Min(Math::RoundUpToPowerOfTwo(newSize / ELEMS_PER_BUCKET + MIN_BUCKETS), MaxSize());
             }
 
-            return newSize != outSize;
+            return Pair.SecondVal.Size != outSize;
         }
 
         /** Contains the head of SetElement list */
@@ -305,6 +303,7 @@ namespace Engine
     template <typename Elem, typename KeyFun = DefaultSetKeyFunc<Elem>, typename Alloc = StandardAllocator<int32>>
     class Set
     {
+        template <typename T, typename U, typename V, typename W> friend class Map;
     public:
         using ValueType = Elem;
         using SizeType = Alloc::SizeType;
@@ -330,7 +329,9 @@ namespace Engine
         using Iterator = SetIterator<Set>;
         using ConstIterator = ConstSetIterator<Set>;
 
-        Set() = default;
+        explicit Set(const AllocatorType& alloc = AllocatorType())
+            : Elements(alloc)
+        {}
 
         Set(SizeType capacity, const AllocatorType& alloc = AllocatorType())
             : Elements(alloc)
@@ -542,7 +543,7 @@ namespace Engine
 
             CheckRehash(Elements.Size() + 1);
             SizeType indexInSparseArray = Elements.AddUnconstructElement();
-            SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(val);
+            SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(std::forward<ElemType>(val));
             LinkElement(SetElemIndex(indexInSparseArray), *item, hashCode);
             return item->MyVal;
         }
@@ -658,7 +659,7 @@ namespace Engine
 
         friend class ConstSetIterator<Set_Deprecated>;
         friend class SetIterator<Set_Deprecated>;
-        template <typename K, typename V, typename T, typename U> friend class Map;
+        template <typename K, typename V, typename T, typename U> friend class Map_Deprecated;
 
     public:
         using Iterator = SetIterator<Set_Deprecated>;

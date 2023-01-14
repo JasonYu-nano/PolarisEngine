@@ -70,7 +70,7 @@ namespace Engine
 
     class StringEntryPool
     {
-        using EntryPoolType = Map<FixedEntryId, String, MapDefaultHashFunc<FixedEntryId, String>, StringEntryPoolAllocator>;
+        using EntryPoolType = Map_Deprecated<FixedEntryId, String, MapDefaultHashFun<FixedEntryId, String>, StringEntryPoolAllocator>;
     public:
         static StringEntryPool& Get()
         {
