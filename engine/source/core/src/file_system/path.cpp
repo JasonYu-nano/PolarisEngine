@@ -72,7 +72,7 @@ namespace Engine
         return ret;
     }
 
-    DynamicArray<String> Path::SplitPath(const String& path)
+    Array<String> Path::SplitPath(const String& path)
     {
         return path.SplitAny("/\\");
     }

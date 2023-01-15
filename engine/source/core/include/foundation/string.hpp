@@ -132,7 +132,7 @@ namespace Engine
 
         StringIterator operator++ (int32)
         {
-            IndexIterator temp = *this;
+            StringIterator temp = *this;
             Super::operator++();
             return temp;
         }
@@ -145,7 +145,7 @@ namespace Engine
 
         StringIterator operator-- (int32)
         {
-            IndexIterator temp = *this;
+            StringIterator temp = *this;
             Super::operator--();
             return temp;
         }
@@ -533,36 +533,36 @@ namespace Engine
 
         void ToLowerLatin1();
 
-        DynamicArray<BasicString> Split(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
+        Array<BasicString> Split(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        DynamicArray<BasicString> Split(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> Split(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(static_cast<ViewType>(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> Split(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> Split(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(ViewType(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> Split(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> Split(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return Split(ViewType(std::addressof(sep), 1), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
+        Array<BasicString> SplitAny(const ViewType& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const;
 
-        DynamicArray<BasicString> SplitAny(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> SplitAny(const BasicString& sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(static_cast<ViewType>(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> SplitAny(const CharType* sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(ViewType(sep), behavior, cs);
         }
 
-        DynamicArray<BasicString> SplitAny(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
+        Array<BasicString> SplitAny(CharType sep, ESplitBehavior behavior = KeepEmptyParts, ECaseSensitivity cs = CaseSensitive) const
         {
             return SplitAny(ViewType(std::addressof(sep), 1), behavior, cs);
         }

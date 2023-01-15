@@ -4,7 +4,7 @@
 #include <condition_variable>
 #include <queue>
 #include <future>
-#include "foundation/dynamic_array.hpp"
+#include "foundation/array.hpp"
 #include "definitions_core.hpp"
 #include "foundation/smart_ptr.hpp"
 
@@ -73,8 +73,8 @@ namespace Engine
     private:
         void DestroyInternal();
 
-        DynamicArray<WorkThread*> AllWorkers;
-        DynamicArray<WorkThread> TestAllWorkers;
+        Array<WorkThread*> AllWorkers;
+        Array<WorkThread> TestAllWorkers;
         std::queue<IWorkThreadTask*> TaskQueue;
         std::queue<WorkThread*> IdleWorkers;
         std::mutex TaskQueueMutex;

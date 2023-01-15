@@ -164,7 +164,6 @@ namespace Engine
     template <typename Elem, typename Alloc = StandardAllocator<int32>>
     class Array
     {
-        template <typename T, typename U> friend class SparseArray_Deprecated;
         template <typename T, typename U> friend class SparseArray;
 
     public:
@@ -909,4 +908,7 @@ namespace Engine
 
         CompressedPair<AllocatorType, SecondaryVal> Pair;
     };
+
+    template <typename Elem>
+    using Array64 = Array<Elem, StandardAllocator<int64>>;
 }

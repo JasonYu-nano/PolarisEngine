@@ -3,7 +3,7 @@
 #include "global.hpp"
 #include "math/generic_math.hpp"
 #include "memory/memory.hpp"
-#include "foundation/dynamic_array.hpp"
+#include "foundation/array.hpp"
 #include "foundation/string_type.hpp"
 #include "foundation/char_traits.hpp"
 

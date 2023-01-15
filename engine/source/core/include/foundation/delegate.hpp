@@ -280,7 +280,7 @@ namespace Engine
     protected:
         int8 LockCounter{ 0 };
 
-        DynamicArray<DelegateType> DelegateArray;
+        Array<DelegateType> DelegateArray;
     };
 
     template <typename OwnerClass, typename RetType, typename... ArgTypes>

@@ -464,11 +464,11 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    DynamicArray<BasicString<Elem, Traits, Alloc>>
+    Array<BasicString<Elem, Traits, Alloc>>
     BasicString<Elem, Traits, Alloc>::Split(const ViewType& sep, ESplitBehavior behavior,
                                             ECaseSensitivity cs) const
     {
-        DynamicArray<BasicString> ret;
+        Array<BasicString> ret;
         SizeType start = 0;
         SizeType end;
         while ((end = FindStringHelper(static_cast<ViewType>(*this), start, sep, cs)) != -1)
@@ -487,11 +487,11 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    DynamicArray<BasicString<Elem, Traits, Alloc>>
+    Array<BasicString<Elem, Traits, Alloc>>
     BasicString<Elem, Traits, Alloc>::SplitAny(const ViewType& sep, ESplitBehavior behavior,
                                                ECaseSensitivity cs) const
     {
-        DynamicArray<BasicString> ret;
+        Array<BasicString> ret;
         SizeType start = 0;
         SizeType end;
         while ((end = FindAnyCharHelper(static_cast<ViewType>(*this), start, sep, cs)) != -1)
@@ -681,7 +681,7 @@ namespace Engine
 
         Private::StringMatcher<CharType, CharTraits, SizeType> matcher(before.Data(), blen, cs);
 
-        DynamicArray<SizeType, InlineAllocator_Deprecated<128>> indices;
+        Array<SizeType, InlineAllocator<128>> indices;
         SizeType pos = matcher.IndexIn(source.Data(), source.Length(), 0);
 
         while (pos >= 0)

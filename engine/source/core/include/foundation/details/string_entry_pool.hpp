@@ -60,8 +60,6 @@ namespace Engine
         }
     };
 
-    using StringEntryPoolAllocator = SetAllocator<DefaultAllocator, DefaultAllocator, 2, InitialBucketCount, 4>;
-
 #ifdef SMALLER_FIXED_STRING
     using FixedEntryId = uint32;
 #else
@@ -70,7 +68,7 @@ namespace Engine
 
     class StringEntryPool
     {
-        using EntryPoolType = Map_Deprecated<FixedEntryId, String, MapDefaultHashFun<FixedEntryId, String>, StringEntryPoolAllocator>;
+        using EntryPoolType = Map<FixedEntryId, String>;
     public:
         static StringEntryPool& Get()
         {
