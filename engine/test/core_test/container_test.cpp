@@ -187,12 +187,12 @@ namespace Engine
 
         for (int32 i = 0; i < 4; ++i)
         {
-            EXPECT_TRUE(*array[i].ValuePtr == i);
+            EXPECT_TRUE(array[i] == i);
         }
 
         array.AddDefault();
-        EXPECT_TRUE(*array.Last().ValuePtr == 0);
-        *array.Last().ValuePtr = 4;
+        EXPECT_TRUE(array.Last() == 0);
+        array.Last() = 4;
 
         EXPECT_TRUE(array.AddUnique(item) == false);
         EXPECT_TRUE(array.AddUnique({5}) == true);
@@ -201,58 +201,79 @@ namespace Engine
 
         for (int32 i = 0; i < 6; ++i)
         {
-            EXPECT_TRUE(*array[i].ValuePtr == i);
+            EXPECT_TRUE(array[i] == i);
         }
 
         array.Insert(0, {-1});
         for (int32 i = 0; i < 6; ++i)
         {
-            EXPECT_TRUE(*array[i].ValuePtr == i - 1);
+            EXPECT_TRUE(array[i] == i - 1);
         }
 
         NonTrivialArrayItem items2[] = {NonTrivialArrayItem(-3), NonTrivialArrayItem(-2)};
         array.Insert(0, items2, 2);
         for (int32 i = 0; i < 6; ++i)
         {
-            EXPECT_TRUE(*array[i].ValuePtr == i - 3);
+            EXPECT_TRUE(array[i] == i - 3);
         }
+    }
+
+    TEST(ContainerTest, Array_Find)
+    {
+        Array<NonTrivialArrayItem> array = {NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2), NonTrivialArrayItem(0)};
+        EXPECT_TRUE(array.Find(NonTrivialArrayItem(0)) == 0);
+        EXPECT_TRUE(array.FindLast(NonTrivialArrayItem(0)) == 3);
+    }
+
+    TEST(ContainerTest, Array_Sort)
+    {
+        Array<int32> array = {5, 3, 1, 8, 9, 0};
+        array.Sort();
+        EXPECT_TRUE(array[0] == 0 && array[5] == 9);
+
+        array.Sort(std::greater<>{});
+        EXPECT_TRUE(array[0] == 9 && array[5] == 0);
     }
 
     TEST(ContainerTest, Array_Remove)
     {
         Array<NonTrivialArrayItem> array;
         NonTrivialArrayItem items[3] = {NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2)};
-        array.Add(items, 3);
+        array.Add(items, 3); // {0, 1, 2}
 
-        array.Remove(2, 1);
-        EXPECT_TRUE(*array.Last().ValuePtr == 1);
+        array.Remove(2, 1); // {0, 1}
+        EXPECT_TRUE(array.Last() == 1);
 
-        array.Add({2});
-        array.Remove(0, 2);
-        EXPECT_TRUE(*array.Last().ValuePtr == 2);
+        array.Add({2}); // {0, 1, 2}
+        array.Remove(0, 2); // {2}
+        EXPECT_TRUE(array.Last() == 2);
 
         array.Add({3});
-        array.Add({4});
-        array.Remove({3});
-        EXPECT_TRUE(*array[1].ValuePtr == 4);
+        array.Add({4}); // {2, 3, 4}
+        array.Remove({3}); // {2, 4}
+        EXPECT_TRUE(array[1] == 4);
 
         array.RemoveMatch([](const NonTrivialArrayItem& item){
-            return *item.ValuePtr == 4;
-        });
-        EXPECT_TRUE(*array.Last().ValuePtr == 2);
+            return item == 4;
+        }); // {2}
+        EXPECT_TRUE(array.Last() == 2);
 
         array.Add({3});
-        array.Add({4});
-        array.RemoveAt(2);
-        EXPECT_TRUE(*array.Last().ValuePtr == 3);
+        array.Add({4}); // {2, 3, 4}
+        array.RemoveAt(2);// {2, 3}
+        EXPECT_TRUE(array.Last() == 3);
 
         array.Add({4});
-        array.RemoveAtSwap(0);
-        EXPECT_TRUE(*array.Last().ValuePtr == 3);
+        array.RemoveAtSwap(0); // {4, 3}
+        EXPECT_TRUE(array.Last() == 3);
 
-        array.Add({4});
+        array.Add({4}); // {4, 3, 4}
         auto elem = array.Pop();
-        EXPECT_TRUE(*elem.ValuePtr == 4);
+        EXPECT_TRUE(elem == 4);
+
+        array.Add({2}); // {4, 3, 2}
+        array.RemoveSwap({2});
+        EXPECT_TRUE(array.Last() == 3);
     }
 
     TEST(ContainerTest, Array_Resize)
@@ -276,10 +297,10 @@ namespace Engine
 
         auto item = NonTrivialArrayItem(1);
         array.Resize(2, item);
-        EXPECT_TRUE(*array.Top().ValuePtr == 0);
+        EXPECT_TRUE(array.Top() == 0);
 
         array.Resize(3, item);
-        EXPECT_TRUE(*array.Top().ValuePtr == 1);
+        EXPECT_TRUE(array.Top() == 1);
 
         array.Reserve(10);
         array.Shrink();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <algorithm>
 #include "definitions_core.hpp"
 #include "math/generic_math.hpp"
 #include "memory/allocator_policies.hpp"
@@ -16,11 +17,26 @@ namespace Engine
     public:
         using ValueType = typename ContainerType::ValueType;
         using SizeType = typename ContainerType::SizeType;
+        using value_type = ValueType;
+        using size_type = SizeType;
+        using iterator_category = std::random_access_iterator_tag;
 
         ConstArrayIterator(const ContainerType& container, SizeType index)
             : Container(container)
             , Index(index)
         {}
+
+        ConstArrayIterator(const ConstArrayIterator& other)
+            : Container(other.Container)
+            , Index(other.Index)
+        {}
+
+        ConstArrayIterator& operator= (const ConstArrayIterator& other)
+        {
+            ENSURE(&Container == &other.Container);
+            Index = other.Index;
+            return *this;
+        }
 
         const ValueType& operator* () const
         {
@@ -43,11 +59,17 @@ namespace Engine
             return *this;
         }
 
-        ConstArrayIterator operator++ (int32)
+        ConstArrayIterator operator++ (SizeType)
         {
             ConstArrayIterator temp = *this;
             ++*this;
             return temp;
+        }
+
+        ConstArrayIterator& operator+ (SizeType diff)
+        {
+            Index += diff;
+            return *this;
         }
 
         ConstArrayIterator& operator-- ()
@@ -56,11 +78,27 @@ namespace Engine
             return *this;
         }
 
-        ConstArrayIterator operator-- (int32)
+        ConstArrayIterator operator-- (SizeType)
         {
             ConstArrayIterator temp = *this;
             --*this;
             return temp;
+        }
+
+        ConstArrayIterator& operator- (SizeType diff)
+        {
+            Index -= diff;
+            return *this;
+        }
+
+        SizeType operator- (const ConstArrayIterator& rhs) const
+        {
+            return Index - rhs.Index;
+        }
+
+        bool operator< (const ConstArrayIterator& rhs) const
+        {
+            return Index < rhs.Index;
         }
 
         SizeType GetIndex() const
@@ -91,9 +129,16 @@ namespace Engine
     public:
         using ValueType = Super::ValueType;
         using SizeType = Super::SizeType;
+        using value_type = ValueType;
+        using size_type = SizeType;
+        using iterator_category = std::random_access_iterator_tag;
 
         ArrayIterator(const ContainerType& container, SizeType index)
-                : Super(container, index)
+            : Super(container, index)
+        {}
+
+        ArrayIterator(const ArrayIterator& other)
+            : Super(other)
         {}
 
         ValueType& operator* () const
@@ -112,11 +157,17 @@ namespace Engine
             return *this;
         }
 
-        ArrayIterator operator++ (int32)
+        ArrayIterator operator++ (SizeType)
         {
             ArrayIterator temp = *this;
             Super::operator++();
             return temp;
+        }
+
+        ArrayIterator& operator+ (SizeType diff)
+        {
+            Super::operator+(diff);
+            return *this;
         }
 
         ArrayIterator& operator-- ()
@@ -125,11 +176,22 @@ namespace Engine
             return *this;
         }
 
-        ArrayIterator operator-- (int32)
+        ArrayIterator operator-- (SizeType)
         {
             ArrayIterator temp = *this;
             Super::operator--();
             return temp;
+        }
+
+        ArrayIterator& operator- (SizeType diff)
+        {
+            Super::operator-(diff);
+            return *this;
+        }
+
+        SizeType operator- (const ArrayIterator& rhs) const
+        {
+            return this->Index - rhs.Index;
         }
 
         void RemoveSelf()
@@ -468,6 +530,13 @@ namespace Engine
             }) > 0;
         }
 
+        bool RemoveSwap(const ValueType& elem)
+        {
+            return RemoveMatchSwap([&elem](const ValueType& val) {
+                return elem == val;
+            }) > 0;
+        }
+
         void Remove(SizeType index, SizeType num)
         {
             SizeType end = index + num - 1;
@@ -506,6 +575,30 @@ namespace Engine
                 if (predicate(*elems))
                 {
                     RemoveAt(searchCount - 1);
+                    matchCount++;
+                }
+                searchCount--;
+            }
+
+            return matchCount;
+        }
+
+        SizeType RemoveMatchSwap(std::function<bool(const ValueType& elem)> predicate)
+        {
+            auto& myVal = Pair.SecondVal;
+            if (myVal.Size <= 0)
+            {
+                return 0;
+            }
+
+            SizeType searchCount = myVal.Size;
+            SizeType matchCount = 0;
+            while (searchCount > 0)
+            {
+                ValueType* elems = Data() + searchCount - 1;
+                if (predicate(*elems))
+                {
+                    RemoveAtSwap(searchCount - 1);
                     matchCount++;
                 }
                 searchCount--;
@@ -674,6 +767,62 @@ namespace Engine
         bool IsValidIndex(SizeType index) const
         {
             return index < Size();
+        }
+
+        bool Find(const ValueType& elem, SizeType& index) const
+        {
+            index = Find(elem);
+            return index != INDEX_NONE;
+        }
+
+        SizeType Find(const ValueType& elem) const
+        {
+            auto& myVal = Pair.SecondVal;
+            const ValueType* begin = myVal.Data;
+            const ValueType* end = begin + myVal.Size;
+
+            for (const ValueType* data = begin; data != end; ++data)
+            {
+                if (*data == elem)
+                {
+                    return static_cast<SizeType>(data - begin);
+                }
+            }
+            return INDEX_NONE;
+        }
+
+        bool FindLast(const ValueType& elem, SizeType& index) const
+        {
+            index = FindLast(elem);
+            return index != INDEX_NONE;
+        }
+
+        SizeType FindLast(const ValueType& elem) const
+        {
+            auto& myVal = Pair.SecondVal;
+            const ValueType* end = myVal.Data;
+            const ValueType* begin = end + myVal.Size;
+
+            while (begin != end)
+            {
+                --begin;
+                if (*begin == elem)
+                {
+                    return static_cast<SizeType>(begin - end);
+                }
+            }
+            return INDEX_NONE;
+        }
+
+        void Sort()
+        {
+            std::sort(begin(), end());
+        }
+
+        template <typename Predicate>
+        void Sort(Predicate pred)
+        {
+            std::sort(begin(), end(), pred);
         }
 
         Iterator begin()
