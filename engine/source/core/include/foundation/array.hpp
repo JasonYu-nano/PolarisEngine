@@ -388,6 +388,11 @@ namespace Engine
             EmplaceBack(std::forward<ValueType>(elem));
         }
 
+        /**
+         * Add a group of elements at end
+         * @param elems
+         * @param size
+         */
         void Add(const ValueType* elems, SizeType size)
         {
             SizeType index = AddUnconstructElement(size);
@@ -395,7 +400,7 @@ namespace Engine
         }
 
         /**
-         * Add an element use default constuctor, return the reference of element.
+         * Add an element use default constructor, return the reference of element.
          * @return Reference of element
          */
         ValueType& AddDefault()
@@ -404,6 +409,11 @@ namespace Engine
             return Data()[Size() - 1];
         }
 
+        /**
+         * Adds unique element to array if it doesn't exist.
+         * @param elem
+         * @return
+         */
         bool AddUnique(const ValueType& elem)
         {
             bool isUnique = true;
@@ -426,6 +436,11 @@ namespace Engine
             return isUnique;
         }
 
+        /**
+         * Move unique element to array if it doesn't exist.
+         * @param elem
+         * @return
+         */
         bool AddUnique(ValueType&& elem)
         {
             bool isUnique = true;
@@ -448,18 +463,26 @@ namespace Engine
             return isUnique;
         }
 
+        /**
+         * Pushes element into the array.
+         * @param elem
+         */
         void Push(const ValueType& elem)
         {
             Add(elem);
         }
 
+        /**
+         * Pushes element into the array.
+         * @param elem
+         */
         void Push(ValueType&& elem)
         {
             Add(std::forward<ValueType>(elem));
         }
 
         /**
-         * Inset element at specifier position
+         * Insert element at specifier position
          * @param index
          * @param elem
          */
@@ -480,6 +503,12 @@ namespace Engine
             EmplaceAt(index, std::forward<ValueType>(elem));
         };
 
+        /**
+         * Insert a group of elements at specifier position
+         * @param index
+         * @param elems
+         * @param size
+         */
         void Insert(SizeType index, const ValueType* elems, SizeType size)
         {
             auto& myVal = Pair.SecondVal;
@@ -491,6 +520,7 @@ namespace Engine
         /**
          * Remove element at position
          * @param index
+         * @param num
          */
         void RemoveAt(SizeType index, SizeType num = 1)
         {
@@ -509,6 +539,10 @@ namespace Engine
             }
         }
 
+        /**
+         * Remove element at position. Fill the hole with the last element
+         * @param index
+         */
         void RemoveAtSwap(SizeType index)
         {
             ENSURE(IsValidIndex(index));
@@ -524,7 +558,7 @@ namespace Engine
         /**
          * Remove all elements equals param
          * @param elem
-         * @return has element been removed
+         * @return True if has element been removed
          */
         bool Remove(const ValueType& elem)
         {
@@ -533,6 +567,11 @@ namespace Engine
             }) > 0;
         }
 
+        /**
+         * Remove all elements. Fill the hole with the last element
+         * @param elem
+         * @return True if has element been removed
+         */
         bool RemoveSwap(const ValueType& elem)
         {
             return RemoveMatchSwap([&elem](const ValueType& val) {
@@ -543,7 +582,7 @@ namespace Engine
         /**
          * Remove all elements match the predicate
          * @param predicate
-         * @return count of elements been removed
+         * @return Count of elements been removed
          */
         SizeType RemoveMatch(std::function<bool(const ValueType& elem)> predicate)
         {
@@ -569,6 +608,11 @@ namespace Engine
             return matchCount;
         }
 
+        /**
+         * Remove all elements match the predicate. Fill the hole with the last element
+         * @param predicate
+         * @return Count of elements been removed
+         */
         SizeType RemoveMatchSwap(std::function<bool(const ValueType& elem)> predicate)
         {
             auto& myVal = Pair.SecondVal;
@@ -593,6 +637,10 @@ namespace Engine
             return matchCount;
         }
 
+        /**
+         * Remove last element in array
+         * @return Last element in array
+         */
         ValueType Pop()
         {
             auto& myVal = Pair.SecondVal;
@@ -657,6 +705,10 @@ namespace Engine
             return Size() == 0;
         }
 
+        /**
+         * Return last element in array.
+         * @return Last element in array
+         */
         ValueType& Last()
         {
             auto& myVal = Pair.SecondVal;
@@ -664,6 +716,10 @@ namespace Engine
             return myVal.Data[myVal.Size - 1];
         }
 
+        /**
+         * Return last element in array.
+         * @return Last element in array
+         */
         const ValueType& Last() const
         {
             auto& myVal = Pair.SecondVal;
@@ -671,11 +727,19 @@ namespace Engine
             return myVal.Data[myVal.Size - 1];
         }
 
+        /**
+         * Return last element in array.
+         * @return Last element in array
+         */
         ValueType& Top()
         {
             return Last();
         }
 
+        /**
+         * Return last element in array.
+         * @return Last element in array
+         */
         const ValueType& Top() const
         {
             return Last();
@@ -686,25 +750,20 @@ namespace Engine
             return static_cast<AllocatorType>(GetAlloc());
         }
 
+        /**
+         * Resizes array to given number of elements.
+         * @param newSize
+         */
         void Resize(SizeType newSize)
         {
-            ENSURE(newSize >= 0);
-            auto& myVal = Pair.SecondVal;
-            if (newSize < myVal.Size)
-            {
-                DestructElements(myVal.Data + newSize, myVal.Size - newSize);
-            }
-            else if (newSize > myVal.Size)
-            {
-                Reserve(newSize);
-                for (SizeType idx = myVal.Size; idx < newSize; ++idx)
-                {
-                    new(myVal.Data + idx) ValueType();
-                }
-            }
-            myVal.Size = newSize;
+            Resize(newSize, ValueType());
         }
 
+        /**
+         * Resizes array to given number of elements.
+         * @param newSize
+         * @param val Template value at construction time
+         */
         void Resize(SizeType newSize, const ValueType& val)
         {
             ENSURE(newSize >= 0);
@@ -724,6 +783,10 @@ namespace Engine
             myVal.Size = newSize;
         }
 
+        /**
+         * Preallocates enough memory.
+         * @param capacity
+         */
         void Reserve(SizeType newCapacity)
         {
             auto& myVal = Pair.SecondVal;
@@ -734,6 +797,9 @@ namespace Engine
             }
         }
 
+        /**
+         * Shrinks the array's memory to smallest possible to store elements currently in it.
+         */
         void Shrink()
         {
             auto& myVal = Pair.SecondVal;
