@@ -81,7 +81,7 @@ namespace Engine
 
     String DelegateTestClass::LastDelegateName = "";
 
-    TEST(DelegateTest, All)
+    TEST(DelegateTest, Delegate)
     {
         DECLARE_DELEGATE_ONE_PARAM(DelegateType, const String&);
         DECLARE_DELEGATE_RET(GetNameDelegate, String);
@@ -100,7 +100,7 @@ namespace Engine
         EXPECT_TRUE(delegate1.Execute() == "SingleDelegate");
     }
 
-    TEST(MultiDelegateTest, All)
+    TEST(DelegateTest, MultiDelegate)
     {
         DECLARE_MULTI_DELEGATE_ONE_PARAM(Notifier, const String&);
 
