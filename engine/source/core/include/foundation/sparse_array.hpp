@@ -487,6 +487,25 @@ namespace Engine
             return result;
         }
 
+        void Sort()
+        {
+            if (Size() > 0)
+            {
+                Compact();
+                ElemNodes.Sort();
+            }
+        }
+
+        template <typename Predicate>
+        void Sort(Predicate pred)
+        {
+            if (Size() > 0)
+            {
+                Compact();
+                ElemNodes.Sort(pred);
+            }
+        }
+
         Iterator begin() { return Iterator(*this, AllocateFlags.CreateValidIterator()); }
 
         ConstIterator begin() const { return ConstIterator(*this, AllocateFlags.CreateValidIterator()); }
