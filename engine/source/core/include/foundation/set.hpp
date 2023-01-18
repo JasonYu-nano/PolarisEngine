@@ -83,6 +83,8 @@ namespace Engine
     template <typename Key>
     struct DefaultSetKeyFunc
     {
+        using KeyType = Key;
+
         static uint32 GetHashCode(const Key& key)
         {
             return Engine::GetHashCode(key);
@@ -97,48 +99,6 @@ namespace Engine
         {
             return lKey == rKey;
         }
-    };
-
-    /** Encapsulates the allocators used by a set in a single type. */
-    template <
-        typename InSparseArrayAllocator,
-        typename InHashAllocator,
-        uint32 ElementsPerHashBucket = 2,
-        uint32 MinHashBuckets = 8,
-        uint32 MinCountOfHashedElements = 4>
-    struct SetAllocator
-    {
-        static uint32 GetNumberOfHashBuckets(uint32 hashedElementsCount)
-        {
-            if (hashedElementsCount >= MinCountOfHashedElements)
-            {
-                return Math::RoundUpToPowerOfTwo(hashedElementsCount / ElementsPerHashBucket + MinHashBuckets);
-            }
-
-            return 1;
-        }
-
-        typedef InSparseArrayAllocator SparseArrayAllocator;
-        typedef InHashAllocator        HashAllocator;
-    };
-
-    /** index of set in sparse array */
-    struct SetElementIndex
-    {
-        SetElementIndex() = default;
-
-        SetElementIndex(int32 index) : Index(index)
-        {}
-
-        bool IsValid() const { return Index != INDEX_NONE; }
-
-        operator int32() const
-        {
-            return Index;
-        }
-
-        // Index in sparse array
-        int32 Index{ INDEX_NONE };
     };
 
     template <typename SizeType>
@@ -157,13 +117,6 @@ namespace Engine
 
         // Index in sparse array
         SizeType Index{ INDEX_NONE };
-    };
-
-    template <typename SizeType>
-    class SetElemIndexVal
-    {
-    public:
-        SetElemIndex<SizeType>* Index{ nullptr };
     };
 
     template <typename ValueType, typename SizeType>
@@ -306,6 +259,7 @@ namespace Engine
         template <typename T, typename U, typename V, typename W> friend class Map;
     public:
         using ValueType = Elem;
+        using KeyType = typename KeyFun::KeyType;
         using SizeType = Alloc::SizeType;
         using SetElemIndex = SetElemIndex<SizeType>;
 
@@ -385,8 +339,7 @@ namespace Engine
 
         /**
          * Adds the specified element to Set.
-         *
-         * @param T element
+         * @param elem
          */
         ValueType& Add(const ValueType& elem)
         {
@@ -395,8 +348,7 @@ namespace Engine
 
         /**
          * Moves the specified element to Set.
-         *
-         * @param T element
+         * @param elem
          */
         ValueType& Add(ValueType&& elem)
         {
@@ -406,25 +358,27 @@ namespace Engine
         void Append(std::initializer_list<ValueType> initializer)
         {
             Reserve(Elements.Size() + static_cast<SizeType>(initializer.size()));
-            for (auto&& element : initializer)
+            for (const ValueType& element : initializer)
             {
-                Add(element);
+                Emplace(element);
             }
         }
 
         /**
          * Determines whether a Set contains the specified element.
-         *
-         * @param T key
-         * @return boolean true if contains the specified element, otherwise false.
+         * @param key
+         * @return True if contains the specified element, otherwise false.
          */
-        template <typename KeyType>
         bool Contains(const KeyType& key) const
         {
             return FindIndex(key).IsValid();
         }
 
-        template <typename KeyType>
+        /**
+         * Finds an element with the given key in the set.
+         * @param key
+         * @return A pointer to an element with the given key.  If no element in the set has the given key, this will return nullptr.
+         */
         ValueType* Find(const KeyType& key) const
         {
             ValueType* ret = nullptr;
@@ -450,11 +404,9 @@ namespace Engine
 
         /**
          * Removes the specified element from a Set.
-         *
-         * @param T key
-         * @return boolean true if remove success.
+         * @param key
+         * @return True if remove success.
          */
-        template <typename KeyType>
         bool Remove(const KeyType& key)
         {
             bool ret = false;
@@ -481,6 +433,10 @@ namespace Engine
             return ret;
         }
 
+        /**
+         * Empties the set.
+         * @param slack The expected capacity after clear operation
+         */
         void Clear(SizeType slack = 0)
         {
             ENSURE(slack >= 0);
@@ -488,20 +444,25 @@ namespace Engine
             Elements.Clear(slack);
         }
 
+        /**
+         * @return Number of elements in set.
+         */
         SizeType Size() const
         {
             return Elements.Size();
         }
 
+        /**
+         * @return True if the set is empty and contains no elements.
+         */
         bool Empty() const
         {
             return Size() == 0;
         }
 
         /**
-         * Preallocates enough memory to contain Number elements.
-         *
-         * @param capacity int32
+         * Preallocates enough memory.
+         * @param capacity
          */
         void Reserve(SizeType capacity)
         {
@@ -517,6 +478,10 @@ namespace Engine
             }
         }
 
+        /**
+        * Resizes set to given number of elements.
+        * @param newSize
+        */
         void Resize(SizeType newSize)
         {
             ENSURE(newSize >= 0);
@@ -560,14 +525,12 @@ namespace Engine
         }
 
         /** Contains key index in sparse array */
-        template <typename KeyType>
         SetElemIndex FindIndex(const KeyType& key) const
         {
             return FindIndex(key, KeyFun::GetHashCode(key));
         }
 
         /** Contains key index in sparse array */
-        template <typename KeyType>
         SetElemIndex FindIndex(const KeyType& key, uint32 hashCode) const
         {
             if (Elements.Size() > 0)
@@ -639,7 +602,6 @@ namespace Engine
     private:
         SparseArrayType Elements;
         HashBucketType HashBucket;
-        //CompressedPair<BucketAllocatorType, SetElemIndexVal<SizeType>> HashBucket;
     };
 }
 

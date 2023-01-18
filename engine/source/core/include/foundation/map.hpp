@@ -88,9 +88,12 @@ namespace Engine
         ValueType Value;
     };
 
-    template <typename KeyType, typename ValueType>
+    template <typename Key, typename Value>
     struct MapDefaultHashFun
     {
+        using KeyType = Key;
+        using ValueType = Value;
+
         static uint32 GetHashCode(const KeyType& key)
         {
             return Engine::GetHashCode(key);
