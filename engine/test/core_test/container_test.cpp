@@ -241,11 +241,11 @@ namespace Engine
         NonTrivialArrayItem items[3] = {NonTrivialArrayItem(0), NonTrivialArrayItem(1), NonTrivialArrayItem(2)};
         array.Add(items, 3); // {0, 1, 2}
 
-        array.Remove(2, 1); // {0, 1}
+        array.RemoveAt(2, 1); // {0, 1}
         EXPECT_TRUE(array.Last() == 1);
 
         array.Add({2}); // {0, 1, 2}
-        array.Remove(0, 2); // {2}
+        array.RemoveAt(0, 2); // {2}
         EXPECT_TRUE(array.Last() == 2);
 
         array.Add({3});
@@ -385,6 +385,23 @@ namespace Engine
         EXPECT_TRUE(array[5] == true);
     }
 
+    TEST(ContainerTest, BitArray_Find)
+    {
+        BitArray array = {true, false, true, false};
+        EXPECT_TRUE(array.Find(true) == 0);
+        EXPECT_TRUE(array.Find(false) == 1);
+        EXPECT_TRUE(array.FindLast(true) == 2);
+        EXPECT_TRUE(array.FindLast(false) == 3);
+
+        BitArray array2 = {false, false, false, false};
+        EXPECT_TRUE(array2.FindLast(true) == INDEX_NONE);
+        EXPECT_TRUE(array2.Find(true) == INDEX_NONE);
+
+        array.RemoveAt(1, 2);
+        EXPECT_TRUE(array.Size() == 2);
+        EXPECT_TRUE(array[1] == false);
+    }
+
     TEST(ContainerTest, BitArray_Iterator)
     {
         BitArray array = {true, false, true, false};
@@ -436,6 +453,10 @@ namespace Engine
         EXPECT_TRUE(array[3] == 4);
 
         EXPECT_FALSE(array.HasValue(2));
+
+        array.Shrink();
+        array.Compact();
+        EXPECT_TRUE(array[2] == 4);
     }
 
     TEST(ContainerTest, SparseArray_Iter)

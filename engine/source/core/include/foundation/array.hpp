@@ -492,18 +492,21 @@ namespace Engine
          * Remove element at position
          * @param index
          */
-        void RemoveAt(SizeType index)
+        void RemoveAt(SizeType index, SizeType num = 1)
         {
-            ENSURE(IsValidIndex(index));
-            auto& myVal = Pair.SecondVal;
-            DestructElements(myVal.Data + index, 1);
-
-            SizeType countToMove = myVal.Size - index - 1;
-            if (countToMove)
+            SizeType end = index + num - 1;
+            ENSURE(IsValidIndex(index) && IsValidIndex(end));
+            if (num > 0)
             {
-                Memory::Memmove(myVal.Data + index, myVal.Data + index + 1, countToMove * sizeof(ValueType));
+                auto& myVal = Pair.SecondVal;
+                DestructElements(Data() + index, num);
+                SizeType countToMove = myVal.Size - end - 1;
+                if (countToMove)
+                {
+                    Memory::Memmove(myVal.Data + index, myVal.Data + end + 1, countToMove * sizeof(ValueType));
+                }
+                myVal.Size -= num;
             }
-            myVal.Size -= 1;
         }
 
         void RemoveAtSwap(SizeType index)
@@ -535,23 +538,6 @@ namespace Engine
             return RemoveMatchSwap([&elem](const ValueType& val) {
                 return elem == val;
             }) > 0;
-        }
-
-        void Remove(SizeType index, SizeType num)
-        {
-            SizeType end = index + num - 1;
-            ENSURE(IsValidIndex(index) && IsValidIndex(end));
-            if (num > 0)
-            {
-                auto& myVal = Pair.SecondVal;
-                DestructElements(Data() + index, num);
-                SizeType countToMove = myVal.Size - end - 1;
-                if (countToMove)
-                {
-                    Memory::Memmove(myVal.Data + index, myVal.Data + end + 1, countToMove * sizeof(ValueType));
-                }
-                myVal.Size -= num;
-            }
         }
 
         /**

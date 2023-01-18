@@ -257,13 +257,13 @@ namespace Engine
         void Insert(SizeType index, const ValueType& element)
         {
             InsertUnconstructElement(index);
-            new(GetData() + index) ValueType(element);
+            new(Data() + index) ValueType(element);
         }
 
         void Insert(SizeType index, ValueType&& element)
         {
             InsertUnconstructElement(index);
-            new(GetData() + index) ValueType(element);
+            new(Data() + index) ValueType(element);
         }
 
         void RemoveAt(SizeType index)
@@ -334,7 +334,7 @@ namespace Engine
             SizeType startIndex = ElemNodes.AddUnconstructElement(elemToAdd);
 
             SizeType remain = capacity;
-            NodeType* data = GetData();
+            NodeType* data = Data();
             while (remain > startIndex)
             {
                 SizeType freeIndex = --remain;
@@ -381,14 +381,110 @@ namespace Engine
             return ElemNodes.MaxSize();
         }
 
-        const NodeType* GetData() const
+        const NodeType* Data() const
         {
             return ElemNodes.Data();
         }
 
-        NodeType* GetData()
+        NodeType* Data()
         {
             return ElemNodes.Data();
+        }
+
+        void Shrink()
+        {
+            SizeType lastAllocatedIndex = AllocateFlags.FindLast(true);
+
+            const SizeType firstIndexToRemove = lastAllocatedIndex + 1;
+            if(firstIndexToRemove < ElemNodes.Size())
+            {
+                if(FreeElemCount > 0)
+                {
+                    // Look for elements in the free list that are in the memory to be freed.
+                    SizeType freeIndex = FirstFreeNodeIndex;
+                    NodeType* data = Data();
+                    while(freeIndex != INDEX_NONE)
+                    {
+                        NodeType& node = data[freeIndex];
+                        if(freeIndex < firstIndexToRemove)
+                        {
+                            freeIndex = node.NextIndex;
+                        }
+                        else
+                        {
+                            const SizeType prevFreeIndex = node.PrevIndex;
+                            const SizeType nextFreeIndex = node.NextIndex;
+                            if(nextFreeIndex != -1)
+                            {
+                                node.PrevIndex = prevFreeIndex;
+                            }
+                            if(prevFreeIndex != -1)
+                            {
+                                node.NextIndex = nextFreeIndex;
+                            }
+                            else
+                            {
+                                FirstFreeNodeIndex = nextFreeIndex;
+                            }
+                            --FreeElemCount;
+
+                            freeIndex = nextFreeIndex;
+                        }
+                    }
+                }
+
+                // Truncate unallocated elements at the end of the data array.
+                ElemNodes.RemoveAt(firstIndexToRemove, ElemNodes.Size() - firstIndexToRemove);
+                AllocateFlags.RemoveAt(firstIndexToRemove, AllocateFlags.Size() - firstIndexToRemove);
+            }
+
+            // Shrink the data array.
+            ElemNodes.Shrink();
+        }
+
+        bool Compact()
+        {
+            SizeType freeCount = FreeElemCount;
+            if (freeCount == 0)
+            {
+                return false;
+            }
+
+            bool result = false;
+
+            NodeType* nodeData = ElemNodes.Data();
+
+            SizeType endIndex    = ElemNodes.Size();
+            SizeType targetIndex = endIndex - freeCount;
+            SizeType freeIndex   = FirstFreeNodeIndex;
+            while (freeIndex != INDEX_NONE)
+            {
+                SizeType nextFreeIndex = nodeData[freeIndex].NextIndex;
+                if (freeIndex < targetIndex)
+                {
+                    // We need an element here
+                    do
+                    {
+                        --endIndex;
+                    }
+                    while (!AllocateFlags[endIndex]);
+
+                    RelocateElements(nodeData + freeIndex, nodeData + endIndex, 1);
+                    AllocateFlags[freeIndex] = true;
+
+                    result = true;
+                }
+
+                freeIndex = nextFreeIndex;
+            }
+
+            ElemNodes.RemoveAt(targetIndex, freeCount);
+            AllocateFlags.RemoveAt(targetIndex, freeCount);
+
+            FreeElemCount = 0;
+            FirstFreeNodeIndex = INDEX_NONE;
+
+            return result;
         }
 
         Iterator begin() { return Iterator(*this, AllocateFlags.CreateValidIterator()); }
@@ -404,7 +500,7 @@ namespace Engine
         SizeType Emplace(Args&&... args)
         {
             SizeType index = AddUnconstructElement();
-            new(GetData() + index) ValueType(std::forward<Args>(args)...);
+            new(Data() + index) ValueType(std::forward<Args>(args)...);
             return index;
         }
 

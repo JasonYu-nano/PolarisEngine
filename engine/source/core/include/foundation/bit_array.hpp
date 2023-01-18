@@ -8,10 +8,6 @@
 
 namespace Engine
 {
-    constexpr int32 kElementBits = (int32)32;
-    constexpr int32 kElementBitsLogTwo = (int32)5;
-    constexpr uint32 kFullWordMask = (uint32)-1;
-
     template <typename ValueType>
     class BitRef
     {
@@ -44,10 +40,13 @@ namespace Engine
         ValueType Mask;
     };
 
-    template <typename ValueType>
+    template <typename ContainerType>
     class ConstBitRef
     {
     public:
+        using SizeType = typename ContainerType::SizeType;
+        using ValueType = typename ContainerType::ValueType;
+
         ConstBitRef(const ValueType& data, ValueType mask)
             : Data(data)
             , Mask(mask)
@@ -67,17 +66,20 @@ namespace Engine
         ValueType Mask;
     };
 
-    template <typename SizeType>
+    template <typename ContainerType>
     class RelativeBitRef
     {
     public:
-         explicit RelativeBitRef(SizeType BitIndex)
-            : Index(BitIndex >> kElementBitsLogTwo)
-            , Mask(1 << (BitIndex & (kElementBits - 1)))
+        using SizeType = typename ContainerType::SizeType;
+        using ValueType = typename ContainerType::ValueType;
+
+        explicit RelativeBitRef(SizeType bitIndex)
+            : Index(bitIndex >> ContainerType::ELEMENT_BITS_NUM_LOG_TWO)
+            , Mask(1 << (bitIndex & (ContainerType::ELEMENT_BITS_NUM - 1)))
         {}
 
         SizeType Index;
-        std::make_unsigned_t<SizeType> Mask;
+        ValueType Mask;
     };
 
     /**
@@ -85,9 +87,9 @@ namespace Engine
      * @tparam ContainerType
      */
     template <typename ContainerType>
-    class ConstBitValidIterator : public RelativeBitRef<typename ContainerType::SizeType>
+    class ConstBitValidIterator : public RelativeBitRef<ContainerType>
     {
-        using Super = RelativeBitRef<typename ContainerType::SizeType>;
+        using Super = RelativeBitRef<ContainerType>;
         using ValueType = typename ContainerType::ValueType;
         using SizeType = typename ContainerType::SizeType;
         using USizeType = std::make_unsigned_t<SizeType>;
@@ -96,8 +98,8 @@ namespace Engine
             : Super(startIndex)
             , Container(container)
             , CurrentBitIndex(startIndex)
-            , UnvisitedBitMask((~0U) << (startIndex & (kElementBits - 1)))
-            , BaseBitIndex(startIndex & ~(kElementBits - 1))
+            , UnvisitedBitMask((~0U) << (startIndex & (ContainerType::ELEMENT_BITS_NUM - 1)))
+            , BaseBitIndex(startIndex & ~(ContainerType::ELEMENT_BITS_NUM - 1))
         {
             if (startIndex != Container.Size())
             {
@@ -105,7 +107,7 @@ namespace Engine
             }
         }
 
-        ConstBitRef<ValueType> operator* () const
+        ConstBitRef<ContainerType> operator* () const
         {
             return Container[CurrentBitIndex];
         }
@@ -142,19 +144,19 @@ namespace Engine
         void FindFirstSetBit()
         {
             const ValueType* rawData = Container.Data();
-            const SizeType arrayCount = Container.Size();
-            const SizeType lastDWORDIndex = (arrayCount - 1) / kElementBits;
+            const SizeType arraySize = Container.Size();
+            const SizeType lastElemIndex = (arraySize - 1) / ContainerType::ELEMENT_BITS_NUM;
 
             // Advance to the next non-zero uint32.
             ValueType remainingBitMask = rawData[this->Index] & UnvisitedBitMask;
             while (!remainingBitMask)
             {
                 ++this->Index;
-                BaseBitIndex += kElementBits;
-                if (this->Index > lastDWORDIndex)
+                BaseBitIndex += ContainerType::ELEMENT_BITS_NUM;
+                if (this->Index > lastElemIndex)
                 {
                     // We've advanced past the end of the array.
-                    CurrentBitIndex = arrayCount;
+                    CurrentBitIndex = arraySize;
                     return;
                 }
 
@@ -170,13 +172,13 @@ namespace Engine
             this->Mask = newRemainingBitMask ^ remainingBitMask;
 
             // If the Nth bit was the lowest set bit of BitMask, then this gives us N
-            CurrentBitIndex = BaseBitIndex + kElementBits - 1 - Math::CountLeadingZeros(this->Mask);
+            CurrentBitIndex = BaseBitIndex + ContainerType::ELEMENT_BITS_NUM - 1 - Math::CountLeadingZeros(this->Mask);
 
             // If we've accidentally iterated off the end of an array but still within the same DWORD
             // then set the index to the last index of the array
-            if (CurrentBitIndex > arrayCount)
+            if (CurrentBitIndex > arraySize)
             {
-                CurrentBitIndex = arrayCount;
+                CurrentBitIndex = arraySize;
             }
         }
     protected:
@@ -236,7 +238,7 @@ namespace Engine
             , Index(index)
         {}
 
-        ConstBitRef<ValueType> operator* () const
+        ConstBitRef<ContainerType> operator* () const
         {
             return Container[Index];
         }
@@ -344,6 +346,10 @@ namespace Engine
         using SecondaryVal = BitArrayVal<ValueType, SizeType, ValueType*>;
 
     public:
+        static constexpr SizeType ELEMENT_BITS_NUM = sizeof(ValueType) * 8;
+        static constexpr SizeType ELEMENT_BITS_NUM_LOG_TWO = Math::FloorLogTwo((USizeType)ELEMENT_BITS_NUM);
+        static constexpr ValueType ELEMENT_MASK = (ValueType)-1;
+
         BitArray() = default;
 
         explicit BitArray(SizeType capacity, const AllocatorType& alloc = AllocatorType())
@@ -408,16 +414,16 @@ namespace Engine
             return BitRef<ValueType>(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
         }
 
-        ConstBitRef<ValueType> operator[] (SizeType index) const
+        ConstBitRef<BitArray> operator[] (SizeType index) const
         {
             ENSURE(0 <= index && index < Size());
-            return ConstBitRef<ValueType>(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
+            return ConstBitRef<BitArray>(Data()[index / ELEMENT_BITS_NUM], 1 << (index & (ELEMENT_BITS_NUM - 1)));
         }
 
         BitArray& operator= (std::initializer_list<bool> initializer)
         {
-            Clear(static_cast<int32>(initializer.size()));
-            InitBits(initializer.begin(), static_cast<int32>(initializer.size()));
+            Clear(static_cast<SizeType>(initializer.size()));
+            InitBits(initializer.begin(), static_cast<SizeType>(initializer.size()));
             return *this;
         }
 
@@ -495,8 +501,8 @@ namespace Engine
             SizeType count = (index + 1 + (ELEMENT_BITS_NUM - 1)) / ELEMENT_BITS_NUM - startIndex;
 
             // Work out masks for the start/end of the sequence
-            USizeType startMask = kFullWordMask << (index % ELEMENT_BITS_NUM);
-            USizeType endMask = kFullWordMask >> (ELEMENT_BITS_NUM - (index + 1) % ELEMENT_BITS_NUM) % ELEMENT_BITS_NUM;
+            USizeType startMask = ELEMENT_MASK << (index % ELEMENT_BITS_NUM);
+            USizeType endMask = ELEMENT_MASK >> (ELEMENT_BITS_NUM - (index + 1) % ELEMENT_BITS_NUM) % ELEMENT_BITS_NUM;
 
             ValueType* data = Data() + startIndex;
             if (value)
@@ -535,6 +541,103 @@ namespace Engine
                     *data &= ~endMask;
                 }
             }
+        }
+
+        void RemoveAt(SizeType index, SizeType num = 1)
+        {
+            auto& myVal = Pair.SecondVal;
+            ENSURE(index >= 0 && num >= 0 && index + num <= myVal.Size);
+
+            if (index + num != myVal.Size)
+            {
+                SizeType numToShift = myVal.Size - (index + num);
+                Memory::MemmoveBits(myVal.Data, index, myVal.Data, index + num, numToShift);
+            }
+
+            myVal.Size -= num;
+        }
+
+        bool Find(bool elem, SizeType& index) const
+        {
+            index = Find(elem);
+            return index != INDEX_NONE;
+        }
+
+        SizeType Find(bool elem) const
+        {
+            auto& myVal = Pair.SecondVal;
+            const ValueType test = elem ? 0u : ~0u;
+
+            const ValueType* data = myVal.Data;
+            const SizeType size = myVal.Size;
+            const SizeType elemCount = Math::DivideAndCeil(size, ELEMENT_BITS_NUM);
+            SizeType elemIndex = 0;
+            while (elemIndex < elemCount && data[elemIndex] == test)
+            {
+                ++elemIndex;
+            }
+
+            if (elemIndex < elemCount)
+            {
+                // If we're looking for a false, then we flip the bits - then we only need to find the first one bit
+                const ValueType bits = elem ? (data[elemIndex]) : ~(data[elemIndex]);
+                ENSURE(bits != 0);
+                const SizeType lowestBitIndex = Math::CountTrailingZeros(bits) + (elemIndex << ELEMENT_BITS_NUM_LOG_TWO);
+                if (lowestBitIndex < size)
+                {
+                    return lowestBitIndex;
+                }
+            }
+
+            return INDEX_NONE;
+        }
+
+        bool FindLast(bool elem, SizeType& index) const
+        {
+            index = FindLast(elem);
+            return index != INDEX_NONE;
+        }
+
+        SizeType FindLast(bool elem) const
+        {
+            auto& myVal = Pair.SecondVal;
+            SizeType size = myVal.Size;
+
+            // Get the correct mask for the last word
+            SizeType slackIndex = ((size - 1) % ELEMENT_BITS_NUM) + 1;
+            USizeType mask = ~0u >> (ELEMENT_BITS_NUM - slackIndex);
+
+            // Iterate over the array until we see a word with a zero bit.
+            SizeType elemIndex = Math::DivideAndCeil(size, ELEMENT_BITS_NUM);
+            const ValueType* data = myVal.Data;
+            const ValueType test = elem ? 0u : ~0u;
+            while (true)
+            {
+                if (elemIndex == 0)
+                {
+                    return INDEX_NONE;
+                }
+                --elemIndex;
+                if ((data[elemIndex] & mask) != (test & mask))
+                {
+                    break;
+                }
+                mask = ~0u;
+            }
+
+            // Flip the bits, then we only need to find the first one bit -- easy.
+            const ValueType bits = (elem ? data[elemIndex] : ~data[elemIndex]) & mask;
+            ENSURE(bits != 0);
+
+            SizeType bitIndex = (ELEMENT_BITS_NUM - 1) - Math::CountLeadingZeros(bits);
+
+            SizeType result = bitIndex + (elemIndex << ELEMENT_BITS_NUM_LOG_TWO);
+            return result;
+        }
+
+        bool Contains(bool elem) const
+        {
+            return Find(elem) != INDEX_NONE;
         }
 
         void Resize(SizeType newSize)
@@ -584,7 +687,7 @@ namespace Engine
             }
         }
 
-        void Clear(int32 slack = 0)
+        void Clear(SizeType slack = 0)
         {
             if (slack == 0)
             {
@@ -783,7 +886,7 @@ namespace Engine
             return geometric;
         }
 
-        void NormalizeOffset(uint32* data, int32& offset)
+        void NormalizeOffset(uint32* data, SizeType& offset)
         {
             if ((offset < 0) | (ELEMENT_BITS_NUM <= offset))
             {
@@ -830,8 +933,6 @@ namespace Engine
         }
 
     private:
-        static constexpr int32 ELEMENT_BITS_NUM = sizeof(ValueType) * 8;
-
         CompressedPair<AllocatorType, SecondaryVal> Pair;
     };
 }

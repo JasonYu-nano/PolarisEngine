@@ -554,7 +554,7 @@ namespace Engine
 
             CheckRehash(Elements.Size() + 1);
             SizeType indexInSparseArray = Elements.AddUnconstructElement();
-            SetElement* item = new(Elements.GetData() + indexInSparseArray) SetElement(std::forward<ElemType>(val));
+            SetElement* item = new(Elements.Data() + indexInSparseArray) SetElement(std::forward<ElemType>(val));
             LinkElement(SetElemIndex(indexInSparseArray), *item, hashCode);
             return item->MyVal;
         }

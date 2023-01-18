@@ -89,6 +89,26 @@ namespace Engine
             --size;
         }
     }
+
+    template <typename ValueType, typename SizeType>
+    void RelocateElements(ValueType* dest, const ValueType* src, SizeType size)
+    {
+        if constexpr (std::is_trivially_copyable_v<ValueType>)
+        {
+            Memory::Memcpy(dest, src, sizeof(ValueType) * size);
+        }
+        else
+        {
+            while (size > 0)
+            {
+                new(dest) ValueType(*src);
+                std::destroy_at(src);
+                ++dest;
+                ++src;
+                --size;
+            }
+        }
+    }
 }
 
 CORE_API extern Engine::IMalloc* GMalloc;
