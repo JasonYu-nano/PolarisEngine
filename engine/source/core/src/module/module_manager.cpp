@@ -8,7 +8,7 @@ namespace Engine
         return inst;
     }
 
-    IModuleInterface* ModuleManager::FindModule(const FixedString &name)
+    IModuleInterface* ModuleManager::FindModule(const StringID &name)
     {
         if (IModuleInterface** module = CachedModule.Find(name))
         {
