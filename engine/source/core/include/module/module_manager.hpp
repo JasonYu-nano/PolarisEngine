@@ -3,7 +3,7 @@
 #include "definitions_core.hpp"
 #include "global.hpp"
 #include "module/module_interface.hpp"
-#include "foundation/fixed_string.hpp"
+#include "foundation/string_id.hpp"
 
 namespace Engine
 {
@@ -16,7 +16,7 @@ namespace Engine
         static ModuleManager& Get();
 
         template <ModuleType Module>
-        static Module* Load(const FixedString& name)
+        static Module* Load(const StringID& name)
         {
             if (IModuleInterface* module = Get().LoadImpl<Module>(name))
             {
@@ -31,7 +31,7 @@ namespace Engine
         }
     private:
         template <ModuleType Module>
-        IModuleInterface* LoadImpl(const FixedString& name)
+        IModuleInterface* LoadImpl(const StringID& name)
         {
             IModuleInterface* module;
             {
@@ -57,11 +57,11 @@ namespace Engine
             }
         }
 
-        IModuleInterface* FindModule(const FixedString& name);
+        IModuleInterface* FindModule(const StringID& name);
 
         void Shutdown();
 
-        Map<FixedString, IModuleInterface*> CachedModule;
+        Map<StringID, IModuleInterface*> CachedModule;
         std::shared_mutex ModuleRWMutex;
     };
 }

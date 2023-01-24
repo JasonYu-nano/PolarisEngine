@@ -1,11 +1,9 @@
 #include "gtest/gtest.h"
 #include "core_minimal_public.hpp"
-#include "math/city_hash.hpp"
-#include "foundation/fixed_string.hpp"
+#include "foundation/string_id.hpp"
 #include "file_system/path.hpp"
 #include "file_system/file_system.hpp"
 #include "foundation/string.hpp"
-#include "foundation/encoding.hpp"
 #include "misc/type_hash.hpp"
 
 namespace Engine
@@ -204,20 +202,25 @@ namespace Engine
         EXPECT_TRUE(ret.Size() == 4);
     }
 
-    TEST(String, FixedString)
+    TEST(String, StringID)
     {
-        FixedString name("Hello_World");
+        StringID name("Hello_World");
         EXPECT_TRUE(name.ToString() == "Hello_World");
 
-        FixedString name2("Hello_World_12");
+        StringID name2("Hello_World_12");
         EXPECT_TRUE(name2.ToString() == "Hello_World_12" && name2.GetNumber() == 12);
 
-        FixedString name3("Hello_World_012");
+        StringID name3("Hello_World_012");
         EXPECT_TRUE(name3.GetNumber() == 0);
 
-        FixedString name4("hello_World_12");
+        StringID name4("hello_World_12");
         EXPECT_TRUE(name2 == name4);
+#if STRING_ID_CASE_SENSITIVE
+        EXPECT_TRUE(name4.ToString() == "hello_World_12");
+#else
         EXPECT_TRUE(name4.ToString() == "Hello_World_12");
+#endif
+        EXPECT_TRUE(name4 == name2);
     }
 
     TEST(FileSystem, Path)

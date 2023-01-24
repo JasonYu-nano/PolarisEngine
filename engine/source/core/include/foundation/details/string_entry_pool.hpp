@@ -14,9 +14,13 @@ namespace Engine
 
     #define MAX_ENTRY_LENGTH (1024)
 
-    constexpr int32 InitialBucketCount = 1 << 9;
+#ifdef WITH_EDITOR
+#define STRING_ID_CASE_SENSITIVE 1
+#else
+#define STRING_ID_CASE_SENSITIVE 0
+#endif
 
-    class FixedStringHelper
+    class StringIDHelper
     {
     public:
         static constexpr int64 Atoi64(const char* str, int32 length)
@@ -60,15 +64,16 @@ namespace Engine
         }
     };
 
-#ifdef SMALLER_FIXED_STRING
-    using FixedEntryId = uint32;
-#else
-    using FixedEntryId = uint64;
+    struct StringEntryID
+    {
+#if STRING_ID_CASE_SENSITIVE
+        uint32 DisplayID = 0;
 #endif
+        uint32 CompressID = 0;
+    };
 
     class StringEntryPool
     {
-        using EntryPoolType = Map<FixedEntryId, String>;
     public:
         static StringEntryPool& Get()
         {
@@ -76,47 +81,20 @@ namespace Engine
             return inst;
         }
 
-        static FixedEntryId AllocEntryId(const StringView& entry);
+        static StringEntryID AllocEntryID(const StringView& entry);
 
-        FixedEntryId FindOrStore(const StringView& entry);
+        StringEntryID FindOrStore(const StringView& entry);
 
-        FixedEntryId Store(const StringView& entry);
+        void Store(StringEntryID id, const StringView& entry);
 
-        String* Find(FixedEntryId entryId);
+        String* Find(StringEntryID id);
 
-    private:
-        template <typename CharType>
-        static FixedEntryId GetLowerCaseHash(const CharType* str, int32 length)
-        {
-            CharType lowerStr[MAX_ENTRY_LENGTH];
-            for (int32 idx = 0; idx < length; ++idx)
-            {
-                lowerStr[idx] = CharTraits<CharType>::ToLowerLatin1(str[idx]);
-            }
-            #ifdef SMALLER_FIXED_STRING
-            return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));
-            #else
-            return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), length * sizeof(CharType));
-            #endif
-        }
+        static uint32 CalcCompressID(const StringView& view);
 
-        static FixedEntryId GetLowerCaseHash(StringView view)
-        {
-            char lowerStr[MAX_ENTRY_LENGTH];
-            int32 len = view.Length();
-            const char* data = view.Data();
-            for (int32 idx = 0; idx < len; ++idx)
-            {
-                lowerStr[idx] = CharTraits<char>::ToLowerLatin1(data[idx]);
-            }
-#ifdef SMALLER_FIXED_STRING
-            return CityHash::CityHash32(reinterpret_cast<const char*>(lowerStr), len * sizeof(char));
-#else
-            return CityHash::CityHash64(reinterpret_cast<const char*>(lowerStr), len * sizeof(char));
-#endif
-        }
+        static uint32 CalcDisplayID(const StringView& view);
+
     private:
         std::shared_mutex Mutex;
-        EntryPoolType EntryPool;
+        Map<uint32, String> EntryPool;
     };
 }
