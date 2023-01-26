@@ -27,7 +27,7 @@ namespace Engine
 
         uint32 GetHashCode() const
         {
-            return (uint32)(GetCompressID()) + ((uint32)(GetCompressID() >> 32) * 23) + GetNumber();
+            return GetCompressID() + GetNumber();
         }
 
         String ToString() const;
