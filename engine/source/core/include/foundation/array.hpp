@@ -252,7 +252,7 @@ namespace Engine
         Array(const ValueType* ptr, SizeType size, const AllocatorType& alloc = AllocatorType())
             : Pair(OneArgPlaceholder(), alloc)
         {
-            CopyElement(ptr, size);
+            CopyAssign(ptr, size);
         }
 
         Array(const ValueType& initVal, SizeType count, const AllocatorType& alloc = AllocatorType())
@@ -264,27 +264,27 @@ namespace Engine
         Array(std::initializer_list<ValueType> initializer, const AllocatorType& alloc = AllocatorType())
             : Pair(OneArgPlaceholder(), alloc)
         {
-            CopyElement(initializer.begin(), static_cast<SizeType>(initializer.size()));
+            CopyAssign(initializer.begin(), static_cast<SizeType>(initializer.size()));
         };
 
         Array(const Array& other)
             : Pair(OneArgPlaceholder(), other.GetAlloc())
         {
             auto& otherVal = other.Pair.SecondVal;
-            CopyElement(otherVal.Data, otherVal.Size);
+            CopyAssign(otherVal.Data, otherVal.Size);
         }
 
         Array(Array&& other) noexcept
             : Pair(OneArgPlaceholder(), std::move(other.GetAlloc()))
         {
-            MoveElement(std::forward<Array>(other));
+            MoveAssign(std::forward<Array>(other));
         }
 
         Array(const Array& other, SizeType extraSlack)
             : Pair(OneArgPlaceholder(), other.GetAlloc())
         {
             auto& otherVal = other.Pair.SecondVal;
-            CopyElement(otherVal.Data, otherVal.Size, extraSlack);
+            CopyAssign(otherVal.Data, otherVal.Size, extraSlack);
         }
 
         template <typename OtherAllocator>
@@ -292,7 +292,7 @@ namespace Engine
             : Pair(OneArgPlaceholder(), alloc)
         {
             auto& otherVal = other.Pair.SecondVal;
-            CopyElement(otherVal.Data, otherVal.Size);
+            CopyAssign(otherVal.Data, otherVal.Size);
         }
 
         virtual ~Array()
@@ -302,7 +302,7 @@ namespace Engine
 
         Array& operator=(std::initializer_list<ValueType> initializer)
         {
-            CopyElement(initializer.begin(), static_cast<SizeType>(initializer.size()));
+            CopyAssign(initializer.begin(), static_cast<SizeType>(initializer.size()));
             return *this;
         }
 
@@ -311,7 +311,7 @@ namespace Engine
             ENSURE(this != &other);
             GetAlloc() = other.GetAlloc();
             auto& otherVal = other.Pair.SecondVal;
-            CopyElement(otherVal.Data, otherVal.Size);
+            CopyAssign(otherVal.Data, otherVal.Size);
             return *this;
         }
 
@@ -319,7 +319,7 @@ namespace Engine
         {
             ENSURE(this != &other);
             GetAlloc() = std::move(other.GetAlloc());
-            MoveElement(std::forward<Array>(other));
+            MoveAssign(std::forward<Array>(other));
             return *this;
         }
 
@@ -327,7 +327,7 @@ namespace Engine
         Array& operator=(const Array<ValueType, OtherAllocator>& other)
         {
             auto& otherVal = other.Pair.SecondVal;
-            CopyElement(otherVal.Data, otherVal.Size);
+            CopyAssign(otherVal.Data, otherVal.Size);
             return *this;
         }
 
@@ -1025,7 +1025,7 @@ namespace Engine
             return address < myVal.Data || address >= myVal.Data + myVal.Capacity;
         }
 
-        void CopyElement(const ValueType* data, SizeType size, SizeType extraSlack = 0)
+        void CopyAssign(const ValueType* data, SizeType size, SizeType extraSlack = 0)
         {
             ENSURE(data && size > 0 && extraSlack >= 0);
             auto& myVal = Pair.SecondVal;
@@ -1042,7 +1042,7 @@ namespace Engine
             ConstructElements(myVal.Data, data, size);
         }
 
-        void MoveElement(Array&& other)
+        void MoveAssign(Array&& other)
         {
             auto& myVal = Pair.SecondVal;
             auto& otherVal = other.Pair.SecondVal;
