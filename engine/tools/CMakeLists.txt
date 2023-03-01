@@ -1,1 +1,2 @@
 add_subdirectory(feature_detector)
+add_subdirectory(meta_object_compiler)

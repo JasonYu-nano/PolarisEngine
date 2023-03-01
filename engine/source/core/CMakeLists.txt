@@ -34,17 +34,19 @@ target_include_directories(${target} PUBLIC ${project_dir}/include ${project_dir
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/source/core)
 
-conan_cmake_configure(REQUIRES spdlog/1.8.2
-    GENERATORS cmake_find_package
+conan_cmake_configure(REQUIRES spdlog/1.11.0
+    GENERATORS CMakeToolchain CMakeDeps
     IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
-    OPTIONS spdlog:shared=True spdlog:wchar_support=True)
+    OPTIONS spdlog/*:shared=True)
 
-conan_cmake_autodetect(settings)
+conan_cmake_autodetect(settings
+    USE_CXX_STANDARD 17)
 
+message(${settings})
 conan_cmake_install(PATH_OR_REFERENCE .
     BUILD missing
     SETTINGS ${settings}
-    REMOTE conan-center)
+    REMOTE conancenter)
 
 find_package(fmt)
 find_package(spdlog)

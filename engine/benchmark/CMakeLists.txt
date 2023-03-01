@@ -18,15 +18,17 @@ target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/benchmark)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/benchmark)
 
 conan_cmake_configure(REQUIRES benchmark/1.6.0
-        GENERATORS cmake_find_package
-        OPTIONS gtest:shared=False)
+        GENERATORS CMakeToolchain CMakeDeps
+        IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
+        OPTIONS benchmark/*:shared=False)
 
-conan_cmake_autodetect(settings)
+conan_cmake_autodetect(settings
+        USE_CXX_STANDARD 17)
 
 conan_cmake_install(PATH_OR_REFERENCE .
         BUILD missing
         SETTINGS ${settings}
-        REMOTE conan-center)
+        REMOTE conancenter)
 
 find_package(benchmark)
 
