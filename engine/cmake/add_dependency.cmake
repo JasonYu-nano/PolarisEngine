@@ -51,3 +51,16 @@ function(add_3rd_dependency target package_name )
     endforeach()
 
 endfunction()
+
+function(conan_imports target package_name)
+    set(include_dir ${${package_name}_INCLUDE_DIR})
+    if (include_dir)
+        set(package_bin ${include_dir}/../bin/*${CMAKE_SHARED_LIBRARY_SUFFIX})
+        file(GLOB dlls ${package_bin})
+
+        foreach(dll ${dlls})
+            file(COPY ${dll} DESTINATION ${CMAKE_BINARY_DIR}/output/bin)
+            message(STATUS "Copy dependency dll: ${dll}")
+        endforeach()
+    endif()
+endfunction()
