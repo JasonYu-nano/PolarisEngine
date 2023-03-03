@@ -32,24 +32,28 @@ target_include_directories(${target} PUBLIC ${project_dir}/include ${project_dir
 
 # add 3rd dependency
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/source/core)
+set(target_binary_path ${CMAKE_BINARY_DIR}/source/core)
+list(APPEND CMAKE_MODULE_PATH ${target_binary_path})
 
-conan_cmake_configure(REQUIRES spdlog/1.11.0
-    GENERATORS CMakeToolchain CMakeDeps
+conan_cmake_autodetect(settings USE_CXX_STANDARD 17)
+
+conan_cmake_configure(REQUIRES spdlog/1.11.0 cxxopts/3.0.0
+    GENERATORS CMakeDeps CMakeToolchain
     IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
     OPTIONS spdlog/*:shared=True)
 
-conan_cmake_autodetect(settings
-    USE_CXX_STANDARD 17)
-
-message(${settings})
 conan_cmake_install(PATH_OR_REFERENCE .
     BUILD missing
     SETTINGS ${settings}
     REMOTE conancenter)
 
-find_package(fmt)
-find_package(spdlog)
+set(fmt_DIR ${target_binary_path})
+set(spdlog_DIR ${target_binary_path})
+set(cxxopts_DIR ${target_binary_path})
+
+find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(cxxopts CONFIG REQUIRED)
 
 if(fmt_FOUND)
     target_include_directories(${target} PRIVATE ${fmt_INCLUDE_DIR})
@@ -60,6 +64,12 @@ if(spdlog_FOUND)
     target_include_directories(${target} PUBLIC ${spdlog_INCLUDE_DIR})
     target_link_libraries(${target} ${spdlog_LIBRARIES})
     target_compile_definitions(${target} PUBLIC ${spdlog_DEFINITIONS})
+endif()
+
+if(cxxopts_FOUND)
+    target_include_directories(${target} PUBLIC ${cxxopts_INCLUDE_DIR})
+    target_link_libraries(${target} ${cxxopts_LIBRARIES})
+    target_compile_definitions(${target} PUBLIC ${cxxopts_DEFINITIONS})
 endif()
 
 add_3rd_dependency(${target} "icu")

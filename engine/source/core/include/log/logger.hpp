@@ -124,7 +124,7 @@ namespace Engine
         {
             std::vector<spdlog::sink_ptr> sinks;
             auto colorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>();
-            colorSink->set_color(spdlog::level::info, colorSink->WHITE);
+            colorSink->set_color(spdlog::level::info, 0xffff);
             sinks.push_back(colorSink);
             sinks.push_back(MakeShared<spdlog::sinks::basic_file_sink_mt>("engine_log", "logs/engine_log.txt"));
             Logger = MakeShared<spdlog::logger>("engine_log", begin(sinks), end(sinks));

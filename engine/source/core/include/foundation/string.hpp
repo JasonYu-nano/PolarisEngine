@@ -639,9 +639,8 @@ namespace Engine
         template <typename... Args, std::enable_if_t<sizeof(Elem) == sizeof(char), bool> = true>
         static BasicString Format(const CharType* fmt, Args&&... args)
         {
-            fmt::basic_memory_buffer<CharType> buffer;
-            const auto& vargs = fmt::make_args_checked<Args...>(fmt, args...);
-            fmt::detail::vformat_to(buffer, fmt::to_string_view(fmt), vargs);
+            fmt::basic_memory_buffer<CharType, 250> buffer;
+            fmt::detail::vformat_to(buffer, fmt::string_view(fmt), fmt::make_format_args(std::forward<Args>(args)...));
             return BasicString(buffer.data(), static_cast<SizeType>(buffer.size()));
         }
 
