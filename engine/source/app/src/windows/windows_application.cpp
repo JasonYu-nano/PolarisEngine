@@ -1,5 +1,6 @@
 #include "core_minimal_public.hpp"
 #include "windows/windows_application.hpp"
+#include "app_log.hpp"
 
 namespace Engine
 {
@@ -89,7 +90,7 @@ namespace Engine
         auto result = RegisterClassEx(&wc);
         if (result == 0)
         {
-            LOG_ERROR("Application", "RegisterClassEx failed in windows platform");
+            LOG_ERROR(Application, "RegisterClassEx failed in windows platform");
         }
     }
 

@@ -236,7 +236,7 @@ namespace Engine
     {
         for (const DirectoryEntry& entry : FileSystem::DirectoryIterator("C:\\Code\\PolarisEngine\\engine\\test"))
         {
-            LOG_INFO("", "{0}", entry.GetPath());
+            LOG_INFO(LogTemp, "{0}", entry.GetPath());
         }
     }
 }

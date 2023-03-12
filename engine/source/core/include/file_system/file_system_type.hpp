@@ -4,9 +4,12 @@
 #include "definitions_core.hpp"
 #include "foundation/time.hpp"
 #include "foundation/string.hpp"
+#include "log/logger.hpp"
 
 namespace Engine
 {
+    DECLARE_LOG_CATEGORY(FileSystem);
+
     enum class FileAttribute : uint32
     {
         Readonly      = 0x00000001,

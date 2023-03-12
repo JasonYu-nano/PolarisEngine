@@ -1,6 +1,7 @@
 #include "core_minimal_public.hpp"
 #include "platform_application.hpp"
 #include "vulkan_windows_platform.hpp"
+#include "render_log.hpp"
 #include <vulkan/vulkan_win32.h>
 
 namespace Engine
@@ -17,7 +18,7 @@ namespace Engine
         {
             return true;
         }
-        LOG_ERROR("Render", "Failed to create window surface!");
+        LOG_ERROR(RenderModule, "Failed to create window surface!");
         return false;
     }
 

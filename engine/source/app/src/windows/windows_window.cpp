@@ -1,5 +1,5 @@
 #include "windows/windows_window.hpp"
-#include "core_minimal_public.hpp"
+#include "app_log.hpp"
 
 namespace Engine
 {
@@ -29,7 +29,7 @@ namespace Engine
         if (HWnd == nullptr)
         {
             uint32 errorCode = (uint32)::GetLastError();
-            LOG_ERROR("Application", "CreateWindowEx failed, error code: {0}", errorCode);
+            LOG_ERROR(Application, "CreateWindowEx failed, error code: {0}", errorCode);
             return;
         }
 

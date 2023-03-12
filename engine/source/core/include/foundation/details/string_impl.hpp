@@ -792,7 +792,7 @@ namespace Engine
     {
         const auto& myVal = Pair.SecondVal;
         SizeType oldCapacity = myVal.MaxSize;
-        SizeType max = CharTraits::MaxSize();
+        SizeType max = NumericLimits<SizeType>::Max();
 
         if (oldCapacity > max - oldCapacity / 2)
         {

@@ -220,7 +220,7 @@ namespace Engine
 
         if (handle == INVALID_HANDLE_VALUE)
         {
-            LOG_ERROR("", "Open file failed");
+            LOG_ERROR(FileSystem, "Open file failed");
         }
 
         return MakeUnique<WindowsFileHandle>(handle);

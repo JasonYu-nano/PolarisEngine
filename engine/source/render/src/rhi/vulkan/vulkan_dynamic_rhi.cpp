@@ -1,9 +1,9 @@
-//#include "GLFW/glfw3.h"
 #include "core_minimal_public.hpp"
 #include "file_system/file_system.hpp"
 #include "rhi/vulkan/vulkan_dynamic_rhi.hpp"
 #include "rhi/vulkan/vulkan_platform.hpp"
 #include "platform_application.hpp"
+#include "render_log.hpp"
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -14,16 +14,16 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     switch (messageSeverity)
     {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        LOG_VERBOSE("Render", pCallbackData->pMessage)
+        LOG_VERBOSE(RenderModule, pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        LOG_INFO("Render", pCallbackData->pMessage)
+        LOG_INFO(RenderModule, pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        LOG_WARN("Render", pCallbackData->pMessage)
+        LOG_WARN(RenderModule, pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        LOG_ERROR("Render", pCallbackData->pMessage)
+        LOG_ERROR(RenderModule, pCallbackData->pMessage)
             break;
     default:
         break;
@@ -131,7 +131,7 @@ namespace Engine
 
         if (vkCreateInstance(&createInfo, nullptr, &Instance) != VK_SUCCESS) 
         {
-            LOG_FATAL("Render", "Failed to create vulkan instance");
+            LOG_FATAL(RenderModule, "Failed to create vulkan instance");
             return;
         }
     }
@@ -190,7 +190,7 @@ namespace Engine
         }
         else
         {
-            LOG_WARN("Render", "CheckValidationLayerSupport failed in vulkan debug mode");
+            LOG_WARN(RenderModule, "CheckValidationLayerSupport failed in vulkan debug mode");
         }
 #endif
     }
@@ -218,7 +218,7 @@ namespace Engine
         }
         else
         {
-            LOG_ERROR("Render", "Failed to set up debug messenger!");
+            LOG_ERROR(RenderModule, "Failed to set up debug messenger!");
             return;
         }
 #endif
@@ -242,7 +242,7 @@ namespace Engine
 
         if (deviceNum <= 0)
         {
-            LOG_ERROR("Render", "Failed to find GPUs with Vulkan support");
+            LOG_ERROR(RenderModule, "Failed to find GPUs with Vulkan support");
             return false;
         }
 
@@ -335,7 +335,7 @@ namespace Engine
 
         if (vkCreateDevice(PhysicalDevice, &createInfo, nullptr, &Device) != VK_SUCCESS) 
         {
-            LOG_ERROR("Render", "Failed to create logical device!");
+            LOG_ERROR(RenderModule, "Failed to create logical device!");
             return false;
         }
 
@@ -504,7 +504,7 @@ namespace Engine
 
         if (vkCreateSwapchainKHR(Device, &createInfo, nullptr, &SwapChain) != VK_SUCCESS)
         {
-            LOG_ERROR("Render", "Failed to create swap chain!");
+            LOG_ERROR(RenderModule, "Failed to create swap chain!");
             return;
         }
 
@@ -539,7 +539,7 @@ namespace Engine
 
             if (vkCreateImageView(Device, &createInfo, nullptr, &SwapChainImageViews[idx]) != VK_SUCCESS)
             {
-                LOG_ERROR("", "Failed to create image views!");
+                LOG_ERROR(RenderModule, "Failed to create image views!");
             }
             ++idx;
         }
@@ -626,7 +626,7 @@ namespace Engine
 
         if (vkCreatePipelineLayout(Device, &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
         {
-            LOG_ERROR("Render", "Failed to create pipeline layout");
+            LOG_ERROR(RenderModule, "Failed to create pipeline layout");
         }
 
 
@@ -644,7 +644,7 @@ namespace Engine
         VkShaderModule shaderModule;
         if (vkCreateShaderModule(Device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
         {
-            LOG_ERROR("Render", "Create shader module failed");
+            LOG_ERROR(RenderModule, "Create shader module failed");
         }
 
         return shaderModule;
