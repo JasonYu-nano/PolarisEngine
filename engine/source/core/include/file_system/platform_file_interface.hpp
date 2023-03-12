@@ -1,7 +1,6 @@
 #pragma once
 
 #include "global.hpp"
-#include "file_system/file_time.hpp"
 #include "foundation/smart_ptr.hpp"
 #include "file_system/file_handle_interface.hpp"
 
