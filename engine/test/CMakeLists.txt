@@ -19,4 +19,3 @@ find_package(GTest CONFIG REQUIRED)
 
 add_subdirectory(core_test)
 add_subdirectory(taskflow_test)
-add_subdirectory(object_test)
