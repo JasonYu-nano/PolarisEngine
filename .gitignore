@@ -33,6 +33,7 @@
 
 # User
 [Bb]uild/
+[Ss]aved/
 .vscode/
 .vs/
 .xmake/
@@ -41,4 +42,3 @@ vsxmake2019/
 generated/
 !**/third_parties/**
 cmake-build-debug/
-build_clion/

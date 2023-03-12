@@ -57,6 +57,8 @@ namespace Engine
 
         static String GetEngineRootPath();
 
+        static String GetEngineSaveDir();
+
         static void ReadFileToBinary(const String& fileName, Array64<uint8>& outBinary);
 
         class DirectoryIterImpl

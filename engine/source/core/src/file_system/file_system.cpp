@@ -75,6 +75,11 @@ namespace Engine
         return ENGINE_ROOT_PATH;
     }
 
+    String FileSystem::GetEngineSaveDir()
+    {
+        return Path::Combine(GetEngineRootPath(), "saved");
+    }
+
 #if PLATFORM_WINDOWS
     UniquePtr<IPlatformFile> FileSystem::PlatformFile = MakeUnique<WindowsPlatformFile>();
 #endif

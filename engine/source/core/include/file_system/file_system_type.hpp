@@ -4,12 +4,9 @@
 #include "definitions_core.hpp"
 #include "foundation/time.hpp"
 #include "foundation/string.hpp"
-#include "log/logger.hpp"
 
 namespace Engine
 {
-    DECLARE_LOG_CATEGORY(FileSystem);
-
     enum class FileAttribute : uint32
     {
         Readonly      = 0x00000001,
@@ -20,8 +17,8 @@ namespace Engine
         Device        = 0x00000040,
         Normal        = 0x00000080,
         Temporary     = 0x00000100,
-        SparseFile   = 0x00000200,
-        ReparsePoint = 0x00000400,
+        SparseFile    = 0x00000200,
+        ReparsePoint  = 0x00000400,
         Invalid       = 0xFFFFFFFF,
     };
 

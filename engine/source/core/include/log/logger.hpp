@@ -6,6 +6,8 @@
 #include "spdlog/pattern_formatter.h"
 #include "foundation/string.hpp"
 #include "foundation/smart_ptr.hpp"
+#include "file_system/path.hpp"
+#include "file_system/file_system.hpp"
 
 namespace Engine
 {
@@ -29,10 +31,21 @@ namespace Engine
     class GLogCategory_##name : public GLogCategory \
     { \
     public: \
-        static const String& GetCategoryName() \
+        static spdlog::logger* GetLogger() \
         { \
-            static String category = #name; \
-            return category; \
+            static UniquePtr<spdlog::logger> logger; \
+            if (logger == nullptr) \
+            { \
+                std::vector<spdlog::sink_ptr> sinks; \
+                auto colorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>(); \
+                colorSink->set_color(spdlog::level::info, 0xffff); \
+                sinks.push_back(colorSink); \
+                String save = Path::Combine(FileSystem::GetEngineSaveDir(), "logs/engine_log.txt"); \
+                sinks.push_back(MakeShared<spdlog::sinks::basic_file_sink_mt>(save.Data(), true)); \
+                logger = MakeUnique<spdlog::logger>(#name, begin(sinks), end(sinks)); \
+                logger->set_pattern("[%n] [%D] [%H:%M:%S] [%l] %v%$"); \
+            } \
+            return logger.get(); \
         } \
     }
 
@@ -42,120 +55,42 @@ namespace Engine
     {
     public:
         template<typename... Args>
-        static void Log(spdlog::source_loc src, ELogLevel level, const String& category, const char* fmt, Args&&... args)
+        static void Log(spdlog::logger* logger, spdlog::source_loc src, ELogLevel level, fmt::format_string<Args...> fmt, Args&&... args)
         {
-            spdlog::level::level_enum logLevel = spdlog::level::off;
-            switch (level)
-            {
-                case Trace:
-                {
-                    logLevel = spdlog::level::trace;
-                    break;
-                }
-                case Debug:
-                {
-                    logLevel = spdlog::level::debug;
-                    break;
-                }
-                case Info:
-                {
-                    logLevel = spdlog::level::info;
-                    break;
-                }
-                case Warn:
-                {
-                    logLevel = spdlog::level::warn;
-                    break;
-                }
-                case Error:
-                {
-                    logLevel = spdlog::level::err;
-                    break;
-                }
-                case Critical:
-                {
-                    logLevel = spdlog::level::critical;
-                    break;
-                }
-                default:;
-            }
-
-            String logText = String::Format(fmt, std::forward<Args>(args)...).Prepend(String::Format("[{0}] ", category));
-            GetLogger()->log(src, logLevel, logText);
+            logger->log(src, CastLevel(level), fmt, std::forward<Args>(args)...);
         }
 
         template<typename... Args>
-        static void Log(ELogLevel level, const String& category, const char* fmt, Args&&... args)
+        static void Log(spdlog::logger* logger, ELogLevel level, fmt::format_string<Args...> fmt, Args&&... args)
         {
-            spdlog::level::level_enum logLevel = spdlog::level::off;
-            switch (level)
-            {
-                case Trace:
-                {
-                    logLevel = spdlog::level::trace;
-                    break;
-                }
-                case Debug:
-                {
-                    logLevel = spdlog::level::debug;
-                    break;
-                }
-                case Info:
-                {
-                    logLevel = spdlog::level::info;
-                    break;
-                }
-                case Warn:
-                {
-                    logLevel = spdlog::level::warn;
-                    break;
-                }
-                case Error:
-                {
-                    logLevel = spdlog::level::err;
-                    break;
-                }
-                case Critical:
-                {
-                    logLevel = spdlog::level::critical;
-                    break;
-                }
-                default:;
-            }
-
-            String logText = String::Format(fmt, std::forward<Args>(args)...).Prepend(String::Format("[{0}] ", category));
-            GetLogger()->log(logLevel, logText);
-        }
-
-        static void AssertFail(spdlog::source_loc src, const char* expr)
-        {
-            GetLogger()->log(src, spdlog::level::critical, "assertion failed: at {0}", expr);
-            abort();
+            logger->log(CastLevel(level), fmt, std::forward<Args>(args)...);
         }
 
     private:
-        static SharedPtr<spdlog::logger> GetLogger()
+        static constexpr spdlog::level::level_enum CastLevel(ELogLevel level)
         {
-            static LogSystem system;
-            return system.Logger;
+            switch (level)
+            {
+                case Trace:
+                    return spdlog::level::trace;
+                case Debug:
+                    return spdlog::level::debug;
+                case Info:
+                    return spdlog::level::info;
+                case Warn:
+                    return spdlog::level::warn;
+                case Error:
+                    return spdlog::level::err;
+                case Critical:
+                    return spdlog::level::critical;
+                default:
+                    return spdlog::level::off;
+            }
         }
-
-        LogSystem()
-        {
-            std::vector<spdlog::sink_ptr> sinks;
-            auto colorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>();
-            colorSink->set_color(spdlog::level::info, 0xffff);
-            sinks.push_back(colorSink);
-            sinks.push_back(MakeShared<spdlog::sinks::basic_file_sink_mt>("engine_log", "logs/engine_log.txt"));
-            Logger = MakeShared<spdlog::logger>("engine_log", begin(sinks), end(sinks));
-            Logger->set_pattern("[%D] [%H:%M:%S] [%l] %v%$");
-        }
-
-        SharedPtr<spdlog::logger> Logger;
     };
 
-    #define PL_LOG_IMPL(level, category, fmt, ...)  {LogSystem::Log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, GLogCategory_##category::GetCategoryName(), fmt, ## __VA_ARGS__);}
-    #define PL_LOG_WITHOUT_SOURCE(level, category, fmt, ...)  {LogSystem::Log(level, GLogCategory_##category::GetCategoryName(), fmt, ## __VA_ARGS__);}
+    #define PL_LOG_IMPL(level, category, fmt, ...)  {LogSystem::Log(GLogCategory_##category::GetLogger(), spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, fmt, ## __VA_ARGS__);}
+    #define PL_LOG_WITHOUT_SOURCE(level, category, fmt, ...)  {LogSystem::Log(GLogCategory_##category::GetLogger(), level, fmt, ## __VA_ARGS__);}
 
     #define LOG_VERBOSE(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(Trace, category, fmt, ## __VA_ARGS__)
     #define LOG_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(Info, category, fmt, ## __VA_ARGS__)
