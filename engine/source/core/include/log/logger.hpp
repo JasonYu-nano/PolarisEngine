@@ -148,8 +148,7 @@ namespace Engine
             sinks.push_back(colorSink);
             sinks.push_back(MakeShared<spdlog::sinks::basic_file_sink_mt>("engine_log", "logs/engine_log.txt"));
             Logger = MakeShared<spdlog::logger>("engine_log", begin(sinks), end(sinks));
-            //TODO: has bug with overriden operator new / delete
-            //Logger->set_pattern("%^[%H:%M:%S] [%s:%#] [%!] %v%$");
+            Logger->set_pattern("[%D] [%H:%M:%S] [%l] %v%$");
         }
 
         SharedPtr<spdlog::logger> Logger;
