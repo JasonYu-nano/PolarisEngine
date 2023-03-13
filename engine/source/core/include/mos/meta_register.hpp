@@ -10,6 +10,8 @@ namespace Engine
     public:
         static void Initialize();
 
+        static void Finalize();
+
         static MetaClass* GetMetaClassChecked(StringID className);
 
     private:
@@ -21,6 +23,8 @@ namespace Engine
     struct CORE_API StructureRegister
     {
         StructureRegister() = default;
+
+        virtual MetaClass* Register() = 0;
     };
 
     template <typename ClassType>
@@ -28,32 +32,23 @@ namespace Engine
     {
         MetaClassRegister() : StructureRegister()
         {
-            MetaClassRegisterCollect(this);
+            Private::MetaObjectInitializer::CollectDeferRegisterMetaClass(this);
         }
 
-        MetaClass* Register()
+        MetaClass* Register() override
         {
             return ClassType::MetaClass();
         }
     };
-
-    inline void MetaClassRegisterCollect(StructureRegister* registerInst)
-    {
-        //TODO: Defer init
-    }
 
 namespace Private
 {
 
     struct CORE_API MetaObjectInitializer
     {
-        static void Initialize()
-        {
-            /**
-             *  1. Malloc member for meta object
-             *  2. Iterator all instance, call register
-             */
-        }
+        static void Initialize();
+
+        static void CollectDeferRegisterMetaClass(StructureRegister* inst);
 
         static MetaClass* ConstructMetaClass(const char* className, EMetaFlag flag, const Map<StringID, String>& attributes)
         {
@@ -72,6 +67,8 @@ namespace Private
         {
             metaClass->AddProperty(MetaProperty(propName, offset, flag, attributes));
         }
+
+        static Array<StructureRegister*> DeferRegisterMetaClassArray;
     };
 }
 }

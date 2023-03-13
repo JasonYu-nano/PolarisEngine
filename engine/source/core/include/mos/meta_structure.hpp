@@ -37,9 +37,9 @@ namespace Engine
         }
 
     private:
-        MetaClass& AddProperty(MetaProperty&& property);
+        MetaClass& AddProperty(MetaProperty&& property) { return *this; }
 
-        MetaClass& AddMethod(MetaMethod&& method);
+        MetaClass& AddMethod(MetaMethod&& method) { return *this;}
     private:
         Map<StringID, MetaProperty> Properties;
         Map<StringID, MetaMethod> Methods;

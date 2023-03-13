@@ -10,6 +10,6 @@ namespace Engine
     {
         META_CLASS_GENERATED(GObject)
     public:
-        
+        static MetaClass* MetaClass() { return nullptr; }
     };
 }
