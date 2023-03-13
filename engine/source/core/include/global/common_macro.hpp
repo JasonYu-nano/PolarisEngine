@@ -22,3 +22,9 @@
 #undef ENABLE_TRANSFORM_INTRINSICS
 #endif
 #define ENABLE_TRANSFORM_INTRINSICS 0
+
+#ifndef USE_BUILTIN_OFFSETOF
+#define OFFSET_OF(struct, member) offsetof(struct, member)
+#else
+#define OFFSET_OF(struct, member) __builtin_offsetof(struct, member)
+#endif

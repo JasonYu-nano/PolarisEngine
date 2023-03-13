@@ -80,6 +80,11 @@ namespace Engine
         return Path::Combine(GetEngineRootPath(), "saved");
     }
 
+    String FileSystem::GetEngineIntermediateDir()
+    {
+        return Path::Combine(GetEngineRootPath(), "intermediate");
+    }
+
 #if PLATFORM_WINDOWS
     UniquePtr<IPlatformFile> FileSystem::PlatformFile = MakeUnique<WindowsPlatformFile>();
 #endif

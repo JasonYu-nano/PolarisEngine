@@ -1,4 +1,4 @@
-set(target core_test)
+set(target object_test)
 
 set(project_dir "${CMAKE_CURRENT_LIST_DIR}")
 
@@ -10,7 +10,7 @@ add_executable(${target} ${project_files})
 # target_precompile_headers(${target} PRIVATE precompiled_core.hpp)
 
 # include dir
-target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/test/core_test)
+target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/test/object_test)
 
 
 # add 3rd dependency
@@ -21,10 +21,6 @@ if(GTest_FOUND)
 else()
     message(FATAL_ERROR "Can't setup gtest dependency")
 endif()
-
-add_custom_command(TARGET ${target}
-        PRE_BUILD
-        COMMAND ${CMAKE_BINARY_DIR}/output/bin/meta_object_compiler -s 20)
 
 # ide
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
