@@ -12,13 +12,13 @@ namespace Engine
 {
     namespace Private
     {
-        class MetaObjectInitializer;
+        struct MetaObjectInitializer;
     }
 
     class CORE_API MetaClass : public MetaAttributes
     {
         using Super = MetaAttributes;
-        friend class Private::MetaObjectInitializer;
+        friend struct Private::MetaObjectInitializer;
     public:
         MetaClass(StringID name, EMetaFlag flags, const Map<StringID, String>& attributes)
             : ClassName(name)

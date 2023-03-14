@@ -6,7 +6,7 @@ namespace Engine
 {
     class CORE_API MetaObjectRegistry
     {
-        friend class MetaObjectInitializer;
+        friend struct Private::MetaObjectInitializer;
     public:
         static void Initialize();
 
@@ -22,22 +22,24 @@ namespace Engine
 
     struct CORE_API StructureRegister
     {
-        StructureRegister() = default;
+        StructureRegister(StringID nameID) : NameID(nameID) {};
 
         virtual MetaClass* Register() = 0;
+
+        StringID NameID;
     };
 
     template <typename ClassType>
     struct CORE_API MetaClassRegister : public StructureRegister
     {
-        MetaClassRegister() : StructureRegister()
+        explicit MetaClassRegister(StringID nameID) : StructureRegister(nameID)
         {
             Private::MetaObjectInitializer::CollectDeferRegisterMetaClass(this);
         }
 
         MetaClass* Register() override
         {
-            return ClassType::MetaClass();
+            return ClassType::MetaObject();
         }
     };
 
@@ -50,15 +52,9 @@ namespace Private
 
         static void CollectDeferRegisterMetaClass(StructureRegister* inst);
 
-        static MetaClass* ConstructMetaClass(const char* className, EMetaFlag flag, const Map<StringID, String>& attributes)
-        {
-            StringID nameID = StringID(className);
-            MetaClass* metaClass = MetaObjectRegistry::GetMetaClassChecked(nameID);
-            new(metaClass) MetaClass(StringID(className), flag, attributes);
-            return metaClass;
-        }
+        static MetaClass* ConstructMetaClass(StringID className, EMetaFlag flag, Map<StringID, String>&& attributes);
 
-        static void AddMetaProperty(MetaClass* metaClass, const char* propName, size_t offset, EMetaFlag flag, const Map<StringID, String>& attributes)
+        static void AddMetaProperty(MetaClass* metaClass, StringID propName, size_t offset, EMetaFlag flag, Map<StringID, String>&& attributes)
         {
             metaClass->AddProperty(MetaProperty(propName, offset, flag, attributes));
         }

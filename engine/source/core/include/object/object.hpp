@@ -10,6 +10,11 @@ namespace Engine
     {
         META_CLASS_GENERATED(GObject)
     public:
-        static MetaClass* MetaClass() { return nullptr; }
+        void SetID(int32 id)
+        {
+            ID = id;
+        }
+
+        int32 ID;
     };
 }

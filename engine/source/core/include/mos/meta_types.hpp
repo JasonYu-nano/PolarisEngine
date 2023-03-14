@@ -16,6 +16,7 @@ namespace Engine
 
     enum EMetaFlag
     {
+        MF_None             = 0x00000000,
         MF_ReadOnly         = 0x00000001,
         MF_ReadWrite        = 0x00000002
     };
