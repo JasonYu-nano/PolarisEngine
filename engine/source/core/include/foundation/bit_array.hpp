@@ -813,7 +813,12 @@ namespace Engine
 
         void CopyBits(ValueType* data, SizeType size)
         {
-            ENSURE(size > 0);
+            if (!data || size <= 0)
+            {
+                Clear();
+                return;
+            }
+
             Clear(size);
             auto& myVal = Pair.SecondVal;
             myVal.Size = size;

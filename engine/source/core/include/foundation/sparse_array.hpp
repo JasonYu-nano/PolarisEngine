@@ -604,6 +604,12 @@ namespace Engine
             AllocateFlags = other.AllocateFlags;
             ElemNodes.GetAlloc() = other.ElemNodes.GetAlloc();
 
+            if (other.ElemNodes.Empty())
+            {
+                ElemNodes.Clear();
+                return;
+            }
+
             if constexpr (std::is_trivially_copyable_v<ValueType>)
             {
                 // Just memory copy
