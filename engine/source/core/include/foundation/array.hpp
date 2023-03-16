@@ -1027,7 +1027,12 @@ namespace Engine
 
         void CopyAssign(const ValueType* data, SizeType size, SizeType extraSlack = 0)
         {
-            ENSURE(data && size > 0 && extraSlack >= 0);
+            if (!data || size <= 0 || extraSlack < 0)
+            {
+                Clear();
+                return;
+            }
+
             auto& myVal = Pair.SecondVal;
             if (myVal.Data)
             {
