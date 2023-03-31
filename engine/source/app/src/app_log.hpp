@@ -4,5 +4,5 @@
 
 namespace Engine
 {
-    DECLARE_LOG_CATEGORY(Application);
+    DEFINE_LOG_CATEGORY(Application);
 }

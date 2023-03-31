@@ -63,6 +63,8 @@ namespace Engine
 
         static void ReadFileToBinary(const String& fileName, Array64<uint8>& outBinary);
 
+        static String ReadFileToString(const String& fileName);
+
         class DirectoryIterImpl
         {
         public:

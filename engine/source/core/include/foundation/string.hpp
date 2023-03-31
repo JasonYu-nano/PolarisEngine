@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "foundation/details/compressed_pair.hpp"
 #include "foundation/char_traits.hpp"
 #include "foundation/string_view.hpp"
@@ -195,6 +196,8 @@ namespace Engine
 
         ~BasicString();
 
+        static BasicString FromStdString(const std::basic_string<CharType>& str);
+
         BasicString& operator= (const BasicString& other);
 
         BasicString& operator= (BasicString&& other) noexcept ;
@@ -228,6 +231,12 @@ namespace Engine
         BasicString operator/ (const BasicString& other);
 
         BasicString operator/ (const CharType* other);
+
+        friend std::ostream& operator<<(std::ostream& os, const BasicString& str)
+        {
+            os << str.Data();
+            return os;
+        }
 
         const CharType& operator[] (SizeType index) const
         {
@@ -567,6 +576,8 @@ namespace Engine
             return SplitAny(ViewType(std::addressof(sep), 1), behavior, cs);
         }
 
+        void Reserve(SizeType capacity);
+
         void Clear()
         {
             Truncate(0);
@@ -671,8 +682,6 @@ namespace Engine
             SizeType index = AddUnconstructElement(1);
             new(Data() + index) CharType(Forward<Args>(args)...);
         }
-
-        void Reserve(SizeType capacity);
 
         void Invalidate();
 

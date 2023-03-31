@@ -9,7 +9,7 @@ add_executable(${target} ${project_files})
 include(${CMAKE_SOURCE_DIR}/cmake/find_llvm.cmake)
 
 # include dir
-target_include_directories(${target} PUBLIC ${project_dir}/include ${project_dir}/include/global PRIVATE ${project_dir}/src ${llvm_include_dirs})
+target_include_directories(${target} PRIVATE ${project_dir} ${project_dir}/include/global PRIVATE ${project_dir}/src ${llvm_include_dirs})
 
 # dependency
 target_link_libraries(${target} PRIVATE core ${libclang_library})

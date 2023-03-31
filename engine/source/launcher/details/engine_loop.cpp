@@ -3,12 +3,14 @@
 #include "memory/memory.hpp"
 #include "render_module.hpp"
 #include "module/module_manager.hpp"
+#include "object_module.hpp"
 
 namespace Engine
 {
     void EngineLoop::Init()
     {
         auto* app = PlatformApplication::CreateApplication();
+        ModuleManager::Load<ObjectModule>("Object");
         ModuleManager::Load<RenderModule>("Render");
     }
 

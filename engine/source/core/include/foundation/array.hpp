@@ -843,6 +843,22 @@ namespace Engine
             return INDEX_NONE;
         }
 
+        SizeType Find(std::function<bool(const ValueType& elem)> predicate) const
+        {
+            auto& myVal = Pair.SecondVal;
+            const ValueType* begin = myVal.Data;
+            const ValueType* end = begin + myVal.Size;
+
+            for (const ValueType* data = begin; data != end; ++data)
+            {
+                if (predicate(*data))
+                {
+                    return static_cast<SizeType>(data - begin);
+                }
+            }
+            return INDEX_NONE;
+        }
+
         bool FindLast(const ValueType& elem, SizeType& index) const
         {
             index = FindLast(elem);

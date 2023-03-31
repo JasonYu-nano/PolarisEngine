@@ -73,6 +73,8 @@ if(cxxopts_FOUND)
     target_compile_definitions(${target} PUBLIC ${cxxopts_DEFINITIONS})
 endif()
 
+target_include_directories(${target} PUBLIC ${engine_generated_path}/moc)
+
 add_3rd_dependency(${target} "icu")
 
 # ide

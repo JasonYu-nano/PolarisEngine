@@ -496,11 +496,11 @@ namespace Engine
 
         Iterator begin() { return Iterator(Elements.begin()); }
 
-        ConstIterator begin() const { return ConstIterator(const_cast<const SparseArrayType>(Elements).begin()); }
+        ConstIterator begin() const { return ConstIterator(Elements.begin()); }
 
         Iterator end() { return Iterator(Elements.end()); }
 
-        ConstIterator end() const { return ConstIterator(const_cast<const SparseArrayType>(Elements).end()); }
+        ConstIterator end() const { return ConstIterator(Elements.end()); }
 
     private:
         template <typename ElemType>

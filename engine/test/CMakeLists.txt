@@ -17,5 +17,5 @@ set(GTest_DIR ${target_binary_path})
 
 find_package(GTest CONFIG REQUIRED)
 
-add_subdirectory(core_test)
 add_subdirectory(taskflow_test)
+add_subdirectory(core_test)

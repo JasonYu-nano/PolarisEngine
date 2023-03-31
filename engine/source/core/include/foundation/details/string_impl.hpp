@@ -61,6 +61,12 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
+    BasicString<Elem, Traits, Alloc> BasicString<Elem, Traits, Alloc>::FromStdString(const std::basic_string<CharType>& str)
+    {
+        return String(str.data());
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
     BasicString<Elem, Traits, Alloc>& BasicString<Elem, Traits, Alloc>::operator=(const BasicString& other)
     {
         Pair.GetFirst() = other.GetAlloc();
@@ -397,7 +403,7 @@ namespace Engine
     BasicString<Elem, Traits, Alloc> BasicString<Elem, Traits, Alloc>::Trimmed() const
     {
         const CharType* start = Data();
-        const CharType* end = Data() + Length() - 1;
+        const CharType* end = Data() + Length();
 
         while (start < end && CharTraits::IsSpace(*start))
         {
@@ -510,12 +516,6 @@ namespace Engine
     }
 
     template <typename Elem, typename Traits, typename Alloc>
-    uint32 BasicString<Elem, Traits, Alloc>::GetHashCode() const
-    {
-        return CityHash::CityHash32(Data(), Length());
-    }
-
-    template <typename Elem, typename Traits, typename Alloc>
     void BasicString<Elem, Traits, Alloc>::Reserve(SizeType capacity)
     {
         auto& val = Pair.SecondVal;
@@ -538,6 +538,12 @@ namespace Engine
         val.UB.Ptr = ptr;
         val.MaxSize = capacity;
         alloc.Deallocate(oldPtr, oldSize);
+    }
+
+    template <typename Elem, typename Traits, typename Alloc>
+    uint32 BasicString<Elem, Traits, Alloc>::GetHashCode() const
+    {
+        return CityHash::CityHash32(Data(), Length());
     }
 
     template <typename Elem, typename Traits, typename Alloc>

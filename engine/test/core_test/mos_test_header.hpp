@@ -1,10 +1,13 @@
 #include "global.hpp"
-#include "mos/meta_types.hpp"
+#include "meta_types.hpp"
 #include "foundation/string.hpp"
+#include "mos_test_header.gen.hpp"
 
 class META() MOSTestClassBase
 {
 public:
+    META_CLASS_GENERATED(MOSTestClassBase)
+
     MOSTestClassBase() = default;
 
     META()
@@ -33,6 +36,7 @@ private:
 
 class META() MOSTestClassChild : public MOSTestClassBase
 {
+    META_CLASS_GENERATED(MOSTestClassChild)
 public:
     META()
     static void Log()
@@ -53,11 +57,13 @@ private:
 
 struct META() MOSTestStruct
 {
+    META_STRUCT_GENERATED(MOSTestStruct)
+
     META(ReadWrite)
     int64 Index;
 };
 
-enum class META() EMOSTestEnum
+enum class META() EMOSTestEnum : uint8
 {
     Item1 META(DisplayName = "1", Tooltips = "Tips 1") = 0,
     Item2 META(DisplayName = "2"),

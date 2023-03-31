@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "global.hpp"
-#include "mos/meta_types.hpp"
 #include "foundation/string.hpp"
 #include "mos_test_header.hpp"
 

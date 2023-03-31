@@ -22,34 +22,38 @@ namespace Engine
         Off = SPDLOG_LEVEL_OFF,
     };
 
-    class CORE_API GLogCategory
+    class CORE_API LogCategory
     {
 
     };
 
-#define DECLARE_LOG_CATEGORY(name) \
-    class GLogCategory_##name : public GLogCategory \
+#define DEFINE_LOG_CATEGORY_WITH_FILE_NAME(name, file) \
+    class LogCategory_##name : public LogCategory \
     { \
-    public: \
+        static UniquePtr<spdlog::logger> CreateLogger() \
+        { \
+            std::vector<spdlog::sink_ptr> sinks; \
+            auto colorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>(); \
+            colorSink->set_color(spdlog::level::info, 0xffff); \
+            sinks.push_back(colorSink); \
+            String save = Path::Combine(FileSystem::GetEngineSaveDir(), String::Format("logs/{}.log", #file)); \
+            sinks.push_back(MakeShared<spdlog::sinks::basic_file_sink_mt>(save.Data(), true)); \
+            UniquePtr<spdlog::logger> logger = MakeUnique<spdlog::logger>(#name, begin(sinks), end(sinks)); \
+            logger->set_pattern("[%n] [%D] [%H:%M:%S] [%l] [%s:%#] %v%$"); \
+            return logger; \
+        } \
+    public:                                            \
         static spdlog::logger* GetLogger() \
         { \
-            static UniquePtr<spdlog::logger> logger; \
-            if (logger == nullptr) \
-            { \
-                std::vector<spdlog::sink_ptr> sinks; \
-                auto colorSink = MakeShared<spdlog::sinks::stdout_color_sink_mt>(); \
-                colorSink->set_color(spdlog::level::info, 0xffff); \
-                sinks.push_back(colorSink); \
-                String save = Path::Combine(FileSystem::GetEngineSaveDir(), "logs/engine_log.txt"); \
-                sinks.push_back(MakeShared<spdlog::sinks::basic_file_sink_mt>(save.Data(), true)); \
-                logger = MakeUnique<spdlog::logger>(#name, begin(sinks), end(sinks)); \
-                logger->set_pattern("[%n] [%D] [%H:%M:%S] [%l] %v%$"); \
-            } \
+            static UniquePtr<spdlog::logger> logger = CreateLogger(); \
             return logger.get(); \
         } \
     }
 
-    DECLARE_LOG_CATEGORY(LogTemp);
+
+#define DEFINE_LOG_CATEGORY(name) DEFINE_LOG_CATEGORY_WITH_FILE_NAME(name, game)
+
+    DEFINE_LOG_CATEGORY(LogTemp);
 
     class CORE_API LogSystem
     {
@@ -89,8 +93,8 @@ namespace Engine
         }
     };
 
-    #define PL_LOG_IMPL(level, category, fmt, ...)  {LogSystem::Log(GLogCategory_##category::GetLogger(), spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, fmt, ## __VA_ARGS__);}
-    #define PL_LOG_WITHOUT_SOURCE(level, category, fmt, ...)  {LogSystem::Log(GLogCategory_##category::GetLogger(), level, fmt, ## __VA_ARGS__);}
+    #define PL_LOG_IMPL(level, category, fmt, ...)  {LogSystem::Log(LogCategory_##category::GetLogger(), spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, fmt, ## __VA_ARGS__);}
+    #define PL_LOG_WITHOUT_SOURCE(level, category, fmt, ...)  {LogSystem::Log(LogCategory_##category::GetLogger(), level, fmt, ## __VA_ARGS__);}
 
     #define LOG_VERBOSE(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(Trace, category, fmt, ## __VA_ARGS__)
     #define LOG_INFO(category, fmt, ...) PL_LOG_WITHOUT_SOURCE(Info, category, fmt, ## __VA_ARGS__)

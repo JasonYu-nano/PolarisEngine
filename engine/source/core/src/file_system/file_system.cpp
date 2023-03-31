@@ -27,8 +27,8 @@ namespace Engine
             return false;
         }
 
-        String destPath;
-        for (int32 index = 0; index < dirs.Size(); index++)
+        String destPath = dirs[0];
+        for (int32 index = 1; index < dirs.Size(); index++)
         {
             destPath = Path::Combine(destPath, dirs[index]);
             if (DirExists(destPath))
@@ -95,6 +95,17 @@ namespace Engine
         int64 fileSize = handle->GetSize();
         outBinary.Resize(fileSize);
         handle->Read(outBinary.Data(), fileSize);
+    }
+
+    String FileSystem::ReadFileToString(const String& fileName)
+    {
+        Array64<uint8> bin;
+        ReadFileToBinary(fileName, bin);
+
+        String::CharType* data = reinterpret_cast<String::CharType*>(bin.Data());
+        int64 strSize = bin.Size() / sizeof(String::CharType);
+
+        return String(data, static_cast<String::SizeType>(strSize));
     }
 
     bool FileSystem::MakeFile(const String& path)

@@ -141,7 +141,7 @@ namespace Engine
 
         Map(Map&& other) noexcept : Pairs(std::move(other.Pairs)) {}
 
-        Map& operator= (std::initializer_list<PairType> initializer)
+        Map& operator= (const std::initializer_list<PairType>& initializer)
         {
             Pairs.Append(initializer);
             return *this;
@@ -261,7 +261,7 @@ namespace Engine
 
         ConstIterator end() const
         {
-            return ConstIterator(Pairs.begin());
+            return ConstIterator(Pairs.end());
         }
 
     private:

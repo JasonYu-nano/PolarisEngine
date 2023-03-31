@@ -515,6 +515,12 @@ namespace Engine
            ++count;
         }
         EXPECT_TRUE(count == 3);
+
+        for (Set<NonTrivialArrayItem>::ConstIterator it = set.begin(); it != set.end(); ++it)
+        {
+            --count;
+        }
+        EXPECT_TRUE(count == 0);
     }
 
     TEST(ContainerTest, Map_Ctor)

@@ -4,5 +4,5 @@
 
 namespace Engine
 {
-    DECLARE_LOG_CATEGORY(FileSystem);
+    DEFINE_LOG_CATEGORY(FileSystem);
 }

@@ -738,7 +738,7 @@ namespace Engine
         ConstValidIterator CreateValidIterator(SizeType startIndex = 0) const
         {
             ENSURE(startIndex >= 0 && startIndex <= Size());
-            return ConstValidIterator(*this, 0);
+            return ConstValidIterator(*this, startIndex);
         }
 
         Iterator begin()

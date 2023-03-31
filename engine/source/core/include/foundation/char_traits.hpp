@@ -170,6 +170,11 @@ namespace Engine
         {
             return ToLowerLatin1(ch);
         }
+
+        static constexpr IntType EndOfFile() noexcept
+        {
+            return static_cast<IntType>(EOF);
+        }
     };
 
     template <typename T>
