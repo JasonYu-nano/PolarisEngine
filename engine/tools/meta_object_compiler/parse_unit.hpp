@@ -4,6 +4,8 @@
 #include "foundation/string.hpp"
 #include "foundation/map.hpp"
 #include "code_generator_interface.hpp"
+#include "foundation/string_id.hpp"
+#include "parse_utils.hpp"
 
 namespace Engine
 {
@@ -49,11 +51,18 @@ namespace Engine
             : Super(cursor)
             , Path(path)
             , NameSpace(nameSpace)
-        {}
+        {
+            OwnerBuildTarget = StringID(ParseUtils::GetFileOwnerBuildTarget(path));
+        }
 
         String GetFilePath() const
         {
             return Path;
+        }
+
+        StringID GetOwnerBuildTarget() const
+        {
+            return OwnerBuildTarget;
         }
 
         String GetRecordName() const { return RecordName; }
@@ -67,6 +76,7 @@ namespace Engine
 
     protected:
         ERecordType RecordType{ ERecordType::Unknown };
+        StringID OwnerBuildTarget;
         String Path;
         String NameSpace;
         String RecordName;

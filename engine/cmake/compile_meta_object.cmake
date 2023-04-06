@@ -24,6 +24,7 @@ function(compile_meta_object)
     endforeach()
 
     set(include_dirs_str "")
+    set(targets_str "")
     get_all_targets(target_List ${CMAKE_SOURCE_DIR})
     foreach(target ${target_List})
         get_target_property(include_dirs ${target} INCLUDE_DIRECTORIES)
@@ -31,18 +32,25 @@ function(compile_meta_object)
         foreach(include_dir ${include_dirs})
             if (include_dir STREQUAL "include_dirs-NOTFOUND")
             elseif (include_dirs_str STREQUAL "")
-                    set(include_dirs_str ${include_dir})
+                set(include_dirs_str ${include_dir})
             else()
                 set(include_dirs_str "${include_dirs_str},${include_dir}")
             endif()
         endforeach()
 
+        if (targets_str STREQUAL "")
+            set(targets_str ${target})
+        else()
+            set(targets_str "${targets_str},${target}")
+        endif()
+
     endforeach()
 
     message("Include directory: ${include_dirs_str}")
+    message("Build targets: ${targets_str}")
 
     add_custom_target(moc
-        COMMAND ${CMAKE_BINARY_DIR}/output/bin/meta_object_compiler -s 20 -c ${content} -i ${include_dirs_str})
+        COMMAND ${CMAKE_BINARY_DIR}/output/bin/meta_object_compiler -s 20 -c ${content} -i ${include_dirs_str} -t ${targets_str})
 
     add_dependencies(${MOC_TARGET} moc)
 
