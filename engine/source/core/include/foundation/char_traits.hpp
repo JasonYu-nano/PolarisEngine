@@ -4,6 +4,7 @@
 #include "foundation/type_traits.hpp"
 #include "memory/memory.hpp"
 #include "math/generic_math.hpp"
+#include "math/limit.hpp"
 
 namespace Engine
 {

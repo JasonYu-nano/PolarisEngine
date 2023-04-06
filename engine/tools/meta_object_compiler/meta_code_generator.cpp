@@ -10,7 +10,8 @@ void MetaCodeGenerator::GenerateCode()
     for (auto&& unit : Parser)
     {
         String fileName = Path::GetShortName(unit->GetFilePath(), false);
-        String outputFile = Path::Combine(saveDir, String::Format("{}.gen.hpp", fileName));
+        StringID target = unit->GetOwnerBuildTarget();
+        String outputFile = Path::Combine(saveDir, String::Format("{}/{}.gen.hpp", target.ToString(), fileName));
 
         CodeWriter& writer = writerMap.FindOrAdd(outputFile, CodeWriter());
         unit->GenerateCode(writer);

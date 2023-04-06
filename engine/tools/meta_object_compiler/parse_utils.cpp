@@ -1,4 +1,6 @@
 #include "parse_utils.hpp"
+#include "file_system/path.hpp"
+#include "build_targets.hpp"
 
 Array<CXCursor> ParseUtils::GetCursorChildren(CXCursor parent)
 {
@@ -135,4 +137,17 @@ bool ParseUtils::IsLeftReference(const String& type)
 bool ParseUtils::IsRightReference(const String& type)
 {
     return type.EndsWith("&&");
+}
+
+String ParseUtils::GetFileOwnerBuildTarget(const String& filePath)
+{
+    String normalizedPath = Path::Normalize(filePath);
+    for (auto&& target : GBuildTargets)
+    {
+        if (normalizedPath.Contains(String::Format("\\{}\\", target)))
+        {
+            return target;
+        }
+    }
+    return "";
 }

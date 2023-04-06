@@ -53,5 +53,7 @@ namespace Engine
         static bool IsLeftReference(const String& type);
 
         static bool IsRightReference(const String& type);
+
+        static String GetFileOwnerBuildTarget(const String& filePath);
     };
 }
