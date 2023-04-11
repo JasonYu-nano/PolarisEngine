@@ -1,10 +1,10 @@
 #pragma once
 
-#include "meta_attributes.hpp"
+#include "meta_field.hpp"
 
 namespace Engine
 {
-    class OBJECT_API MetaProperty : public MetaObject
+    class OBJECT_API MetaProperty : public MetaField
     {
     public:
         MetaProperty(StringID name, size_t offset, EMetaFlag flags)

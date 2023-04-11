@@ -15,7 +15,7 @@ namespace Engine
 
         void Parse() final;
 
-        void GenerateCode(CodeWriter& writer) const override;
+        void GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) const override;
 
     private:
         Set<String> GetSupportFlags() override

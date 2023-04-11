@@ -43,7 +43,7 @@ function(add_3rd_dependency target package_name )
     foreach(lib ${link_libs})
         message(STATUS "Add dependency lib: ${lib}")
     endforeach()
-    target_link_libraries(${target} ${link_libs})
+    target_link_libraries(${target} PUBLIC ${link_libs})
 
     foreach(dll ${link_dlls})
         file(COPY ${dll} DESTINATION ${CMAKE_BINARY_DIR}/output/bin)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "memory/memory.hpp"
-#include "meta_attributes.hpp"
+#include "meta_field.hpp"
 
 namespace Engine
 {
@@ -11,7 +11,7 @@ namespace Engine
         StringID Name;
     };
 
-    class OBJECT_API MetaMethod : public MetaObject
+    class OBJECT_API MetaMethod : public MetaField
     {
     public:
         typedef void(* FnPtr)(void* args);

@@ -1,8 +1,7 @@
 #pragma once
 
 #include "definitions_object.hpp"
-#include "meta_structure.hpp"
-#include "meta_enum.hpp"
+#include "meta_object.hpp"
 
 namespace Engine
 {
@@ -34,18 +33,18 @@ namespace Engine
         static UniquePtr<MetaEnum> ConstructMetaEnum(StringID enumName, EMetaFlag flags);
 
         template <typename RecordType>
-        static MetaProperty& ConstructMetaProperty(RecordType* record, StringID propertyName, size_t offset, EMetaFlag flags)
+        static MetaProperty* ConstructMetaProperty(RecordType* record, StringID propertyName, size_t offset, EMetaFlag flags)
         {
             MetaProperty property(propertyName, offset, flags);
             return record->AddProperty(std::move(property));
         }
 
-        static MetaMethod& ConstructMetaMethod(MetaClass* metaClass, StringID methodName, MetaMethod::FnPtr fnPtr, EMetaFlag flags);
+        static MetaMethod* ConstructMetaMethod(MetaClass* metaClass, StringID methodName, MetaMethod::FnPtr fnPtr, EMetaFlag flags);
 
         static MetaEnumConstantDecl& ConstructEnumConstantDecl(MetaEnum* metaEnum, StringID constantName, int64 constantValue, EMetaFlag flags);
 
 #if WITH_META_DATA
-        static void SetMetaData(MetaObject* object, const std::initializer_list<Pair<StringID, String>>& metaData);
+        static void SetMetaData(MetaField* object, const std::initializer_list<Pair<StringID, String>>& metaData);
 #endif
     };
 

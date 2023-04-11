@@ -1,5 +1,3 @@
-set(target renderer)
-
 set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if (NOT DEFINED ENV{VULKAN_SDK})
@@ -8,7 +6,7 @@ endif ()
 
 file(TO_CMAKE_PATH $ENV{VULKAN_SDK} vulkan_path)
 
-add_polaris_engine_library(
+add_polaris_library(
         TARGET renderer
         PRIVATE_DEFINITIONS RENDER_EXPORT
         PUBLIC_INCLUDE_DIRS ${project_dir}/include ${vulkan_path}/Include

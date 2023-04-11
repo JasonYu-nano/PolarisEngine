@@ -12,7 +12,10 @@ namespace Engine
 
         void GenerateCode();
 
+        void GenerateManifest();
+
     private:
         const MetaParser& Parser;
+        Map<StringID, Set<String>> TargetDependenceFiles;
     };
 }

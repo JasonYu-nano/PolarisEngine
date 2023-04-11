@@ -1,18 +1,28 @@
 #pragma once
 
-#define IMPL_META_STRUCT_GENERATED_START() \
+#define IMPL_META_STRUCT_GENERATED() \
     public: \
         static MetaStruct* MetaObject() \
         { \
-            static UniquePtr<MetaStruct> meta = PrivateConstructMetaClass(); \
+            static UniquePtr<MetaStruct> meta = PrivateConstructMetaStruct(); \
             return meta.get(); \
         }; \
+        \
+        MetaStruct* GetMetaObject() const \
+        { \
+            return MetaObject(); \
+        } \
      \
     private: \
-        static UniquePtr<MetaStruct> PrivateConstructMetaClass() \
-        { \
+        static UniquePtr<MetaStruct> PrivateConstructMetaStruct();
 
 #define IMPL_META_STRUCT_GENERATED_END() } public:
+
+#define DEFINE_CONSTRUCT_META_STRUCT_START(structName) \
+    UniquePtr<MetaStruct> structName::PrivateConstructMetaStruct() \
+    {
+
+#define DEFINE_CONSTRUCT_META_STRUCT_END()  return meta; }
 
 #define DECLARE_STRUCT_START(name, super, flags) \
     UniquePtr<MetaStruct> meta = MetaConstructUtils::ConstructMetaStruct(name, super, flags); \
@@ -30,7 +40,7 @@
 
 #define DECLARE_STRUCT_PROPERTY_START(...) \
     { \
-        auto&& property = MetaConstructUtils::ConstructMetaProperty<MetaStruct>(metaStruct, __VA_ARGS__);
+        auto* property = MetaConstructUtils::ConstructMetaProperty<MetaStruct>(metaStruct, __VA_ARGS__);
 
 #define DECLARE_STRUCT_PROPERTY_END() }
 
@@ -41,6 +51,11 @@
             static UniquePtr<MetaClass> meta = PrivateConstructMetaClass(); \
             return meta.get(); \
         }; \
+        \
+        MetaClass* GetMetaObject() const \
+        { \
+            return MetaObject(); \
+        } \
      \
     private: \
         static UniquePtr<MetaClass> PrivateConstructMetaClass() \
@@ -64,26 +79,26 @@
 
 #define DECLARE_CLASS_PROPERTY_START(...) \
     { \
-        auto&& property = MetaConstructUtils::ConstructMetaProperty<MetaClass>(metaClass, __VA_ARGS__);
+        auto* property = MetaConstructUtils::ConstructMetaProperty<MetaClass>(metaClass, __VA_ARGS__);
 
 #define DECLARE_CLASS_PROPERTY_END() }
 
 #if WITH_META_DATA
     #define DEFINE_PROPERTY_META_DATA(...) \
-        MetaConstructUtils::SetMetaData(&property, __VA_ARGS__);
+        MetaConstructUtils::SetMetaData(property, __VA_ARGS__);
 #else
     #define DEFINE_PROPERTY_META_DATA(metaData)
 #endif
 
 #define DECLARE_CLASS_METHOD_START(className, methodName, flags) \
     { \
-        auto&& method = MetaConstructUtils::ConstructMetaMethod(metaClass, #methodName, &className::_Execute##methodName, flags);
+        auto* method = MetaConstructUtils::ConstructMetaMethod(metaClass, #methodName, &className::_Execute##methodName, flags);
 
 #define DECLARE_CLASS_METHOD_END() }
 
 #if WITH_META_DATA
     #define DEFINE_METHOD_META_DATA(...) \
-        MetaConstructUtils::SetMetaData(&method, __VA_ARGS__);
+        MetaConstructUtils::SetMetaData(method, __VA_ARGS__);
 #else
     #define DEFINE_METHOD_META_DATA(metaData)
 #endif

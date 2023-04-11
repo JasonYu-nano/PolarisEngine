@@ -73,7 +73,7 @@ namespace Engine
 
     protected:
         String GetGeneratedHead() const;
-
+        String GetGeneratedSource() const;
     protected:
         ERecordType RecordType{ ERecordType::Unknown };
         StringID OwnerBuildTarget;

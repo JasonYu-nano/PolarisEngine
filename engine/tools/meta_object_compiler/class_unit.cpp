@@ -47,77 +47,77 @@ namespace Engine
         }
     }
 
-    void ClassUnit::GenerateCode(CodeWriter& writer) const
+    void ClassUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) const
     {
-        if (writer.Empty())
+        if (headerWriter.Empty())
         {
-            writer.WriteLine(GetGeneratedHead());
+            headerWriter.WriteLine(GetGeneratedHead());
         }
 
-        writer.WriteEmptyRow();
-        writer.WriteLine(String::Format(R"(#define META_CLASS_GENERATED_{}() \)", RecordName));
-        writer.AddTab();
+        headerWriter.WriteEmptyLine();
+        headerWriter.WriteLine(String::Format(R"(#define MOC_GENERATED_{}() \)", RecordName));
+        headerWriter.AddTab();
 
         for (auto&& method: Methods)
         {
-            method.GenerateProxyMethod(writer);
+            method.GenerateProxyMethod(headerWriter);
         }
 
         if (!Methods.Empty())
         {
-            writer.WriteLine("\\");
+            headerWriter.WriteLine("\\");
         }
 
-        writer.WriteLine(R"(IMPL_META_CLASS_GENERATED_START() \)");
+        headerWriter.WriteLine(R"(IMPL_META_CLASS_GENERATED_START() \)");
 
-        writer.AddTab();
+        headerWriter.AddTab();
 
         if (SuperName.Empty())
         {
-            writer.WriteLine(String::Format(R"(DECLARE_CLASS_START("{0}", {1}, {2}) \)", RecordName, "nullptr", MetaFlagsToString()));
+            headerWriter.WriteLine(String::Format(R"(DECLARE_CLASS_START("{0}", {1}, {2}) \)", RecordName, "nullptr", MetaFlagsToString()));
         }
         else
         {
-            writer.WriteLine(String::Format(R"(DECLARE_CLASS_START("{0}", {1}::MetaObject(), {2}) \)", RecordName, SuperName, MetaFlagsToString()));
+            headerWriter.WriteLine(String::Format(R"(DECLARE_CLASS_START("{0}", {1}::MetaObject(), {2}) \)", RecordName, SuperName, MetaFlagsToString()));
         }
 
-        writer.WriteLine(String::Format(R"(DEFINE_CLASS_META_DATA({}) \)", MetaDataToString()));
+        headerWriter.WriteLine(String::Format(R"(DEFINE_CLASS_META_DATA({}) \)", MetaDataToString()));
 
-        writer.AddTab();
+        headerWriter.AddTab();
 
         for (auto&& property: Properties)
         {
-            property.GenerateMetaProperty(writer);
+            property.GenerateMetaProperty(headerWriter);
         }
 
         for (auto&& method: Methods)
         {
-            method.GenerateMetaMethod(writer);
+            method.GenerateMetaMethod(headerWriter);
         }
 
-        writer.RemoveTab();
+        headerWriter.RemoveTab();
 
-        writer.WriteLine(String::Format(R"(DECLARE_CLASS_END() \)"));
-        writer.RemoveTab();
+        headerWriter.WriteLine(String::Format(R"(DECLARE_CLASS_END() \)"));
+        headerWriter.RemoveTab();
 
-        writer.WriteLine("IMPL_META_CLASS_GENERATED_END()");
-        writer.RemoveTab();
+        headerWriter.WriteLine("IMPL_META_CLASS_GENERATED_END()");
+        headerWriter.RemoveTab();
 
-        writer.WriteEmptyRow();
+        headerWriter.WriteEmptyLine();
 
         if (!NameSpace.Empty())
         {
-            writer.WriteLine(String::Format("namespace {}", NameSpace));
-            writer.WriteLine("{");
-            writer.AddTab();
+            headerWriter.WriteLine(String::Format("namespace {}", NameSpace));
+            headerWriter.WriteLine("{");
+            headerWriter.AddTab();
         }
 
-        writer.WriteLine(String::Format(R"(static DeferInitializer _register{0}(&RegisterMetaObject<class {0}>);)", RecordName));
+        headerWriter.WriteLine(String::Format(R"(static DeferInitializer _register{0}(&RegisterMetaObject<class {0}>);)", RecordName));
 
         if (!NameSpace.Empty())
         {
-            writer.RemoveTab();
-            writer.WriteLine("}");
+            headerWriter.RemoveTab();
+            headerWriter.WriteLine("}");
         }
     }
 

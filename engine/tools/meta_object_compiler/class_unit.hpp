@@ -16,7 +16,7 @@ namespace Engine
 
         void Parse() final;
 
-        void GenerateCode(CodeWriter& writer) const override;
+        void GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) const override;
 
         bool HasMethod(const String& methodName) const;
 

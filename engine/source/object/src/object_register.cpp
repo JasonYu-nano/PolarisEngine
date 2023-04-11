@@ -24,7 +24,7 @@ UniquePtr<MetaEnum> MetaConstructUtils::ConstructMetaEnum(StringID enumName, EMe
     return metaClass;
 }
 
-MetaMethod& MetaConstructUtils::ConstructMetaMethod(MetaClass* metaClass, StringID methodName, MetaMethod::FnPtr fnPtr,
+MetaMethod* MetaConstructUtils::ConstructMetaMethod(MetaClass* metaClass, StringID methodName, MetaMethod::FnPtr fnPtr,
                                              EMetaFlag flags)
 {
     MetaMethod method(fnPtr, methodName, flags);
@@ -38,7 +38,7 @@ MetaEnumConstantDecl& MetaConstructUtils::ConstructEnumConstantDecl(MetaEnum* me
 }
 
 #if WITH_META_DATA
-void MetaConstructUtils::SetMetaData(MetaObject* object, const std::initializer_list<Pair<StringID, String>>& metaData)
+void MetaConstructUtils::SetMetaData(MetaField* object, const std::initializer_list<Pair<StringID, String>>& metaData)
 {
     object->SetMetaData(metaData);
 }

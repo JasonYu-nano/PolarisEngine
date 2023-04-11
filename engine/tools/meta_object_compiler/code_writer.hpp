@@ -7,9 +7,16 @@ namespace Engine
     class CodeWriter
     {
     public:
+        CodeWriter(const String& fileName) : FileName(fileName) {}
+
         bool Empty() const
         {
             return CodeText.Empty();
+        }
+
+        const String& GetFileName() const
+        {
+            return FileName;
         }
 
         const String& GetCodeText() const
@@ -27,7 +34,7 @@ namespace Engine
             CodeText.Append(text).Append('\n');
         }
 
-        void WriteEmptyRow()
+        void WriteEmptyLine()
         {
             CodeText.Append('\n');
         }
@@ -48,5 +55,6 @@ namespace Engine
     private:
         int32 NumTab{ 0 };
         String CodeText;
+        String FileName;
     };
 }

@@ -47,3 +47,9 @@ TEST(MosTest, TestOffset)
     EXPECT_TRUE(OFFSET_OF(::Test::NonStandardLayoutBase, Int) == 8);
     EXPECT_TRUE(OFFSET_OF(::Test::NonStandardLayoutChild, Name) == 24);
 }
+
+TEST(MosTest, TestMetaObjectTraits)
+{
+    EXPECT_FALSE(HasMetaClassV<MOSTestClassBase>);
+    EXPECT_TRUE(HasMetaStructV<MOSTestStruct>);
+}

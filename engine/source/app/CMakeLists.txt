@@ -1,24 +1,7 @@
-set(target app)
-
-set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
-
-file(GLOB_RECURSE project_files *.hpp *.cpp)
-
-if(shared)
-    add_library(${target} SHARED ${project_files})
-else()
-    add_library(${target} STATIC ${project_files})
-endif()
-
-# compile marco
-target_compile_definitions(${target} PRIVATE APP_EXPORT)
-
-# include dir
-target_include_directories(${target} PUBLIC ${project_dir}/include PRIVATE ${project_dir}/src)
-
-# dependency
-target_link_libraries(${target} PUBLIC core)
-
-# ide
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
-set_target_properties(${target} PROPERTIES FOLDER "Engine")
+add_polaris_library(
+        TARGET app
+        PRIVATE_DEFINITIONS APP_EXPORT
+        PUBLIC_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+        PRIVATE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
+        PUBLIC_LINK_LIB core
+)

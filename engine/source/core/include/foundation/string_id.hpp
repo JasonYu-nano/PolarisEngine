@@ -43,4 +43,6 @@ namespace Engine
         StringEntryID EntryID;
         uint32 Number{ SUFFIX_NUMBER_NONE };
     };
+
+#define STRING_ID_NONE StringID()
 }

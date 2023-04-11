@@ -7,7 +7,7 @@
 
 namespace Engine
 {
-    class OBJECT_API MetaObject
+    class OBJECT_API MetaField
     {
         friend struct MetaConstructUtils;
     public:

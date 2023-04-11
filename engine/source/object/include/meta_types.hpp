@@ -14,11 +14,9 @@ namespace Engine
 #define WITH_META_DATA 1
 
 #if !defined(MOC_BUILDER)
-    #define META_CLASS_GENERATED(className) META_CLASS_GENERATED_##className()
-    #define META_STRUCT_GENERATED(className) META_STRUCT_GENERATED_##className()
+    #define MOC_GENERATED(className) MOC_GENERATED_##className()
 #else
-    #define META_CLASS_GENERATED(className)
-    #define META_STRUCT_GENERATED(className)
+    #define MOC_GENERATED(className)
 #endif
 
 

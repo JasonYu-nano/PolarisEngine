@@ -52,70 +52,70 @@ void EnumUnit::Parse()
     }
 }
 
-void EnumUnit::GenerateCode(CodeWriter& writer) const
+void EnumUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) const
 {
     if (DeclareType == EEnumDeclareType::Invalid)
     {
         return;
     }
 
-    if (writer.Empty())
+    if (headerWriter.Empty())
     {
-        writer.WriteLine(GetGeneratedHead());
+        headerWriter.WriteLine(GetGeneratedHead());
     }
 
-    writer.WriteEmptyRow();
+    headerWriter.WriteEmptyLine();
 
     if (DeclareType == EEnumDeclareType::Enum)
     {
-        writer.WriteLine(String::Format("enum {} : {};", RecordName, UnderlyingType));
+        headerWriter.WriteLine(String::Format("enum {} : {};", RecordName, UnderlyingType));
     }
     else if (DeclareType == EEnumDeclareType::EnumClass)
     {
-        writer.WriteLine(String::Format("enum class {} : {};", RecordName, UnderlyingType));
+        headerWriter.WriteLine(String::Format("enum class {} : {};", RecordName, UnderlyingType));
     }
 
-    writer.WriteEmptyRow();
-    writer.WriteLine(String::Format(R"(DEFINE_META_ENUM_START({}, {}))", RecordName, MetaFlagsToString()));
-    writer.WriteLine(String::Format(R"(DEFINE_ENUM_META_DATA({}) \)", MetaDataToString()));
+    headerWriter.WriteEmptyLine();
+    headerWriter.WriteLine(String::Format(R"(DEFINE_META_ENUM_START({}, {}))", RecordName, MetaFlagsToString()));
+    headerWriter.WriteLine(String::Format(R"(DEFINE_ENUM_META_DATA({}) \)", MetaDataToString()));
 
-    writer.AddTab();
+    headerWriter.AddTab();
 
     for (auto&& constant: EnumConstants)
     {
-        constant.GenerateCode(writer);
+        constant.GenerateCode(headerWriter);
     }
 
-    writer.RemoveTab();
+    headerWriter.RemoveTab();
 
 
-    writer.WriteLine("DEFINE_META_ENUM_END()");
+    headerWriter.WriteLine("DEFINE_META_ENUM_END()");
 
-    writer.WriteEmptyRow();
+    headerWriter.WriteEmptyLine();
 
     if (!NameSpace.Empty())
     {
-        writer.WriteLine(String::Format("namespace {}", NameSpace));
-        writer.WriteLine("{");
-        writer.AddTab();
+        headerWriter.WriteLine(String::Format("namespace {}", NameSpace));
+        headerWriter.WriteLine("{");
+        headerWriter.AddTab();
     }
 
-    writer.WriteLine(String::Format("template<> MetaEnum* Engine::GetEnum<{}>()", RecordName));
-    writer.WriteLine("{");
-    writer.AddTab();
-    writer.WriteLine(String::Format("static UniquePtr<MetaEnum> meta = GetMetaEnum{}();", RecordName));
-    writer.WriteLine("return meta.get();");
-    writer.RemoveTab();
-    writer.WriteLine("}");
+    headerWriter.WriteLine(String::Format("template<> MetaEnum* Engine::GetEnum<{}>()", RecordName));
+    headerWriter.WriteLine("{");
+    headerWriter.AddTab();
+    headerWriter.WriteLine(String::Format("static UniquePtr<MetaEnum> meta = GetMetaEnum{}();", RecordName));
+    headerWriter.WriteLine("return meta.get();");
+    headerWriter.RemoveTab();
+    headerWriter.WriteLine("}");
 
-    writer.WriteEmptyRow();
+    headerWriter.WriteEmptyLine();
 
-    writer.WriteLine(String::Format(R"(static DeferInitializer _register{0}(&RegisterMetaEnum<{0}>);)", RecordName));
+    headerWriter.WriteLine(String::Format(R"(static DeferInitializer _register{0}(&RegisterMetaEnum<{0}>);)", RecordName));
 
     if (!NameSpace.Empty())
     {
-        writer.RemoveTab();
-        writer.WriteLine("}");
+        headerWriter.RemoveTab();
+        headerWriter.WriteLine("}");
     }
 }
 

@@ -1,5 +1,5 @@
 macro(_build_target_parse_arguments)
-    set(options)
+    set(options GAME_TARGET EDITOR_ONLY TEST_ONLY)
     set(one_value_args TARGET)
     set(multi_value_args PUBLIC_DEFINITIONS PRIVATE_DEFINITIONS PUBLIC_INCLUDE_DIRS PRIVATE_INCLUDE_DIRS PUBLIC_LINK_LIB PRIVATE_LINK_LIB DEPENDENCE_TARGETS)
     cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
@@ -55,7 +55,7 @@ macro(_add_link_libs)
     endif ()
 endmacro()
 
-macro(add_polaris_engine_library)
+macro(add_polaris_library)
     _build_target_parse_arguments(${ARGV})
 
     set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -73,6 +73,44 @@ macro(add_polaris_engine_library)
     _add_link_libs()
     _add_dependency()
 
+    target_include_directories(${ARG_TARGET} PRIVATE ${engine_generated_path}/moc/${ARG_TARGET})
+
+    if (ARG_EDITOR_ONLY)
+        set_target_properties(${ARG_TARGET} PROPERTIES EDITOR_ONLY "True")
+    endif ()
+
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
-    set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "Engine")
+
+    if (ARG_GAME_TARGET)
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "Game")
+    else ()
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "Engine")
+    endif ()
+endmacro()
+
+macro(add_polaris_executable)
+    _build_target_parse_arguments(${ARGV})
+
+    set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    file(GLOB_RECURSE project_files *.hpp *.cpp)
+
+    add_executable(${ARG_TARGET} ${project_files})
+
+    _add_compile_definitions()
+    _add_include_dirs()
+    _add_link_libs()
+    _add_dependency()
+
+    target_include_directories(${ARG_TARGET} PRIVATE ${engine_generated_path}/moc/${ARG_TARGET})
+
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
+
+    if (ARG_GAME_TARGET)
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "Game")
+    elseif (ARG_TEST_ONLY)
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "Test")
+    else ()
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "Engine")
+    endif ()
 endmacro()

@@ -144,7 +144,7 @@ String ParseUtils::GetFileOwnerBuildTarget(const String& filePath)
     String normalizedPath = Path::Normalize(filePath);
     for (auto&& target : GBuildTargets)
     {
-        if (normalizedPath.Contains(String::Format("\\{}\\", target)))
+        if (normalizedPath.Contains(String::Format("/{}/", target)))
         {
             return target;
         }
