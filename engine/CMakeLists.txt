@@ -71,6 +71,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/detect_cpu_architectures.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/add_dependency.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_feature.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/compile_meta_object.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/build_target.cmake)
 
 if (use_ispc)
     include(${CMAKE_SOURCE_DIR}/cmake/find_ispc.cmake)

@@ -2,38 +2,18 @@ set(target renderer)
 
 set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
 
-file(GLOB_RECURSE project_files *.hpp *.cpp)
-
-if(shared)
-    add_library(${target} SHARED ${project_files})
-else()
-    add_library(${target} STATIC ${project_files})
-endif()
-
-# compile marco
-target_compile_definitions(${target} PRIVATE RENDER_EXPORT)
-
-# include dir
-target_include_directories(${target} PUBLIC ${project_dir}/include PRIVATE ${project_dir}/src)
-
-# dependency
-
-# set(link_libs "app")
-
-if(DEFINED ENV{VULKAN_SDK})
-    set(vulkan_path $ENV{VULKAN_SDK})
-    target_include_directories(${target} PUBLIC ${vulkan_path}/Include)
-    #target_link_libraries(${target} ${vulkan_path}/Lib/vulkan-1)
-    set(link_libs "${link_libs} ${vulkan_path}/Lib/vulkan-1")
-    target_link_libraries(${target} PUBLIC app PRIVATE ${vulkan_path}/Lib/vulkan-1.lib)
-else()
+if (NOT DEFINED ENV{VULKAN_SDK})
     message(FATAL_ERROR "Can't find vulkan sdk")
-endif()
+endif ()
 
-add_dependencies(${target} ${shader_target})
+file(TO_CMAKE_PATH $ENV{VULKAN_SDK} vulkan_path)
 
-# target_link_libraries(${target} PUBLIC ${link_libs})
-
-# ide
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
-set_target_properties(${target} PROPERTIES FOLDER "Engine")
+add_polaris_engine_library(
+        TARGET renderer
+        PRIVATE_DEFINITIONS RENDER_EXPORT
+        PUBLIC_INCLUDE_DIRS ${project_dir}/include ${vulkan_path}/Include
+        PRIVATE_INCLUDE_DIRS ${project_dir}/src
+        PUBLIC_LINK_LIB app
+        PRIVATE_LINK_LIB ${vulkan_path}/Lib/vulkan-1.lib
+        DEPENDENCE_TARGETS shader_target
+)

@@ -14,16 +14,16 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     switch (messageSeverity)
     {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        LOG_VERBOSE(RenderModule, pCallbackData->pMessage)
+        LOG_VERBOSE(RenderModule, "{}", pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        LOG_INFO(RenderModule, pCallbackData->pMessage)
+        LOG_INFO(RenderModule, "{}", pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        LOG_WARN(RenderModule, pCallbackData->pMessage)
+        LOG_WARN(RenderModule, "{}", pCallbackData->pMessage)
             break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        LOG_ERROR(RenderModule, pCallbackData->pMessage)
+        LOG_ERROR(RenderModule, "{}", pCallbackData->pMessage)
             break;
     default:
         break;
