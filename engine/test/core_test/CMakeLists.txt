@@ -9,5 +9,3 @@ add_polaris_executable(
         PRIVATE_LINK_LIB core object ${GTest_LIBRARIES}
         TEST_ONLY
 )
-
-compile_meta_object(CONTENT test/core_test source)
