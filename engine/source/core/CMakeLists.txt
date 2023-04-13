@@ -47,7 +47,7 @@ add_polaris_library(
 
 conan_imports(core "spdlog")
 
-add_3rd_dependency(core "icu")
+add_3rd_dependency(core "icu" TRUE)
 
 if(WIN32)
     if(unicode)

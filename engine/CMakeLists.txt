@@ -68,7 +68,6 @@ set(shader_target "shader_target")
 
 include(${CMAKE_SOURCE_DIR}/cmake/conan.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_cpu_architectures.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/add_dependency.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_feature.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/utils.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/build_target.cmake)
