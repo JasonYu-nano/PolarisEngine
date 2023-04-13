@@ -7,5 +7,6 @@ add_polaris_executable(
         PRIVATE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${GTest_INCLUDE_DIR}
         PUBLIC_LINK_LIB app
         PRIVATE_LINK_LIB core object ${GTest_LIBRARIES}
-        TEST_ONLY
+        TEST_TARGET
+        EDITOR_ONLY
 )

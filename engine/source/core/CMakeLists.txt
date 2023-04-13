@@ -73,7 +73,7 @@ if (use_ispc)
     set(generated_objs "")
     compile_ispc("${ispc_files}" ${ispc_target} core ${ispc_output} ${ISPC_EXECUTION_PATH} generated_objs)
     add_dependencies(core ${ispc_target})
-    target_link_libraries(core ${generated_objs})
+    target_link_libraries(core PRIVATE ${generated_objs})
 
     target_compile_definitions(core PUBLIC WITH_ISPC=1)
 endif()
