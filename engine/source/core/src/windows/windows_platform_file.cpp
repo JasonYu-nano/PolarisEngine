@@ -107,6 +107,8 @@ namespace Engine
                 ret.LastAccessTime = GetTimeStamp(fLastAccessTime);
                 ret.LastModifyTime = GetTimeStamp(fLastWriteTime);
             }
+
+            ::CloseHandle(handle);
         }
 
         return ret;
@@ -220,7 +222,7 @@ namespace Engine
 
         if (handle == INVALID_HANDLE_VALUE)
         {
-            LOG_ERROR(FileSystem, "Open file failed");
+            LOG_ERROR(FileSystem, "Open file: {} failed", filePath);
         }
 
         return MakeUnique<WindowsFileHandle>(handle);
