@@ -22,10 +22,15 @@ namespace Engine
 
     void MetaParser::Parse(const Set<String>& content, const ParserOptions& options)
     {
-        String standardOp = String::Format("-std={0}", options.Standard);
+        DisplayDiagnostics = options.DisplayDebugInfo;
+        IncrementalCompile = options.IncrementalCompile;
+
+        String standardOp = String::Format("-std=c++{0}", options.Standard);
         Array<const char*> parserArgs = {"-xc++",
                                          "-DMOC_BUILDER",
                                          "-DPL_SHARED",
+                                         "-DNDEBUG",
+                                         "-D__clang__",
                                          standardOp.Data()};
 
         Array<String> includeDirOpts;
@@ -38,13 +43,14 @@ namespace Engine
         {
             parserArgs.Add(dir.Data());
         }
-
-        String pchFile = GeneratePrecompileHeader(options.PrecompileHeader);
-        if (!pchFile.Empty())
-        {
-            pchFile = String::Format("-include-pch{0}", pchFile);
-            parserArgs.Add(pchFile.Data());
-        }
+//        FIXME: Precompile has some error
+//        String pchInclude = "-include-pch";
+//        String pchFile = GeneratePrecompileHeader(options.PrecompileHeader);
+//        if (!pchFile.Empty())
+//        {
+//            parserArgs.Add(pchInclude.Data());
+//            parserArgs.Add(pchFile.Data());
+//        }
 
         for (auto&& dir : content)
         {
@@ -66,7 +72,7 @@ namespace Engine
             return;
         }
 
-        CXIndex cxIndex = clang_createIndex(true, false);
+        CXIndex cxIndex = clang_createIndex(true, DisplayDiagnostics ? 1 : 0);
         CXTranslationUnit tu;
 
         auto error = clang_parseTranslationUnit2(
@@ -91,6 +97,7 @@ namespace Engine
         ParseCursor(cursor, header);
 
         clang_disposeTranslationUnit(tu);
+        clang_disposeIndex(cxIndex);
     }
 
     void MetaParser::ParseCursor(const CXCursor& cursor, const String& header, const String& nameSpace)

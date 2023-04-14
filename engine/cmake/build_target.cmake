@@ -181,10 +181,24 @@ function(compile_meta_object)
     message("Moc content ${arg_content}")
     message("Moc include dirs ${arg_include_dirs}")
 
-    execute_process(
-            COMMAND meta_object_compiler -s 20 -c ${arg_content} -i ${arg_include_dirs} -t ${arg_target_list}
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin
-    )
+    set(moc_exist 0)
+    if (WIN32)
+        if (EXISTS ${CMAKE_BINARY_DIR}/output/bin/meta_object_compiler.exe)
+            set(moc_exist 1)
+        endif ()
+    endif ()
+
+    if (moc_exist)
+        execute_process(
+                COMMAND meta_object_compiler -s 20 -c ${arg_content} -i ${arg_include_dirs} -t ${arg_target_list} -d 0
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin
+                RESULT_VARIABLE exit_code
+        )
+    endif ()
+
+    if (exit_code)
+        message(FATAL_ERROR "Compile meta object failed, error code: ${exit_code}")
+    endif ()
 
     foreach(target ${target_list})
         set(target_moc_generated_path ${moc_generated_path}/${target})

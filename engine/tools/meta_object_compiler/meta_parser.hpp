@@ -7,6 +7,8 @@ namespace Engine
 {
     struct ParserOptions
     {
+        bool DisplayDebugInfo = false;
+        bool IncrementalCompile = false;
         int32 Standard = 11;
         String PrecompileHeader;
         Set<String> IncludeDirs;
@@ -38,6 +40,10 @@ namespace Engine
         void ParseCursor(const CXCursor& cursor, const String& header, const String& nameSpace = "");
 
         bool IsCursorParsed(CXCursor cursor) const;
+
+        bool DisplayDiagnostics{ false };
+
+        bool IncrementalCompile{ false };
 
         Array<RecordUnit*> Units;
 
