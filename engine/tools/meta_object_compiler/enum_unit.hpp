@@ -41,7 +41,7 @@ namespace Engine
     {
         using Super = RecordUnit;
     public:
-        EnumUnit(CXCursor cursor, const String& path, const String& nameSpace) : Super(cursor, path, nameSpace)
+        EnumUnit(CXCursor cursor, const String& nameSpace) : Super(cursor, nameSpace)
         {
             RecordType = ERecordType::Enum;
         }

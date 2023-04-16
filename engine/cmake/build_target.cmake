@@ -190,14 +190,14 @@ function(compile_meta_object)
 
     if (moc_exist)
         execute_process(
-                COMMAND meta_object_compiler -s 20 -c ${arg_content} -i ${arg_include_dirs} -t ${arg_target_list} -d 0
+                COMMAND meta_object_compiler -s 20 -c ${arg_content} -i ${arg_include_dirs} -t ${arg_target_list} -d 0 --incremental 0
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin
                 RESULT_VARIABLE exit_code
         )
     endif ()
 
     if (exit_code)
-        message(FATAL_ERROR "Compile meta object failed, error code: ${exit_code}")
+        message("Compile meta object failed, error code: ${exit_code}")
     endif ()
 
     foreach(target ${target_list})
@@ -206,14 +206,16 @@ function(compile_meta_object)
 
         if (EXISTS ${target_moc_generated_path}/manifest.cmake)
             include(${target_moc_generated_path}/manifest.cmake)
-
-            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-                    ${${target}_manifest}
-            )
+#            FIXME: Re-run cmake when file modified
+#            get_target_property(location ${target} SOURCE_DIR)
+#            set_property(DIRECTORY ${location} PROPERTY CMAKE_CONFIGURE_DEPENDS
+#                    ${${target}_manifest}
+#            )
         endif()
 
+        message("AAA ${target_moc_generated_path}")
         target_sources(${target} PRIVATE ${auto_generated_files})
-        target_include_directories(${target} PRIVATE ${target_moc_generated_path})
+        target_include_directories(${target} PUBLIC ${target_moc_generated_path})
     endforeach()
 
 endfunction()

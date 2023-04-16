@@ -34,14 +34,14 @@ void PropertyUnit::GenerateMetaProperty(CodeWriter& writer) const
 {
     if (OwnerRecord->GetRecordType() == ERecordType::Class)
     {
-        writer.WriteLine(String::Format(R"(DECLARE_CLASS_PROPERTY_START("{0}", OFFSET_OF({1}, {0}), {2}) \)", PropertyName, OwnerRecord->GetRecordName(), MetaFlagsToString()));
+        writer.WriteLine(String::Format(R"(DEFINE_CLASS_PROPERTY_START("{0}", OFFSET_OF({1}, {0}), {2}) \)", PropertyName, OwnerRecord->GetRecordName(), MetaFlagsToString()));
         writer.WriteLine(String::Format(R"(DEFINE_PROPERTY_META_DATA({}) \)", MetaDataToString()));
-        writer.WriteLine(R"(DECLARE_CLASS_PROPERTY_END() \)");
+        writer.WriteLine(R"(DEFINE_CLASS_PROPERTY_END() \)");
     }
     else if (OwnerRecord->GetRecordType() == ERecordType::Struct)
     {
-        writer.WriteLine(String::Format(R"(DECLARE_STRUCT_PROPERTY_START("{0}", OFFSET_OF({1}, {0}), {2}) \)", PropertyName, OwnerRecord->GetRecordName(), MetaFlagsToString()));
+        writer.WriteLine(String::Format(R"(DEFINE_STRUCT_PROPERTY_START("{0}", OFFSET_OF({1}, {0}), {2}) \)", PropertyName, OwnerRecord->GetRecordName(), MetaFlagsToString()));
         writer.WriteLine(String::Format(R"(DEFINE_PROPERTY_META_DATA({}) \)", MetaDataToString()));
-        writer.WriteLine(R"(DECLARE_STRUCT_PROPERTY_END() \)");
+        writer.WriteLine(R"(DEFINE_STRUCT_PROPERTY_END() \)");
     }
 }

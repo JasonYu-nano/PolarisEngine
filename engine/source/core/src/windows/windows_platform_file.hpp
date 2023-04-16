@@ -36,6 +36,7 @@ namespace Engine
 
         UniquePtr<IFileHandle> OpenFile(const String& fileName, EFileAccess access, EFileShareMode mode) final;
 
+        void SetupExceptionHandle() final;
     private:
         uint32 GetLastError();
     };

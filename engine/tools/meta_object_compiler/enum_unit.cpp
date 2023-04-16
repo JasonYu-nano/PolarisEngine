@@ -59,12 +59,20 @@ void EnumUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) 
         return;
     }
 
+    // Write *.hpp
     if (headerWriter.Empty())
     {
         headerWriter.WriteLine(GetGeneratedHead());
     }
 
     headerWriter.WriteEmptyLine();
+
+    if (!NameSpace.Empty())
+    {
+        headerWriter.WriteLine(String::Format("namespace {}", NameSpace));
+        headerWriter.WriteLine("{");
+        headerWriter.AddTab();
+    }
 
     if (DeclareType == EEnumDeclareType::Enum)
     {
@@ -76,46 +84,61 @@ void EnumUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) 
     }
 
     headerWriter.WriteEmptyLine();
-    headerWriter.WriteLine(String::Format(R"(DEFINE_META_ENUM_START({}, {}))", RecordName, MetaFlagsToString()));
-    headerWriter.WriteLine(String::Format(R"(DEFINE_ENUM_META_DATA({}) \)", MetaDataToString()));
-
-    headerWriter.AddTab();
-
-    for (auto&& constant: EnumConstants)
-    {
-        constant.GenerateCode(headerWriter);
-    }
-
-    headerWriter.RemoveTab();
-
-
-    headerWriter.WriteLine("DEFINE_META_ENUM_END()");
-
-    headerWriter.WriteEmptyLine();
-
-    if (!NameSpace.Empty())
-    {
-        headerWriter.WriteLine(String::Format("namespace {}", NameSpace));
-        headerWriter.WriteLine("{");
-        headerWriter.AddTab();
-    }
-
-    headerWriter.WriteLine(String::Format("template<> MetaEnum* Engine::GetEnum<{}>()", RecordName));
-    headerWriter.WriteLine("{");
-    headerWriter.AddTab();
-    headerWriter.WriteLine(String::Format("static UniquePtr<MetaEnum> meta = GetMetaEnum{}();", RecordName));
-    headerWriter.WriteLine("return meta.get();");
-    headerWriter.RemoveTab();
-    headerWriter.WriteLine("}");
-
-    headerWriter.WriteEmptyLine();
-
-    headerWriter.WriteLine(String::Format(R"(static DeferInitializer _register{0}(&RegisterMetaEnum<{0}>);)", RecordName));
+    headerWriter.WriteLine(String::Format("template<> class MetaEnum* Engine::GetEnum<{}>();", RecordName));
 
     if (!NameSpace.Empty())
     {
         headerWriter.RemoveTab();
         headerWriter.WriteLine("}");
+    }
+
+    // Write *.cpp
+    if (sourceWriter.Empty())
+    {
+        sourceWriter.WriteLine(GetGeneratedSource());
+        sourceWriter.WriteLine(String::Format(R"(#include "{}")", GetFilePath()));
+    }
+
+    sourceWriter.WriteEmptyLine();
+    sourceWriter.WriteLine(String::Format(R"(DEFINE_META_ENUM_START({}, {}))", RecordName, MetaFlagsToString()));
+    sourceWriter.WriteLine(String::Format(R"(DEFINE_ENUM_META_DATA({}) \)", MetaDataToString()));
+
+    sourceWriter.AddTab();
+
+    for (auto&& constant: EnumConstants)
+    {
+        constant.GenerateCode(sourceWriter);
+    }
+
+    sourceWriter.RemoveTab();
+
+
+    sourceWriter.WriteLine("DEFINE_META_ENUM_END()");
+
+    sourceWriter.WriteEmptyLine();
+
+    if (!NameSpace.Empty())
+    {
+        sourceWriter.WriteLine(String::Format("namespace {}", NameSpace));
+        sourceWriter.WriteLine("{");
+        sourceWriter.AddTab();
+    }
+
+    sourceWriter.WriteLine(String::Format("template<> MetaEnum* Engine::GetEnum<{}>()", RecordName));
+    sourceWriter.WriteLine("{");
+    sourceWriter.AddTab();
+    sourceWriter.WriteLine(String::Format("static UniquePtr<MetaEnum> meta = GetMetaEnum{}();", RecordName));
+    sourceWriter.WriteLine("return meta.get();");
+    sourceWriter.RemoveTab();
+    sourceWriter.WriteLine("}");
+
+    sourceWriter.WriteEmptyLine();
+    sourceWriter.WriteLine(String::Format(R"(static DeferInitializer register{0}(&RegisterMetaEnum<{0}>);)", RecordName));
+
+    if (!NameSpace.Empty())
+    {
+        sourceWriter.RemoveTab();
+        sourceWriter.WriteLine("}");
     }
 }
 

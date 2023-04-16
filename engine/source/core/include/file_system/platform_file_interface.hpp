@@ -36,5 +36,7 @@ namespace Engine
         virtual Array<String> QueryFiles(const String& searchPath, const String& regexExpr, bool recursion) = 0;
 
         virtual UniquePtr<IFileHandle> OpenFile(const String& fileName, EFileAccess access, EFileShareMode mode) = 0;
+
+        virtual void SetupExceptionHandle() = 0;
     };
 }

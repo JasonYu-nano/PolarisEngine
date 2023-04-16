@@ -115,14 +115,6 @@ namespace Engine
     };
 
     template <typename T>
-    MetaEnum* GetEnum()
-    {
-        static_assert(FalseExpr<T>, "Can't match MetaEnum");
-        return nullptr;
-    }
-
-
-    template <typename T>
     inline constexpr bool HasStaticMetaObject = requires(const T& t)
     {
         T::MetaObject();

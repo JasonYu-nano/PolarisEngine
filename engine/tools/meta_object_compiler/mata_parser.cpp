@@ -22,6 +22,9 @@ namespace Engine
 
     void MetaParser::Parse(const Set<String>& content, const ParserOptions& options)
     {
+        // Record parse time
+        ParseTime = PlatformClock::Now().TimeSinceEpoch();
+
         DisplayDiagnostics = options.DisplayDebugInfo;
         IncrementalCompile = options.IncrementalCompile;
 
@@ -52,6 +55,7 @@ namespace Engine
 //            parserArgs.Add(pchFile.Data());
 //        }
 
+        int64 lastParseTime = GetLastParseTime();
         for (auto&& dir : content)
         {
             String normalizedDir = Path::Normalize(dir);
@@ -59,9 +63,20 @@ namespace Engine
 
             for (auto&& header : headFiles)
             {
+                if (IncrementalCompile)
+                {
+                    FileTime fileTime = FileSystem::GetFileTime(header);
+                    if (static_cast<int64>(fileTime.LastModifyTime) < lastParseTime)
+                    {
+                        continue;
+                    }
+                }
+
                 ParseImpl(header, parserArgs);
             }
         }
+
+        UpdateLastParseTime(ParseTime);
     }
 
     void MetaParser::ParseImpl(const String& header, const Array<const char*>& args)
@@ -94,13 +109,13 @@ namespace Engine
 
         CXCursor cursor = clang_getTranslationUnitCursor(tu);
 
-        ParseCursor(cursor, header);
+        ParseCursor(cursor);
 
         clang_disposeTranslationUnit(tu);
         clang_disposeIndex(cxIndex);
     }
 
-    void MetaParser::ParseCursor(const CXCursor& cursor, const String& header, const String& nameSpace)
+    void MetaParser::ParseCursor(const CXCursor& cursor, const String& nameSpace)
     {
         for (auto&& child : ParseUtils::GetCursorChildren(cursor))
         {
@@ -114,7 +129,7 @@ namespace Engine
                     {
                         CX_TOSTRING_EXPR(enumName, clang_getCursorSpelling(child))
                         LOG_INFO(MOC, "Start parse enum: {}", enumName);
-                        unit = new EnumUnit(child, header, nameSpace);
+                        unit = new EnumUnit(child, nameSpace);
                     }
                     break;
                 }
@@ -124,7 +139,7 @@ namespace Engine
                     {
                         CX_TOSTRING_EXPR(structName, clang_getCursorSpelling(child))
                         LOG_INFO(MOC, "Start parse struct: {}", structName);
-                        unit = new StructUnit(child, header, nameSpace);
+                        unit = new StructUnit(child, nameSpace);
                     }
                     break;
                 }
@@ -134,7 +149,7 @@ namespace Engine
                     {
                         CX_TOSTRING_EXPR(className, clang_getCursorSpelling(child))
                         LOG_INFO(MOC, "Start parse class: {}", className);
-                        unit = new ClassUnit(child, header, nameSpace);
+                        unit = new ClassUnit(child, nameSpace);
                     }
                     break;
                 }
@@ -152,7 +167,7 @@ namespace Engine
                         {
                             newNameSpace.Append("::").Append(ns);
                         }
-                        ParseCursor(child, header, newNameSpace);
+                        ParseCursor(child, newNameSpace);
                     }
                     break;
                 }
@@ -217,5 +232,55 @@ namespace Engine
     {
         CX_TOSTRING_EXPR(cursorName, clang_getCursorSpelling(cursor))
         return ParsedMetaObjectNames.Contains(cursorName);
+    }
+
+    const String& GetMocConfigPath()
+    {
+        static String path = Path::Combine(FileSystem::GetEngineIntermediateDir(), "moc/config.toml");
+        return path;
+    }
+
+    toml::table GetMocConfig()
+    {
+        const String& path = GetMocConfigPath();
+        if (FileSystem::FileExists(path))
+        {
+            toml::parse_result result = toml::parse_file(path.Data());
+            if (result)
+            {
+                return result.table();
+            }
+        }
+
+        static constexpr auto source = R"(
+            [parser]
+            LastParseTime = 0
+        )";
+
+        toml::parse_result result = toml::parse(source);
+        ENSURE(result);
+
+        return result.table();
+    }
+
+    int64 MetaParser::GetLastParseTime() const
+    {
+        Config = GetMocConfig();
+        std::optional<int32> lastParseTime = Config["parser"]["LastParseTime"].value<int32>();
+        return lastParseTime.has_value() ? lastParseTime.value() : 0;
+    }
+
+    void MetaParser::UpdateLastParseTime(int64 parseTime) const
+    {
+        auto view = Config["parser"]["LastParseTime"];
+        if (view.is_number())
+        {
+            int64& time = view.ref<int64>();
+            time = parseTime;
+            std::ofstream stream(GetMocConfigPath().Data());
+            stream << Config;
+            stream.flush();
+            stream.close();
+        }
     }
 }

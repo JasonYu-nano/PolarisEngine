@@ -1,4 +1,5 @@
 #include "object_register.hpp"
+#include "meta_construct_utils.hpp"
 
 DeferInitializer::DeferInitializer(FnInitialize fn)
 {

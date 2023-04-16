@@ -7,19 +7,12 @@
 
 class META() MOSTestClassBase
 {
+    MOC_GENERATED()
 public:
-    MOC_GENERATED(MOSTestClassBase)
-
     MOSTestClassBase() = default;
 
     META()
     int32 GetID() const
-    {
-        return ID;
-    }
-
-    META()
-    int32& GetID()
     {
         return ID;
     }
@@ -38,7 +31,7 @@ private:
 
 class META() MOSTestClassChild : public MOSTestClassBase
 {
-    MOC_GENERATED(MOSTestClassChild)
+    MOC_GENERATED()
 public:
     META()
     static void Log()
@@ -59,13 +52,13 @@ private:
 
 struct META() MOSTestStruct
 {
-    MOC_GENERATED(MOSTestStruct)
+    MOC_GENERATED()
 
     META(ReadWrite)
     int64 Index;
 };
 
-enum class EMOSTestEnum : uint8
+enum class META() EMOSTestEnum : uint8
 {
     Item1 META(DisplayName = "1", Tooltips = "Tips 1") = 0,
     Item2 META(DisplayName = "2"),

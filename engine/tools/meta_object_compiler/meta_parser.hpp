@@ -2,6 +2,7 @@
 
 #include "foundation/string.hpp"
 #include "parse_unit.hpp"
+#include "misc/toml_utils.hpp"
 
 namespace Engine
 {
@@ -37,16 +38,20 @@ namespace Engine
     private:
         void ParseImpl(const String& header, const Array<const char*>& args);
 
-        void ParseCursor(const CXCursor& cursor, const String& header, const String& nameSpace = "");
+        void ParseCursor(const CXCursor& cursor, const String& nameSpace = "");
 
         bool IsCursorParsed(CXCursor cursor) const;
 
+        int64 GetLastParseTime() const;
+
+        void UpdateLastParseTime(int64 parseTime) const;
+
+    private:
         bool DisplayDiagnostics{ false };
-
         bool IncrementalCompile{ false };
-
+        int64 ParseTime{ 0 };
         Array<RecordUnit*> Units;
-
         Set<String> ParsedMetaObjectNames;
+        mutable toml::table Config;
     };
 }

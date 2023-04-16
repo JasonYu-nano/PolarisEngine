@@ -28,3 +28,5 @@
 #else
 #define OFFSET_OF(struct, member) __builtin_offsetof(struct, member)
 #endif
+
+#define ENABLE_CORE_DUMP 1

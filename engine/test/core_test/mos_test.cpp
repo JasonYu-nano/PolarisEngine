@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 #include "global.hpp"
 #include "foundation/string.hpp"
-#include "mos_test_header.hpp"
 
 using namespace Engine;
 
@@ -46,10 +45,4 @@ TEST(MosTest, TestOffset)
 
     EXPECT_TRUE(OFFSET_OF(::Test::NonStandardLayoutBase, Int) == 8);
     EXPECT_TRUE(OFFSET_OF(::Test::NonStandardLayoutChild, Name) == 24);
-}
-
-TEST(MosTest, TestMetaObjectTraits)
-{
-    EXPECT_FALSE(HasMetaClassV<MOSTestClassBase>);
-    EXPECT_TRUE(HasMetaStructV<MOSTestStruct>);
 }

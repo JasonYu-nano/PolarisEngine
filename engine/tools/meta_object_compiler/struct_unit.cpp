@@ -54,40 +54,24 @@ void StructUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter
     }
 
     headerWriter.WriteEmptyLine();
-    headerWriter.WriteLine(String::Format(R"(#define MOC_GENERATED_{}() IMPL_META_STRUCT_GENERATED())", RecordName));
+    headerWriter.WriteLine(String::Format(R"(#define MOC_GENERATED_{}() IMPL_META_STRUCT_GENERATED())", FileID));
 
     headerWriter.WriteEmptyLine();
-
-    if (!NameSpace.Empty())
-    {
-        headerWriter.WriteLine(String::Format("namespace {}", NameSpace));
-        headerWriter.WriteLine("{");
-        headerWriter.AddTab();
-    }
-
-    headerWriter.WriteLine(String::Format(R"(static DeferInitializer _register{0}(&RegisterMetaObject<struct {0}>);)", RecordName));
-
-    if (!NameSpace.Empty())
-    {
-        headerWriter.RemoveTab();
-        headerWriter.WriteLine("}");
-    }
 
     // Write *.cpp
     if (sourceWriter.Empty())
     {
         sourceWriter.WriteLine(GetGeneratedSource());
-        //sourceWriter.WriteLine(String::Format(R"(#include "{}")", headerWriter.GetFileName()));
         sourceWriter.WriteLine(String::Format(R"(#include "{}")", GetFilePath()));
     }
 
     sourceWriter.WriteEmptyLine();
     sourceWriter.WriteLine(String::Format(R"(DEFINE_CONSTRUCT_META_STRUCT_START({}) \)", RecordName));
     sourceWriter.AddTab();
-    sourceWriter.WriteLine(String::Format(R"(DECLARE_STRUCT_START("{0}", {1}, {2}) \)", RecordName, (SuperName.Empty() ? "nullptr" : SuperName), MetaFlagsToString()));
+    sourceWriter.WriteLine(String::Format(R"(DEFINE_STRUCT("{0}", {1}, {2}) \)", RecordName, (SuperName.Empty() ? "nullptr" : String::Format("{}::MetaObject()", SuperName)), MetaFlagsToString()));
     sourceWriter.WriteLine(R"(DEFINE_STRUCT_META_DATA({}) \)");
 
-    headerWriter.AddTab();
+    sourceWriter.AddTab();
     for (auto&& property: Properties)
     {
         property.GenerateMetaProperty(sourceWriter);
@@ -97,4 +81,19 @@ void StructUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter
 
     sourceWriter.WriteLine(String::Format(R"(DEFINE_CONSTRUCT_META_STRUCT_END())"));
     sourceWriter.RemoveTab();
+
+    if (!NameSpace.Empty())
+    {
+        sourceWriter.WriteLine(String::Format("namespace {}", NameSpace));
+        sourceWriter.WriteLine("{");
+        sourceWriter.AddTab();
+    }
+
+    sourceWriter.WriteLine(String::Format(R"(static DeferInitializer register{0}(&RegisterMetaObject<struct {0}>);)", RecordName));
+
+    if (!NameSpace.Empty())
+    {
+        sourceWriter.RemoveTab();
+        sourceWriter.WriteLine("}");
+    }
 }

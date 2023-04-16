@@ -13,10 +13,19 @@ namespace Engine
 
 #define WITH_META_DATA 1
 
+#define FILE_PATH 1
+
+#define FILE_ID_INTERNAL(path, line) path##_##line
+#define FILE_ID_COMBINE(path, line) FILE_ID_INTERNAL(path, line)
+#define FILE_ID FILE_ID_COMBINE(FILE_PATH, __LINE__)
+
+#define MOC_GENERATED_INTERNAL(fileId) MOC_GENERATED_##fileId
+#define MOC_GENERATED_COMBINE(fileId) MOC_GENERATED_INTERNAL(fileId)
+
 #if !defined(MOC_BUILDER)
-    #define MOC_GENERATED(className) MOC_GENERATED_##className()
+#define MOC_GENERATED() MOC_GENERATED_COMBINE(FILE_ID)()
 #else
-    #define MOC_GENERATED(className)
+#define MOC_GENERATED()
 #endif
 
 

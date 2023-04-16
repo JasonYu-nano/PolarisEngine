@@ -16,7 +16,15 @@ void MetaCodeGenerator::GenerateCode()
 
     for (auto&& unit : Parser)
     {
+        StringID buildTarget = unit->GetOwnerBuildTarget();
+        if (buildTarget == STRING_ID_NONE)
+        {
+            LOG_INFO(MOC, "Header file: {} belongs to an invalid target", unit->GetFilePath());
+            continue;
+        }
+
         const String targetSaveDir = Path::Combine(saveDir, unit->GetOwnerBuildTarget().ToString());
+
         if (!FileSystem::DirExists(targetSaveDir))
         {
             FileSystem::MakeDir(targetSaveDir);
@@ -34,7 +42,7 @@ void MetaCodeGenerator::GenerateCode()
         unit->GenerateCode(writerMap.FindRef(header), writerMap.FindRef(source));
 
 
-        Set<String>& files = TargetDependenceFiles.FindOrAdd(unit->GetOwnerBuildTarget(), Set<String>());
+        Set<String>& files = TargetDependenceFiles.FindOrAdd(buildTarget, Set<String>());
         files.Add(unit->GetFilePath());
     }
 

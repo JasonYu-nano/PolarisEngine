@@ -10,6 +10,8 @@ using namespace Engine;
 
 int main(int32 argc, char** argv)
 {
+    FileSystem::SetupExceptionHandle();
+
     cxxopts::Options options("Moc", "Meta object compiler");
 
     options.add_options()

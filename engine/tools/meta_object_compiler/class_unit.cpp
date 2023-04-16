@@ -49,18 +49,19 @@ namespace Engine
 
     void ClassUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) const
     {
+        // Write *.hpp
         if (headerWriter.Empty())
         {
             headerWriter.WriteLine(GetGeneratedHead());
         }
 
         headerWriter.WriteEmptyLine();
-        headerWriter.WriteLine(String::Format(R"(#define MOC_GENERATED_{}() \)", RecordName));
+        headerWriter.WriteLine(String::Format(R"(#define MOC_GENERATED_{}() \)", FileID));
         headerWriter.AddTab();
 
         for (auto&& method: Methods)
         {
-            method.GenerateProxyMethod(headerWriter);
+            method.GenerateProxyMethodDeclare(headerWriter);
         }
 
         if (!Methods.Empty())
@@ -68,56 +69,61 @@ namespace Engine
             headerWriter.WriteLine("\\");
         }
 
-        headerWriter.WriteLine(R"(IMPL_META_CLASS_GENERATED_START() \)");
+        headerWriter.WriteLine(R"(IMPL_META_CLASS_GENERATED())");
+        headerWriter.RemoveTab();
 
-        headerWriter.AddTab();
-
-        if (SuperName.Empty())
+        // Write *.cpp
+        if (sourceWriter.Empty())
         {
-            headerWriter.WriteLine(String::Format(R"(DECLARE_CLASS_START("{0}", {1}, {2}) \)", RecordName, "nullptr", MetaFlagsToString()));
-        }
-        else
-        {
-            headerWriter.WriteLine(String::Format(R"(DECLARE_CLASS_START("{0}", {1}::MetaObject(), {2}) \)", RecordName, SuperName, MetaFlagsToString()));
+            sourceWriter.WriteLine(GetGeneratedSource());
+            sourceWriter.WriteLine(String::Format(R"(#include "{}")", GetFilePath()));
         }
 
-        headerWriter.WriteLine(String::Format(R"(DEFINE_CLASS_META_DATA({}) \)", MetaDataToString()));
+        sourceWriter.WriteEmptyLine();
 
-        headerWriter.AddTab();
+        for (auto&& method: Methods)
+        {
+            method.GenerateProxyMethodDefine(sourceWriter);
+            sourceWriter.WriteEmptyLine();
+        }
+
+        sourceWriter.WriteLine(String::Format(R"(DEFINE_CONSTRUCT_META_CLASS_START({}) \)", RecordName));
+        sourceWriter.AddTab();
+        sourceWriter.WriteLine(String::Format(R"(DEFINE_CLASS("{0}", {1}, {2}) \)", RecordName, (SuperName.Empty() ? "nullptr" : String::Format("{}::MetaObject()", SuperName)), MetaFlagsToString()));
+        sourceWriter.WriteLine(String::Format(R"(DEFINE_CLASS_META_DATA({}) \)", MetaDataToString()));
+
+        sourceWriter.AddTab();
 
         for (auto&& property: Properties)
         {
-            property.GenerateMetaProperty(headerWriter);
+            property.GenerateMetaProperty(sourceWriter);
         }
 
         for (auto&& method: Methods)
         {
-            method.GenerateMetaMethod(headerWriter);
+            method.GenerateMetaMethod(sourceWriter);
         }
 
-        headerWriter.RemoveTab();
+        sourceWriter.RemoveTab();
 
-        headerWriter.WriteLine(String::Format(R"(DECLARE_CLASS_END() \)"));
-        headerWriter.RemoveTab();
+        sourceWriter.WriteLine(String::Format(R"(DEFINE_CONSTRUCT_META_CLASS_END())"));
+        sourceWriter.RemoveTab();
 
-        headerWriter.WriteLine("IMPL_META_CLASS_GENERATED_END()");
-        headerWriter.RemoveTab();
-
-        headerWriter.WriteEmptyLine();
+        sourceWriter.WriteEmptyLine();
 
         if (!NameSpace.Empty())
         {
-            headerWriter.WriteLine(String::Format("namespace {}", NameSpace));
-            headerWriter.WriteLine("{");
-            headerWriter.AddTab();
+            sourceWriter.WriteLine(String::Format("namespace {}", NameSpace));
+            sourceWriter.WriteLine("{");
+            sourceWriter.AddTab();
         }
 
-        headerWriter.WriteLine(String::Format(R"(static DeferInitializer _register{0}(&RegisterMetaObject<class {0}>);)", RecordName));
+        sourceWriter.WriteLine(String::Format(R"(static DeferInitializer register{0}(&RegisterMetaObject<class {0}>);)", RecordName));
 
         if (!NameSpace.Empty())
         {
-            headerWriter.RemoveTab();
-            headerWriter.WriteLine("}");
+            sourceWriter.RemoveTab();
+            sourceWriter.WriteLine("}");
         }
     }
 

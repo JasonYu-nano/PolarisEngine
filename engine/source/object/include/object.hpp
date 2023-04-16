@@ -9,15 +9,11 @@ namespace Engine
 {
     class OBJECT_API META() GObject
     {
-        MOC_GENERATED(GObject)
+        MOC_GENERATED()
     public:
 
         META()
-        bool IsA(MetaClass* metaClass)
-        {
-            MetaClass* myMeta = MetaObject();
-            return myMeta == metaClass or myMeta->IsChildOf(metaClass);
-        }
+        bool IsA(class MetaClass* metaClass) const;
 
     protected:
         META()

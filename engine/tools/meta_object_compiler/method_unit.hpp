@@ -37,7 +37,9 @@ namespace Engine
 
         String GetMethodName() const { return MethodName; }
 
-        void GenerateProxyMethod(CodeWriter& writer) const;
+        void GenerateProxyMethodDeclare(CodeWriter& writer) const;
+
+        void GenerateProxyMethodDefine(CodeWriter& writer) const;
 
         void GenerateMetaMethod(CodeWriter& writer) const;
 

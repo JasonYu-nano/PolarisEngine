@@ -36,9 +36,6 @@
 [Ss]aved/
 .vscode/
 .vs/
-.xmake/
 .idea/
-vsxmake2019/
-generated/
+[Ii]ntermediate/
 !**/third_parties/**
-cmake-build-debug/

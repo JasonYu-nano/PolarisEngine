@@ -65,6 +65,8 @@ namespace Engine
 
         static String ReadFileToString(const String& fileName);
 
+        static void SetupExceptionHandle();
+
         class DirectoryIterImpl
         {
         public:
@@ -132,6 +134,4 @@ namespace Engine
     {
         return {};
     }
-
-    //class CORE_API Recursive
 }

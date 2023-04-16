@@ -1,14 +1,17 @@
 #pragma once
 
-#include "global.hpp"
 #include "foundation/map.hpp"
 #include "meta_types.hpp"
 #include "definitions_object.hpp"
+#include "object.hpp"
+#include "meta_field.gen.hpp"
 
 namespace Engine
 {
-    class OBJECT_API MetaField
+    class OBJECT_API META() MetaField : public GObject
     {
+        MOC_GENERATED()
+
         friend struct MetaConstructUtils;
     public:
         bool HasAnyFlags(EMetaFlag flags) const

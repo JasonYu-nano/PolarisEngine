@@ -51,18 +51,23 @@ void MethodUnit::Parse()
     }
 }
 
-void MethodUnit::GenerateProxyMethod(CodeWriter& writer) const
+void MethodUnit::GenerateProxyMethodDeclare(CodeWriter& writer) const
 {
     writer.WriteLine(String::Format(R"(DECLARE_PROXY_METHOD({}) \)", MethodName));
+}
+
+void MethodUnit::GenerateProxyMethodDefine(CodeWriter& writer) const
+{
+    writer.WriteLine(String::Format(R"(DEFINE_PROXY_METHOD({}, {}) \)", OwnerRecord->GetRecordName(), MethodName));
     writer.WriteLine(R"({ \)");
     writer.WriteLine(R"(} \)");
 }
 
 void MethodUnit::GenerateMetaMethod(CodeWriter& writer) const
 {
-    writer.WriteLine(String::Format(R"(DECLARE_CLASS_METHOD_START({0}, {1}, {2}) \)", OwnerRecord->GetRecordName(), MethodName, MetaFlagsToString()));
+    writer.WriteLine(String::Format(R"(DEFINE_CLASS_METHOD_START({0}, {1}, {2}) \)", OwnerRecord->GetRecordName(), MethodName, MetaFlagsToString()));
     writer.WriteLine(R"(DEFINE_METHOD_META_DATA({}) \)");
-    writer.WriteLine(R"(DECLARE_CLASS_METHOD_END() \)");
+    writer.WriteLine(R"(DEFINE_CLASS_METHOD_END() \)");
 }
 
 Set<String> MethodUnit::GetSupportFlags()

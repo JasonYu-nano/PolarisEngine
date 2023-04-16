@@ -4,8 +4,12 @@
 #include "file_system/path.hpp"
 #include "foundation/queue.hpp"
 #include "windows/windows_file_handle.hpp"
-#include "log/logger.hpp"
+#include "file_system/file_system.hpp"
 #include "file_system/file_system_log.hpp"
+
+#if ENABLE_CORE_DUMP
+#include <Dbghelp.h>
+#endif
 
 using namespace Engine;
 
@@ -226,5 +230,52 @@ namespace Engine
         }
 
         return MakeUnique<WindowsFileHandle>(handle);
+    }
+
+    typedef bool (WINAPI *MiniDumpWriter)(HANDLE hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE DumpType,
+            CONST PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam, CONST PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
+            CONST PMINIDUMP_CALLBACK_INFORMATION CallbackParam);
+
+    void CreateMinidump(struct _EXCEPTION_POINTERS* exceptionInfo)
+    {
+        HMODULE library = ::LoadLibraryA("dbghelp.dll");
+
+        MiniDumpWriter dumpWriter = (MiniDumpWriter)::GetProcAddress(library, "MiniDumpWriteDump");
+
+        const String saveDir = Path::Combine(FileSystem::GetEngineSaveDir(), "dump");
+        if (!FileSystem::DirExists(saveDir))
+        {
+            FileSystem::MakeDirTree(saveDir);
+        }
+
+        String dumpFile = Path::Combine(saveDir, String::Format("core_{}.dump", PlatformClock::Now().TimeSinceEpoch()));
+        HANDLE handle = ::CreateFileA(dumpFile.Data(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
+                                       FILE_ATTRIBUTE_NORMAL, NULL);
+
+        if (handle == INVALID_HANDLE_VALUE)
+        {
+            return;
+        }
+
+        _MINIDUMP_EXCEPTION_INFORMATION dumpExceptionInfo;
+        dumpExceptionInfo.ThreadId = ::GetCurrentThreadId();
+        dumpExceptionInfo.ExceptionPointers = exceptionInfo;
+        dumpExceptionInfo.ClientPointers = false;
+
+        dumpWriter(GetCurrentProcess(), GetCurrentProcessId(), handle, MiniDumpNormal, &dumpExceptionInfo, NULL, NULL);
+        ::CloseHandle(handle);
+    }
+
+    LONG ExceptionHandler(struct _EXCEPTION_POINTERS* exceptionInfo)
+    {
+        CreateMinidump(exceptionInfo);
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    void WindowsPlatformFile::SetupExceptionHandle()
+    {
+#if ENABLE_CORE_DUMP
+        SetUnhandledExceptionFilter(ExceptionHandler);
+#endif
     }
 }

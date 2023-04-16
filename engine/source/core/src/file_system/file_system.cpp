@@ -143,6 +143,11 @@ namespace Engine
         return PlatformFile->GetFileTime(path);
     }
 
+    void FileSystem::SetupExceptionHandle()
+    {
+        return PlatformFile->SetupExceptionHandle();
+    }
+
     FileSystem::DirectoryIterImpl::DirectoryIterImpl(const String& path, bool recursive)
     {
         if (recursive)

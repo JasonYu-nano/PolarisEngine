@@ -47,13 +47,10 @@ namespace Engine
     {
         using Super = ParseUnit;
     public:
-        RecordUnit(CXCursor cursor, const String& path, const String& nameSpace)
+        RecordUnit(CXCursor cursor, const String& nameSpace)
             : Super(cursor)
-            , Path(path)
             , NameSpace(nameSpace)
-        {
-            OwnerBuildTarget = StringID(ParseUtils::GetFileOwnerBuildTarget(path));
-        }
+        {}
 
         String GetFilePath() const
         {
@@ -73,12 +70,18 @@ namespace Engine
 
     protected:
         String GetGeneratedHead() const;
+
         String GetGeneratedSource() const;
+
+        String GetFilePathMacro() const;
+
+        String GetFileID() const;
     protected:
         ERecordType RecordType{ ERecordType::Unknown };
         StringID OwnerBuildTarget;
         String Path;
         String NameSpace;
         String RecordName;
+        String FileID;
     };
 }

@@ -23,6 +23,11 @@ namespace Engine
 
         void UpdateOverlapped();
 
+        bool IsHandleValid() const
+        {
+            return Handle && Handle != INVALID_HANDLE_VALUE;
+        }
+
     private:
         HANDLE Handle{ nullptr };
         int64 Size{ 0 };
@@ -40,6 +45,11 @@ namespace Engine
         bool FindNext(DirectoryEntry& entry) final;
 
     private:
+        bool IsHandleValid() const
+        {
+            return Handle && Handle != INVALID_HANDLE_VALUE;
+        }
+
         HANDLE Handle{ nullptr };
         String NormalizedPath;
     };
@@ -55,6 +65,11 @@ namespace Engine
 
     private:
         HANDLE FindTop(WIN32_FIND_DATAA& data);
+
+        bool IsHandleValid() const
+        {
+            return Handle && Handle != INVALID_HANDLE_VALUE;
+        }
 
         HANDLE Handle{ nullptr };
         String NormalizedPath;

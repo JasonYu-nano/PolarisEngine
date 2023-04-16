@@ -9,7 +9,7 @@ namespace Engine
     {
         using Super = RecordUnit;
     public:
-        ClassUnit(CXCursor cursor, const String& path, const String& nameSpace) : Super(cursor, path, nameSpace)
+        ClassUnit(CXCursor cursor, const String& nameSpace) : Super(cursor, nameSpace)
         {
             RecordType = ERecordType::Class;
         }

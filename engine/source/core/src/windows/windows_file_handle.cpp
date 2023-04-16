@@ -10,8 +10,12 @@ namespace Engine
 {
     WindowsFileHandle::~WindowsFileHandle()
     {
-        bool result = CloseHandle(Handle);
-        CLOG(!result, FileSystem, Error, "Close windows file handle failed");
+        if (IsHandleValid())
+        {
+            bool result = CloseHandle(Handle);
+            CLOG(!result, FileSystem, Error, "Close windows file handle failed");
+            Handle = nullptr;
+        }
     }
 
     int64 WindowsFileHandle::GetSize() const
@@ -21,14 +25,17 @@ namespace Engine
 
     void WindowsFileHandle::CalcFileSize()
     {
-        LARGE_INTEGER size;
-        GetFileSizeEx(Handle, &size);
-        Size = size.QuadPart;
+        if (IsHandleValid())
+        {
+            LARGE_INTEGER size;
+            GetFileSizeEx(Handle, &size);
+            Size = size.QuadPart;
+        }
     }
 
     bool WindowsFileHandle::Read(uint8* dest, int64 size)
     {
-        if (size <= 0)
+        if (!IsHandleValid() || size <= 0)
         {
             return false;
         }
@@ -67,7 +74,7 @@ namespace Engine
 
     WindowsFindFileHandle::~WindowsFindFileHandle()
     {
-        if (Handle && Handle != INVALID_HANDLE_VALUE)
+        if (IsHandleValid())
         {
             ::FindClose(Handle);
             Handle = nullptr;
@@ -124,7 +131,7 @@ namespace Engine
 
     WindowsRecursiveFindFileHandle::~WindowsRecursiveFindFileHandle()
     {
-        if (Handle && Handle != INVALID_HANDLE_VALUE)
+        if (IsHandleValid())
         {
             ::FindClose(Handle);
             Handle = nullptr;
