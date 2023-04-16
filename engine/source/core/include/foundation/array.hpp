@@ -978,11 +978,12 @@ namespace Engine
             ENSURE(count > 0);
             auto& myVal = Pair.SecondVal;
             SizeType oldSize = myVal.Size;
-            myVal.Size += count;
-            if (myVal.Size > myVal.Capacity)
+            SizeType newSize = oldSize + count;
+            if (newSize > myVal.Capacity)
             {
-                Expansion(myVal.Size);
+                Expansion(newSize);
             }
+            myVal.Size = newSize;
             return oldSize;
         }
 
@@ -991,12 +992,12 @@ namespace Engine
             auto& myVal = Pair.SecondVal;
             ENSURE(index >= 0 && count > 0 && index <= myVal.Size);
             SizeType oldSize = myVal.Size;
-            myVal.Size += count;
-            if (myVal.Size > myVal.Capacity)
+            SizeType newSize = oldSize + count;
+            if (newSize > myVal.Capacity)
             {
-                Expansion(myVal.Size);
+                Expansion(newSize);
             }
-
+            myVal.Size = newSize;
             ValueType* src = myVal.Data + index;
             Memory::Memmove(src + count, src, (oldSize - index) * sizeof(ValueType));
         }
