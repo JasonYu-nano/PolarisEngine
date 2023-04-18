@@ -150,10 +150,4 @@ namespace Engine
         macro.ToUpperLatin1();
         return macro;
     }
-
-    String RecordUnit::GetFileID() const
-    {
-        uint32 line = ParseUtils::GetCursorLocationLine(MyCursor);
-        return String::Format("{}_{}", GetFilePathMacro(), line + 2);
-    }
 }

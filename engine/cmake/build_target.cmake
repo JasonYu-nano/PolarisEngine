@@ -213,7 +213,6 @@ function(compile_meta_object)
 #            )
         endif()
 
-        message("AAA ${target_moc_generated_path}")
         target_sources(${target} PRIVATE ${auto_generated_files})
         target_include_directories(${target} PUBLIC ${target_moc_generated_path})
     endforeach()
