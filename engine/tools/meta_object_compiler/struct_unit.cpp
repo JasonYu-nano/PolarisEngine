@@ -54,8 +54,17 @@ void StructUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter
     }
 
     headerWriter.WriteEmptyLine();
-    headerWriter.WriteLine(String::Format(R"(#define MOC_GENERATED_{}() IMPL_META_STRUCT_GENERATED())", FileID));
+    headerWriter.WriteLine(String::Format(R"(#define MOC_GENERATED_{}() \)", FileID));
+    headerWriter.AddTab();
 
+    if (!SuperName.Empty())
+    {
+        headerWriter.WriteLine(String::Format(R"(using Super = {}; \)", SuperName));
+    }
+
+    headerWriter.WriteLine(R"(IMPL_META_STRUCT_GENERATED() )");
+
+    headerWriter.RemoveTab();
     headerWriter.WriteEmptyLine();
 
     // Write *.cpp

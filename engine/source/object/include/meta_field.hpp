@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-    class OBJECT_API META() MetaField : public GObject
+    class OBJECT_API META() GMetaField : public GObject
     {
         MOC_GENERATED()
 

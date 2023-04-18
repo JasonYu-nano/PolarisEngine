@@ -7,39 +7,39 @@ DeferInitializer::DeferInitializer(FnInitialize fn)
     list.Add(fn);
 }
 
-UniquePtr<MetaClass> MetaConstructUtils::ConstructMetaClass(StringID className, MetaClass* super, EMetaFlag flags)
+UniquePtr<GMetaClass> MetaConstructUtils::ConstructMetaClass(StringID className, GMetaClass* super, EMetaFlag flags)
 {
-    UniquePtr<MetaClass> metaClass = MakeUnique<MetaClass>(className, super, flags);
+    UniquePtr<GMetaClass> metaClass = MakeUnique<GMetaClass>(className, super, flags);
     return metaClass;
 }
 
-UniquePtr<MetaStruct> MetaConstructUtils::ConstructMetaStruct(StringID structName, MetaStruct* super, EMetaFlag flags)
+UniquePtr<GMetaStruct> MetaConstructUtils::ConstructMetaStruct(StringID structName, GMetaStruct* super, EMetaFlag flags)
 {
-    UniquePtr<MetaStruct> metaClass = MakeUnique<MetaStruct>(structName, super, flags);
+    UniquePtr<GMetaStruct> metaClass = MakeUnique<GMetaStruct>(structName, super, flags);
     return metaClass;
 }
 
-UniquePtr<MetaEnum> MetaConstructUtils::ConstructMetaEnum(StringID enumName, EMetaFlag flags)
+UniquePtr<GMetaEnum> MetaConstructUtils::ConstructMetaEnum(StringID enumName, EMetaFlag flags)
 {
-    UniquePtr<MetaEnum> metaClass = MakeUnique<MetaEnum>(enumName, flags);
+    UniquePtr<GMetaEnum> metaClass = MakeUnique<GMetaEnum>(enumName, flags);
     return metaClass;
 }
 
-MetaMethod* MetaConstructUtils::ConstructMetaMethod(MetaClass* metaClass, StringID methodName, MetaMethod::FnPtr fnPtr,
+MetaMethod* MetaConstructUtils::ConstructMetaMethod(GMetaClass* metaClass, StringID methodName, MetaMethod::FnPtr fnPtr,
                                              EMetaFlag flags)
 {
     MetaMethod method(fnPtr, methodName, flags);
     return metaClass->AddMethod(std::move(method));
 }
 
-MetaEnumConstantDecl& MetaConstructUtils::ConstructEnumConstantDecl(MetaEnum* metaEnum, StringID constantName, int64 constantValue,
+GMetaEnumConstantDecl& MetaConstructUtils::ConstructEnumConstantDecl(GMetaEnum* metaEnum, StringID constantName, int64 constantValue,
                                               EMetaFlag flags)
 {
-    return metaEnum->AddConstantDecl(MetaEnumConstantDecl(constantName, constantValue, flags));
+    return metaEnum->AddConstantDecl(GMetaEnumConstantDecl(constantName, constantValue, flags));
 }
 
 #if WITH_META_DATA
-void MetaConstructUtils::SetMetaData(MetaField* object, const std::initializer_list<Pair<StringID, String>>& metaData)
+void MetaConstructUtils::SetMetaData(GMetaField* object, const std::initializer_list<Pair<StringID, String>>& metaData)
 {
     object->SetMetaData(metaData);
 }

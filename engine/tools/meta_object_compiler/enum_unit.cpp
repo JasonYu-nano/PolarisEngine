@@ -84,7 +84,7 @@ void EnumUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) 
     }
 
     headerWriter.WriteEmptyLine();
-    headerWriter.WriteLine(String::Format("template<> class MetaEnum* Engine::GetEnum<{}>();", RecordName));
+    headerWriter.WriteLine(String::Format("template<> class GMetaEnum* Engine::GetEnum<{}>();", RecordName));
 
     if (!NameSpace.Empty())
     {
@@ -124,10 +124,10 @@ void EnumUnit::GenerateCode(CodeWriter& headerWriter, CodeWriter& sourceWriter) 
         sourceWriter.AddTab();
     }
 
-    sourceWriter.WriteLine(String::Format("template<> MetaEnum* Engine::GetEnum<{}>()", RecordName));
+    sourceWriter.WriteLine(String::Format("template<> GMetaEnum* Engine::GetEnum<{}>()", RecordName));
     sourceWriter.WriteLine("{");
     sourceWriter.AddTab();
-    sourceWriter.WriteLine(String::Format("static UniquePtr<MetaEnum> meta = GetMetaEnum{}();", RecordName));
+    sourceWriter.WriteLine(String::Format("static UniquePtr<GMetaEnum> meta = GetMetaEnum{}();", RecordName));
     sourceWriter.WriteLine("return meta.get();");
     sourceWriter.RemoveTab();
     sourceWriter.WriteLine("}");

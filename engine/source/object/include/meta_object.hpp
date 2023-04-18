@@ -6,77 +6,81 @@
 #include "foundation/map.hpp"
 #include "meta_property.hpp"
 #include "meta_method.hpp"
+#include "meta_object.gen.hpp"
 
 namespace Engine
 {
-    class OBJECT_API MetaObject : public MetaField
+    class OBJECT_API META() GMetaObject : public GMetaField
     {
-    public:
-
-    protected:
+        MOC_GENERATED()
     };
 
-    class OBJECT_API MetaClass : public MetaObject
+    class OBJECT_API META() GMetaClass : public GMetaObject
     {
-        using Super = MetaObject;
+        MOC_GENERATED()
         friend struct MetaConstructUtils;
     public:
-        MetaClass(StringID name, MetaClass* super, EMetaFlag flags)
+        GMetaClass(StringID name, GMetaClass* super, EMetaFlag flags)
             : SuperClass(super)
             , ClassName(name)
         {
             Flags = SuperClass ? static_cast<EMetaFlag>(flags | SuperClass->Flags) : flags;
         }
 
-        bool IsChildOf(MetaClass* metaClass) const;
+        ~GMetaClass() override;
+
+        bool IsChildOf(GMetaClass* metaClass) const;
 
         bool FindProperty(StringID name, MetaProperty*& property);
 
         bool FindMethod(StringID name, MetaMethod* method);
 
     private:
-        MetaProperty* AddProperty(MetaProperty&& property);
+        void AddProperty(MetaProperty* property);
 
         MetaMethod* AddMethod(MetaMethod&& method);
     private:
-        MetaClass* SuperClass{ nullptr };
+        GMetaClass* SuperClass{ nullptr };
         StringID ClassName;
-        Array<MetaProperty> Properties;
+        Array<MetaProperty*> Properties;
         Map<StringID, MetaMethod> Methods;
     };
 
-    class OBJECT_API MetaStruct : public MetaObject
+    class OBJECT_API META() GMetaStruct : public GMetaObject
     {
-        using Super = MetaObject;
+        MOC_GENERATED()
         friend struct MetaConstructUtils;
     public:
-        MetaStruct(StringID name, MetaStruct* super, EMetaFlag flags)
+        GMetaStruct(StringID name, GMetaStruct* super, EMetaFlag flags)
             : SuperStruct(super)
             , StructName(name)
         {
             Flags = SuperStruct ? static_cast<EMetaFlag>(flags | SuperStruct->Flags) : flags;
         }
 
-        bool IsChildOf(MetaStruct* metaStruct) const;
+        ~GMetaStruct() override;
+
+        bool IsChildOf(GMetaStruct* metaStruct) const;
 
         bool FindProperty(StringID name, MetaProperty*& property);
 
     private:
-        MetaProperty* AddProperty(MetaProperty&& property);
+        void AddProperty(MetaProperty* property);
 
     private:
-        MetaStruct* SuperStruct;
+        GMetaStruct* SuperStruct;
         StringID StructName;
-        Array<MetaProperty> Properties;
+        Array<MetaProperty*> Properties;
     };
 
-    class OBJECT_API MetaEnumConstantDecl : public MetaField
+    class OBJECT_API META() GMetaEnumConstantDecl : public GMetaField
     {
-        friend class MetaEnum;
+        MOC_GENERATED()
+        friend class GMetaEnum;
     public:
-        MetaEnumConstantDecl(StringID constantName, int64 constantValue, EMetaFlag flags)
-                : ConstantName(constantName)
-                  , ConstantValue(constantValue)
+        GMetaEnumConstantDecl(StringID constantName, int64 constantValue, EMetaFlag flags)
+            : ConstantName(constantName)
+            , ConstantValue(constantValue)
         {
             Flags = flags;
         }
@@ -86,12 +90,13 @@ namespace Engine
         int64 ConstantValue;
     };
 
-    class OBJECT_API MetaEnum : public MetaField
+    class OBJECT_API META() GMetaEnum : public GMetaField
     {
+        MOC_GENERATED()
         friend struct MetaConstructUtils;
     public:
-        MetaEnum(StringID enumName, EMetaFlag flags)
-                : EnumName(enumName)
+        GMetaEnum(StringID enumName, EMetaFlag flags)
+            : EnumName(enumName)
         {
             Flags = flags;
         }
@@ -107,11 +112,11 @@ namespace Engine
 #endif
 
     private:
-        MetaEnumConstantDecl& AddConstantDecl(MetaEnumConstantDecl&& decl);
+        GMetaEnumConstantDecl& AddConstantDecl(GMetaEnumConstantDecl&& decl);
 
     private:
         StringID EnumName;
-        Array<MetaEnumConstantDecl> ConstantDecl;
+        Array<GMetaEnumConstantDecl> ConstantDecl;
     };
 
     template <typename T>

@@ -11,7 +11,7 @@ namespace Engine
         StringID Name;
     };
 
-    class OBJECT_API MetaMethod : public MetaField
+    class OBJECT_API MetaMethod : public GMetaField
     {
     public:
         typedef void(* FnPtr)(void* args);

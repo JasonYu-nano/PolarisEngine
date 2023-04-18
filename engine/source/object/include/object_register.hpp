@@ -5,10 +5,10 @@
 
 namespace Engine
 {
-    class MetaEnum;
+    class GMetaEnum;
 
     template <typename T>
-    MetaEnum* GetEnum()
+    GMetaEnum* GetEnum()
     {
         static_assert(FalseExpr<T>, "Can't match MetaEnum");
         return nullptr;

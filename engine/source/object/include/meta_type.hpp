@@ -30,7 +30,7 @@ namespace Engine
             return TypeID != other.TypeID;
         }
 
-        MetaObject* GetMetaObject() const;
+        GMetaObject* GetMetaObject() const;
 
     private:
         int32 TypeID{ 0 };

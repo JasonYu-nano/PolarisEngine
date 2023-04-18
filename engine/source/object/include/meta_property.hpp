@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-    class OBJECT_API MetaProperty : public MetaField
+    class OBJECT_API MetaProperty : public GMetaField
     {
     public:
         MetaProperty(StringID name, size_t offset, EMetaFlag flags)

@@ -1,13 +1,22 @@
 #include "meta_object.hpp"
 
-bool MetaClass::IsChildOf(MetaClass* metaClass) const
+GMetaClass::~GMetaClass()
+{
+    for (auto property : Properties)
+    {
+        delete property;
+    }
+    Properties.Clear();
+}
+
+bool GMetaClass::IsChildOf(GMetaClass* metaClass) const
 {
     if (this == metaClass)
     {
         return false;
     }
 
-    MetaClass* super = SuperClass;
+    GMetaClass* super = SuperClass;
     while (super)
     {
         if (super == metaClass)
@@ -20,10 +29,10 @@ bool MetaClass::IsChildOf(MetaClass* metaClass) const
     return false;
 }
 
-bool MetaClass::FindProperty(StringID name, MetaProperty*& property)
+bool GMetaClass::FindProperty(StringID name, MetaProperty*& property)
 {
-    int32 index = Properties.Find([&name](const MetaProperty& elem){
-        return elem.GetPropertyName() == name;
+    int32 index = Properties.Find([&name](MetaProperty* elem){
+        return elem->GetPropertyName() == name;
     });
 
     if (index == INDEX_NONE)
@@ -32,35 +41,43 @@ bool MetaClass::FindProperty(StringID name, MetaProperty*& property)
         return false;
     }
 
-    property = &Properties[index];
+    property = Properties[index];
     return true;
 }
 
-bool MetaClass::FindMethod(StringID name, MetaMethod* method)
+bool GMetaClass::FindMethod(StringID name, MetaMethod* method)
 {
     method = Methods.Find(name);
     return method != nullptr;
 }
 
-MetaProperty* MetaClass::AddProperty(MetaProperty&& property)
+void GMetaClass::AddProperty(MetaProperty* property)
 {
-    Properties.Add(std::forward<MetaProperty>(property));
-    return &Properties.Last();
+    Properties.Add(property);
 }
 
-MetaMethod* MetaClass::AddMethod(MetaMethod&& method)
+MetaMethod* GMetaClass::AddMethod(MetaMethod&& method)
 {
     return &Methods.Add(method.GetMethodName(), std::forward<MetaMethod>(method));
 }
 
-bool MetaStruct::IsChildOf(MetaStruct* metaStruct) const
+GMetaStruct::~GMetaStruct()
+{
+    for (auto property : Properties)
+    {
+        delete property;
+    }
+    Properties.Clear();
+}
+
+bool GMetaStruct::IsChildOf(GMetaStruct* metaStruct) const
 {
     if (this == metaStruct)
     {
         return false;
     }
 
-    MetaStruct* super = SuperStruct;
+    GMetaStruct* super = SuperStruct;
     while (super)
     {
         if (super == metaStruct)
@@ -73,10 +90,10 @@ bool MetaStruct::IsChildOf(MetaStruct* metaStruct) const
     return false;
 }
 
-bool MetaStruct::FindProperty(StringID name, MetaProperty*& property)
+bool GMetaStruct::FindProperty(StringID name, MetaProperty*& property)
 {
-    int32 index = Properties.Find([&name](const MetaProperty& elem){
-        return elem.GetPropertyName() == name;
+    int32 index = Properties.Find([&name](MetaProperty* elem){
+        return elem->GetPropertyName() == name;
     });
 
     if (index == INDEX_NONE)
@@ -85,17 +102,16 @@ bool MetaStruct::FindProperty(StringID name, MetaProperty*& property)
         return false;
     }
 
-    property = &Properties[index];
+    property = Properties[index];
     return true;
 }
 
-MetaProperty* MetaStruct::AddProperty(MetaProperty&& property)
+void GMetaStruct::AddProperty(MetaProperty* property)
 {
-    Properties.Add(std::forward<MetaProperty>(property));
-    return &Properties.Last();
+    Properties.Add(property);
 }
 
-int64 MetaEnum::GetEnumConstantValueByIndex(int32 index) const
+int64 GMetaEnum::GetEnumConstantValueByIndex(int32 index) const
 {
     if (ConstantDecl.IsValidIndex(index))
     {
@@ -105,7 +121,7 @@ int64 MetaEnum::GetEnumConstantValueByIndex(int32 index) const
     return INDEX_NONE;
 }
 
-StringID MetaEnum::GetEnumConstantNameByIndex(int32 index) const
+StringID GMetaEnum::GetEnumConstantNameByIndex(int32 index) const
 {
     if (ConstantDecl.IsValidIndex(index))
     {
@@ -116,14 +132,14 @@ StringID MetaEnum::GetEnumConstantNameByIndex(int32 index) const
 }
 
 #if WITH_META_DATA
-String MetaEnum::GetEnumConstantDisplayNameByIndex(int32 index) const
+String GMetaEnum::GetEnumConstantDisplayNameByIndex(int32 index) const
 {
     if (!ConstantDecl.IsValidIndex(index))
     {
         return "";
     }
 
-    const MetaEnumConstantDecl& decl = ConstantDecl[index];
+    const GMetaEnumConstantDecl& decl = ConstantDecl[index];
 
     String* displayName = decl.MetaDataMap.Find("DisplayName");
     if (displayName)
@@ -135,7 +151,7 @@ String MetaEnum::GetEnumConstantDisplayNameByIndex(int32 index) const
 }
 #endif
 
-MetaEnumConstantDecl& MetaEnum::AddConstantDecl(MetaEnumConstantDecl&& decl)
+GMetaEnumConstantDecl& GMetaEnum::AddConstantDecl(GMetaEnumConstantDecl&& decl)
 {
     ConstantDecl.Add(decl);
     return ConstantDecl.Last();

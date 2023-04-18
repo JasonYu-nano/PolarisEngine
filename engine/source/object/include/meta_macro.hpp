@@ -2,32 +2,32 @@
 
 #define IMPL_META_STRUCT_GENERATED() \
     private: \
-        static UniquePtr<class MetaStruct> PrivateConstructMetaStruct(); \
+        static UniquePtr<class GMetaStruct> PrivateConstructMetaStruct(); \
     public: \
-        static class MetaStruct* MetaObject(); \
+        static class GMetaStruct* MetaObject(); \
         \
-        class MetaStruct* GetMetaObject() const;
+        class GMetaStruct* GetMetaObject() const;
 
 #define DEFINE_CONSTRUCT_META_STRUCT_START(structName) \
-    MetaStruct* structName::MetaObject() \
+    GMetaStruct* structName::MetaObject() \
     { \
-        static UniquePtr<MetaStruct> meta = PrivateConstructMetaStruct(); \
+        static UniquePtr<GMetaStruct> meta = PrivateConstructMetaStruct(); \
         return meta.get(); \
     } \
     \
-    MetaStruct* structName::GetMetaObject() const \
+    GMetaStruct* structName::GetMetaObject() const \
     { \
         return MetaObject(); \
     } \
     \
-    UniquePtr<MetaStruct> structName::PrivateConstructMetaStruct() \
+    UniquePtr<GMetaStruct> structName::PrivateConstructMetaStruct() \
     {
 
 #define DEFINE_CONSTRUCT_META_STRUCT_END()  return meta; }
 
 #define DEFINE_STRUCT(name, super, flags) \
-    UniquePtr<MetaStruct> meta = MetaConstructUtils::ConstructMetaStruct(name, super, flags); \
-    MetaStruct* metaStruct = meta.get();
+    UniquePtr<GMetaStruct> meta = MetaConstructUtils::ConstructMetaStruct(name, super, flags); \
+    GMetaStruct* metaStruct = meta.get();
 
 #if WITH_META_DATA
 #define DEFINE_STRUCT_META_DATA(...) \
@@ -38,39 +38,39 @@
 
 #define DEFINE_STRUCT_PROPERTY_START(...) \
     { \
-        auto* property = MetaConstructUtils::ConstructMetaProperty<MetaStruct>(metaStruct, __VA_ARGS__);
+        auto* property = MetaConstructUtils::ConstructMetaProperty<GMetaStruct>(metaStruct, __VA_ARGS__);
 
 #define DEFINE_STRUCT_PROPERTY_END() }
 
 #define IMPL_META_CLASS_GENERATED() \
     public: \
-        static class MetaClass* MetaObject(); \
+        static class GMetaClass* MetaObject(); \
         \
-        class MetaClass* GetMetaObject() const; \
+        class GMetaClass* GetMetaObject() const; \
      \
     private: \
-        static UniquePtr<class MetaClass> PrivateConstructMetaClass();
+        static UniquePtr<class GMetaClass> PrivateConstructMetaClass();
 
 #define DEFINE_CONSTRUCT_META_CLASS_START(className) \
-    MetaClass* className::MetaObject() \
+    GMetaClass* className::MetaObject() \
     { \
-        static UniquePtr<MetaClass> meta = PrivateConstructMetaClass(); \
+        static UniquePtr<GMetaClass> meta = PrivateConstructMetaClass(); \
         return meta.get(); \
     } \
     \
-    MetaClass* className::GetMetaObject() const \
+    GMetaClass* className::GetMetaObject() const \
     { \
         return MetaObject(); \
     } \
     \
-    UniquePtr<MetaClass> className::PrivateConstructMetaClass() \
+    UniquePtr<GMetaClass> className::PrivateConstructMetaClass() \
     {
 
 #define DEFINE_CONSTRUCT_META_CLASS_END()  return meta; }
 
 #define DEFINE_CLASS(...) \
-    UniquePtr<MetaClass> meta = MetaConstructUtils::ConstructMetaClass(__VA_ARGS__); \
-    MetaClass* metaClass = meta.get();
+    UniquePtr<GMetaClass> meta = MetaConstructUtils::ConstructMetaClass(__VA_ARGS__); \
+    GMetaClass* metaClass = meta.get();
 
 #if WITH_META_DATA
     #define DEFINE_CLASS_META_DATA(...) \
@@ -81,7 +81,7 @@
 
 #define DEFINE_CLASS_PROPERTY_START(...) \
     { \
-        auto* property = MetaConstructUtils::ConstructMetaProperty<MetaClass>(metaClass, __VA_ARGS__);
+        auto* property = MetaConstructUtils::ConstructMetaProperty<GMetaClass>(metaClass, __VA_ARGS__);
 
 #define DEFINE_CLASS_PROPERTY_END() }
 
@@ -110,10 +110,10 @@
 #define DEFINE_PROXY_METHOD(className, methodName) void className::_Execute##methodName(void* args)
 
 #define DEFINE_META_ENUM_START(enumName, flags) \
-    static UniquePtr<MetaEnum> GetMetaEnum##enumName()              \
+    static UniquePtr<GMetaEnum> GetMetaEnum##enumName()              \
     {                                           \
-        UniquePtr<MetaEnum> meta = MetaConstructUtils::ConstructMetaEnum(#enumName, flags); \
-        MetaEnum* metaEnum = meta.get();
+        UniquePtr<GMetaEnum> meta = MetaConstructUtils::ConstructMetaEnum(#enumName, flags); \
+        GMetaEnum* metaEnum = meta.get();
 
 #define DEFINE_META_ENUM_END() return meta; }
 

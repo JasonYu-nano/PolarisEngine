@@ -11,9 +11,10 @@ namespace Engine
     {
         MOC_GENERATED()
     public:
+        virtual ~GObject() = default;
 
         META()
-        bool IsA(class MetaClass* metaClass) const;
+        bool IsA(class GMetaClass* metaClass) const;
 
     protected:
         META()

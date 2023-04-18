@@ -69,6 +69,11 @@ namespace Engine
             headerWriter.WriteLine("\\");
         }
 
+        if (!SuperName.Empty())
+        {
+            headerWriter.WriteLine(String::Format(R"(using Super = {}; \)", SuperName));
+        }
+
         headerWriter.WriteLine(R"(IMPL_META_CLASS_GENERATED())");
         headerWriter.RemoveTab();
 
