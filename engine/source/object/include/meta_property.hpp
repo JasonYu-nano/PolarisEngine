@@ -1,13 +1,15 @@
 #pragma once
 
 #include "meta_field.hpp"
+#include "meta_property.gen.hpp"
 
 namespace Engine
 {
-    class OBJECT_API MetaProperty : public GMetaField
+    class OBJECT_API META() GMetaProperty : public GMetaField
     {
+        MOC_GENERATED()
     public:
-        MetaProperty(StringID name, size_t offset, EMetaFlag flags)
+        GMetaProperty(StringID name, size_t offset, EMetaFlag flags)
             : Name(name)
             , Offset(offset)
         {

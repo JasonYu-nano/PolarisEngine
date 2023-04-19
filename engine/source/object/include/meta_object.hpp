@@ -31,18 +31,18 @@ namespace Engine
 
         bool IsChildOf(GMetaClass* metaClass) const;
 
-        bool FindProperty(StringID name, MetaProperty*& property);
+        bool FindProperty(StringID name, GMetaProperty*& property);
 
         bool FindMethod(StringID name, MetaMethod* method);
 
     private:
-        void AddProperty(MetaProperty* property);
+        void AddProperty(GMetaProperty* property);
 
         MetaMethod* AddMethod(MetaMethod&& method);
     private:
         GMetaClass* SuperClass{ nullptr };
         StringID ClassName;
-        Array<MetaProperty*> Properties;
+        Array<GMetaProperty*> Properties;
         Map<StringID, MetaMethod> Methods;
     };
 
@@ -62,15 +62,15 @@ namespace Engine
 
         bool IsChildOf(GMetaStruct* metaStruct) const;
 
-        bool FindProperty(StringID name, MetaProperty*& property);
+        bool FindProperty(StringID name, GMetaProperty*& property);
 
     private:
-        void AddProperty(MetaProperty* property);
+        void AddProperty(GMetaProperty* property);
 
     private:
         GMetaStruct* SuperStruct;
         StringID StructName;
-        Array<MetaProperty*> Properties;
+        Array<GMetaProperty*> Properties;
     };
 
     class OBJECT_API META() GMetaEnumConstantDecl : public GMetaField

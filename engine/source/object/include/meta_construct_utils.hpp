@@ -13,9 +13,9 @@ namespace Engine
         static UniquePtr<GMetaEnum> ConstructMetaEnum(StringID enumName, EMetaFlag flags);
 
         template <typename RecordType>
-        static MetaProperty* ConstructMetaProperty(RecordType* record, StringID propertyName, size_t offset, EMetaFlag flags)
+        static GMetaProperty* ConstructMetaProperty(RecordType* record, StringID propertyName, size_t offset, EMetaFlag flags)
         {
-            MetaProperty* property = new MetaProperty(propertyName, offset, flags);
+            GMetaProperty* property = new GMetaProperty(propertyName, offset, flags);
             record->AddProperty(property);
             return property;
         }

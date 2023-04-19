@@ -29,9 +29,9 @@ bool GMetaClass::IsChildOf(GMetaClass* metaClass) const
     return false;
 }
 
-bool GMetaClass::FindProperty(StringID name, MetaProperty*& property)
+bool GMetaClass::FindProperty(StringID name, GMetaProperty*& property)
 {
-    int32 index = Properties.Find([&name](MetaProperty* elem){
+    int32 index = Properties.Find([&name](GMetaProperty* elem){
         return elem->GetPropertyName() == name;
     });
 
@@ -51,7 +51,7 @@ bool GMetaClass::FindMethod(StringID name, MetaMethod* method)
     return method != nullptr;
 }
 
-void GMetaClass::AddProperty(MetaProperty* property)
+void GMetaClass::AddProperty(GMetaProperty* property)
 {
     Properties.Add(property);
 }
@@ -90,9 +90,9 @@ bool GMetaStruct::IsChildOf(GMetaStruct* metaStruct) const
     return false;
 }
 
-bool GMetaStruct::FindProperty(StringID name, MetaProperty*& property)
+bool GMetaStruct::FindProperty(StringID name, GMetaProperty*& property)
 {
-    int32 index = Properties.Find([&name](MetaProperty* elem){
+    int32 index = Properties.Find([&name](GMetaProperty* elem){
         return elem->GetPropertyName() == name;
     });
 
@@ -106,7 +106,7 @@ bool GMetaStruct::FindProperty(StringID name, MetaProperty*& property)
     return true;
 }
 
-void GMetaStruct::AddProperty(MetaProperty* property)
+void GMetaStruct::AddProperty(GMetaProperty* property)
 {
     Properties.Add(property);
 }
