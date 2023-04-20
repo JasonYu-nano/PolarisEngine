@@ -58,8 +58,7 @@ int main(int32 argc, char** argv)
     parser.Parse(contents, parserOptions);
 
     MetaCodeGenerator generator(parser);
-    generator.GenerateCode();
-    generator.GenerateManifest();
+    generator.Generate();
 
     LOG_INFO(MOC, "Meta code generate complete")
 

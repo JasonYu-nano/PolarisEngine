@@ -204,14 +204,22 @@ function(compile_meta_object)
         set(target_moc_generated_path ${moc_generated_path}/${target})
         FILE(GLOB auto_generated_files "${target_moc_generated_path}/*.hpp" "${target_moc_generated_path}/*.cpp")
 
-        if (EXISTS ${target_moc_generated_path}/manifest.cmake)
-            include(${target_moc_generated_path}/manifest.cmake)
+#        if (EXISTS ${target_moc_generated_path}/manifest.cmake)
+#            include(${target_moc_generated_path}/manifest.cmake)
 #            FIXME: Re-run cmake when file modified
 #            get_target_property(location ${target} SOURCE_DIR)
 #            set_property(DIRECTORY ${location} PROPERTY CMAKE_CONFIGURE_DEPENDS
 #                    ${${target}_manifest}
 #            )
-        endif()
+#        endif()
+
+        if (EXISTS ${target_moc_generated_path}/manifest.moc)
+            file(READ ${target_moc_generated_path}/manifest.moc manifest)
+            string(REPLACE "\n" ";" dependence ${manifest})
+            message(${dependence})
+            get_target_property(location ${target} SOURCE_DIR)
+            set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY CMAKE_CONFIGURE_DEPENDS ${dependence})
+        endif ()
 
         target_sources(${target} PRIVATE ${auto_generated_files})
         target_include_directories(${target} PUBLIC ${target_moc_generated_path})

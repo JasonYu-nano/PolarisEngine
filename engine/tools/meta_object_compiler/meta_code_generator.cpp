@@ -5,6 +5,12 @@
 #include "moc_log.hpp"
 #include "build_targets.hpp"
 
+void MetaCodeGenerator::Generate()
+{
+    GenerateCode();
+    GenerateManifest();
+}
+
 void MetaCodeGenerator::GenerateCode()
 {
     Map<String, CodeWriter> writerMap;
@@ -72,18 +78,19 @@ void MetaCodeGenerator::GenerateManifest()
         const String saveDir = Path::Combine(FileSystem::GetEngineIntermediateDir(), String::Format("generated/moc/{}", targetName)) ;
         ENSURE(FileSystem::DirExists(saveDir));
 
-        const String manifest = Path::Combine(saveDir, "manifest.cmake");
+        const String manifest = Path::Combine(saveDir, "manifest.moc");
         if (!FileSystem::FileExists(manifest))
         {
             FileSystem::MakeFile(manifest);
         }
 
-        String manifestText = String::Format("set({}_manifest \n", targetName);
+        String manifestText;
+        bool isFirstItem = true;
         for (auto&& file : files)
         {
-            manifestText.Append(String::Format("\t{}\n", file));
+            isFirstItem ? manifestText.Append(file) : manifestText.Append('\n').Append(file);
+            isFirstItem = false;
         }
-        manifestText.Append(")");
 
         std::ofstream outFile(manifest.Data());
         outFile << manifestText.Data();
@@ -92,4 +99,9 @@ void MetaCodeGenerator::GenerateManifest()
 
         LOG_INFO(MOC, "Generate {}", manifest);
     }
+}
+
+void MetaCodeGenerator::CleanupContent()
+{
+
 }

@@ -22,4 +22,10 @@ namespace Engine
         StringID Name;
         size_t Offset{ 0 };
     };
+
+    class OBJECT_API META() GBoolProperty : public GMetaProperty
+    {
+        MOC_GENERATED()
+    public:
+    };
 }
