@@ -21,15 +21,16 @@ int main(int32 argc, char** argv)
             ("c,content", "parse content", cxxopts::value<std::string>()->default_value("test/core_test"))
             ("i,include", "include dirs", cxxopts::value<std::string>()->default_value("C:/Code/PolarisEngine/engine/source/core/include,C:/Code/PolarisEngine/engine/source/core/include/global,C:/Code/PolarisEngine/engine/source/object/include"))
             ("t,target", "build target", cxxopts::value<std::string>()->default_value("core_test"))
-            ("incremental", "incremental compile", cxxopts::value<int>()->default_value("0"));
+            ("incremental", "incremental build", cxxopts::value<int>()->default_value("0"));
 
     auto result = options.parse(argc, argv);
 
     ParserOptions parserOptions;
     parserOptions.DisplayDebugInfo = result["debug"].as<int>();
-    parserOptions.IncrementalCompile = result["incremental"].as<int>();
     parserOptions.Standard = result["standard"].as<int32>();
     parserOptions.PrecompileHeader = Path::Combine(FileSystem::GetEngineRootPath(), String(result["pch"].as<std::string>().data()));
+
+    GIncrementalBuild = result["incremental"].as<int>();
 
     String contentOp = String::FromStdString(result["content"].as<std::string>());
     Array<String> contentArray = contentOp.Split(',');

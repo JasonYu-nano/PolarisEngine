@@ -7,6 +7,7 @@
 #include "parse_utils.hpp"
 #include "moc_log.hpp"
 #include "struct_unit.hpp"
+#include "build_targets.hpp"
 
 namespace Engine
 {
@@ -26,7 +27,6 @@ namespace Engine
         ParseTime = PlatformClock::Now().TimeSinceEpoch();
 
         DisplayDiagnostics = options.DisplayDebugInfo;
-        IncrementalCompile = options.IncrementalCompile;
 
         String standardOp = String::Format("-std=c++{0}", options.Standard);
         Array<const char*> parserArgs = {"-xc++",
@@ -63,7 +63,7 @@ namespace Engine
 
             for (auto&& header : headFiles)
             {
-                if (IncrementalCompile)
+                if (GIncrementalBuild)
                 {
                     FileTime fileTime = FileSystem::GetFileTime(header);
                     if (static_cast<int64>(fileTime.LastModifyTime) < lastParseTime)

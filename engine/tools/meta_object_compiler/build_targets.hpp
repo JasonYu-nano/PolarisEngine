@@ -4,3 +4,5 @@
 #include "foundation/set.hpp"
 
 extern Set<String> GBuildTargets;
+
+extern bool GIncrementalBuild;

@@ -72,7 +72,7 @@ void MetaCodeGenerator::GenerateManifest()
     for (auto&& pair : TargetDependenceFiles)
     {
         const StringID target = pair.Key;
-        const Set<String> files = pair.Value;
+        Set<String> files = pair.Value;
 
         const String targetName = target.ToString();
         const String saveDir = Path::Combine(FileSystem::GetEngineIntermediateDir(), String::Format("generated/moc/{}", targetName)) ;
@@ -82,6 +82,13 @@ void MetaCodeGenerator::GenerateManifest()
         if (!FileSystem::FileExists(manifest))
         {
             FileSystem::MakeFile(manifest);
+        }
+
+        if (GIncrementalBuild)
+        {
+            Array<String> manifestItems;
+            CleanupManifest(manifest, &manifestItems);
+            MergeManifestItem(files, manifestItems);
         }
 
         String manifestText;
@@ -98,10 +105,65 @@ void MetaCodeGenerator::GenerateManifest()
         outFile.close();
 
         LOG_INFO(MOC, "Generate {}", manifest);
+
+        CleanupExpiredGeneratedFiles(saveDir, files);
     }
 }
 
-void MetaCodeGenerator::CleanupContent()
+void MetaCodeGenerator::CleanupManifest(const String& manifest, Array<String>* validManifestItems)
 {
+    Array<String> items;
+    GetManifestItem(manifest, items);
+    for (auto it = items.begin(); (bool)it; ++it)
+    {
+        if (!FileSystem::FileExists(*it))
+        {
+            it.RemoveSelf();
+        }
+    }
 
+    if (validManifestItems)
+    {
+        *validManifestItems = std::move(items);
+    }
+}
+
+void MetaCodeGenerator::MergeManifestItem(Set<String>& files, const Array<String>& items)
+{
+    for (auto&& item : items)
+    {
+        files.Add(item);
+    }
+}
+
+void MetaCodeGenerator::GetManifestItem(const String& manifest, Array<String>& manifestItems)
+{
+    if (!FileSystem::FileExists(manifest))
+    {
+        return;
+    }
+
+    String fileText = FileSystem::ReadFileToString(manifest);
+    manifestItems = fileText.Split('\n');
+}
+
+void MetaCodeGenerator::CleanupExpiredGeneratedFiles(const String& path, const Set<String>& manifestItems)
+{
+    Array<String> files = FileSystem::QueryFiles(path, "\\w+\\.gen\\.\\w+");
+
+    Set<String> shortNameItems(manifestItems.Size());
+    for (const String& item : manifestItems)
+    {
+        shortNameItems.Add(Path::GetShortName(item, false));
+    }
+
+    for (auto&& file : files)
+    {
+        String shortFileName = Path::GetShortName(file);
+        shortFileName.Remove(shortFileName.Length() - 8, 8);
+        if (!shortNameItems.Contains(shortFileName))
+        {
+            FileSystem::RemoveFile(file);
+        }
+    }
 }
