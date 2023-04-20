@@ -3,18 +3,6 @@
 set(target_binary_path ${CMAKE_BINARY_DIR}/source/core)
 list(APPEND CMAKE_MODULE_PATH ${target_binary_path})
 
-conan_cmake_autodetect(settings USE_CXX_STANDARD 17)
-
-conan_cmake_configure(REQUIRES spdlog/1.11.0 cxxopts/3.0.0 tomlplusplus/3.3.0
-        GENERATORS CMakeDeps CMakeToolchain
-        IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
-        OPTIONS spdlog/*:shared=True)
-
-conan_cmake_install(PATH_OR_REFERENCE .
-        BUILD missing
-        SETTINGS ${settings}
-        REMOTE conancenter)
-
 set(fmt_DIR ${target_binary_path})
 set(spdlog_DIR ${target_binary_path})
 set(cxxopts_DIR ${target_binary_path})
@@ -24,6 +12,25 @@ find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
 find_package(tomlplusplus CONFIG REQUIRED)
+
+if (NOT fmt_FOUND OR NOT spdlog_FOUND OR NOT cxxopts_FOUND OR NOT tomlplusplus_FOUND)
+    conan_cmake_autodetect(settings USE_CXX_STANDARD 17)
+
+    conan_cmake_configure(REQUIRES spdlog/1.11.0 cxxopts/3.0.0 tomlplusplus/3.3.0
+            GENERATORS CMakeDeps CMakeToolchain
+            IMPORTS "bin, *.dll -> ${CMAKE_BINARY_DIR}/output/bin"
+            OPTIONS spdlog/*:shared=True)
+
+    conan_cmake_install(PATH_OR_REFERENCE .
+            BUILD missing
+            SETTINGS ${settings}
+            REMOTE conancenter)
+
+    find_package(fmt CONFIG REQUIRED)
+    find_package(spdlog CONFIG REQUIRED)
+    find_package(cxxopts CONFIG REQUIRED)
+    find_package(tomlplusplus CONFIG REQUIRED)
+endif ()
 
 if(NOT fmt_FOUND)
     message(FATAL_ERROR "Can't find fmt lib")
