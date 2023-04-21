@@ -190,7 +190,7 @@ function(compile_meta_object)
 
     if (moc_exist)
         execute_process(
-                COMMAND meta_object_compiler -s 20 -c ${arg_content} -i ${arg_include_dirs} -t ${arg_target_list} -d 0 --incremental 0
+                COMMAND meta_object_compiler -s 20 -c ${arg_content} -i ${arg_include_dirs} -t ${arg_target_list} -d 0 --incremental 1
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/output/bin
                 RESULT_VARIABLE exit_code
         )
