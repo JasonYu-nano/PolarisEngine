@@ -784,27 +784,29 @@ namespace Engine
         {
             ENSURE(count > 0);
             auto& myVal = Pair.SecondVal;
-            SizeType index = myVal.Size;
-            myVal.Size += count;
-            if (myVal.Size > myVal.Capacity)
+            SizeType oldSize = myVal.Size;
+            SizeType newSize = oldSize + count;
+            if (newSize > myVal.Capacity)
             {
-                Expansion(myVal.Size);
+                Expansion(newSize);
             }
-            return index;
+            myVal.Size = newSize;
+            return oldSize;
         }
 
         void InsertBits(SizeType index, SizeType count)
         {
             auto& myVal = Pair.SecondVal;
             ENSURE(index >= 0 && index <= myVal.Size);
-            SizeType oldCount = myVal.Size;
-            myVal.Size += count;
-            if (myVal.Size > myVal.Capacity)
+            SizeType oldSize = myVal.Size;
+            SizeType newSize = oldSize + count;
+            if (newSize > myVal.Capacity)
             {
-                Expansion(myVal.Size);
+                Expansion(newSize);
             }
+            myVal.Size = newSize;
 
-            SizeType shiftCount = oldCount - index;
+            SizeType shiftCount = oldSize - index;
             if (shiftCount > 0)
             {
                 Memory::MemmoveBits(myVal.Data, index + count, myVal.Data, index, shiftCount);
@@ -852,7 +854,7 @@ namespace Engine
             if (myVal.Data)
             {
                 auto& alloc = GetAlloc();
-                alloc.Deallocate(myVal.Data, myVal.Capacity);
+                alloc.Deallocate(myVal.Data, Math::DivideAndCeil(myVal.Capacity, ELEMENT_BITS_NUM));
             }
 
             myVal.Size = otherVal.Size;
@@ -916,8 +918,9 @@ namespace Engine
             ValueType* newPtr = alloc.Allocate(elemCount);
             if (myVal.Data)
             {
-                Memory::Memmove(newPtr, myVal.Data, myVal.Size);
-                alloc.Deallocate(myVal.Data, myVal.Capacity);
+                const SizeType numOfByte = Math::DivideAndCeil(myVal.Size, ELEMENT_BITS_NUM) * sizeof(ValueType);
+                Memory::Memmove(newPtr, myVal.Data, numOfByte);
+                alloc.Deallocate(myVal.Data, Math::DivideAndCeil(myVal.Capacity, ELEMENT_BITS_NUM));
             }
 
             myVal.Data = newPtr;
@@ -930,7 +933,7 @@ namespace Engine
             if (myVal.Data)
             {
                 auto& alloc = GetAlloc();
-                alloc.Deallocate(myVal.Data, myVal.Capacity);
+                alloc.Deallocate(myVal.Data, Math::DivideAndCeil(myVal.Capacity, ELEMENT_BITS_NUM));
             }
             myVal.Size = 0;
             myVal.Capacity = 0;
