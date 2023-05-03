@@ -127,8 +127,8 @@ namespace Engine
         using Super = ConstArrayIterator<ContainerType>;
 
     public:
-        using ValueType = Super::ValueType;
-        using SizeType = Super::SizeType;
+        using ValueType = typename Super::ValueType;
+        using SizeType = typename Super::SizeType;
         using value_type = ValueType;
         using size_type = SizeType;
         using iterator_category = std::random_access_iterator_tag;

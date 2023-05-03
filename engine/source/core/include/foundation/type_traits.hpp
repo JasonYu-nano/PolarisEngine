@@ -64,12 +64,6 @@ struct CopyQualifiersAndRefFrom<From&&, To&> { using Type = typename CopyQualifi
 template <typename From, typename To>
 struct CopyQualifiersAndRefFrom<From&&, To&&> { using Type = typename CopyQualifiersFrom<From, To>::Type&&; };
 
-template <typename Type>
-constexpr bool HasTrivialDestructorV = __has_trivial_destructor(Type);
-
-template <typename Type>
-constexpr bool HasUserDestructorV = __has_virtual_destructor(Type) || __has_user_destructor(Type);
-
 /** return type depend predicate */
 template <bool Predicate, typename TrueType, typename FalseType>
 struct SwitchType;
