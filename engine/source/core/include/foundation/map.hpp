@@ -3,6 +3,7 @@
 #include <tuple>
 #include "definitions_core.hpp"
 #include "foundation/set.hpp"
+#include "tuple.hpp"
 
 namespace Engine
 {
@@ -61,33 +62,6 @@ namespace Engine
         }
     };
 
-    template <typename KeyType, typename ValueType>
-    class Pair
-    {
-    public:
-        Pair() = default;
-
-        Pair(const KeyType& key, const ValueType& value)
-            : Key(key)
-            , Value(value)
-        {}
-
-        explicit Pair(const std::tuple<KeyType, ValueType>& pair)
-            : Key(std::get<0>(pair))
-            , Value(std::get<1>(pair))
-        {}
-
-        template<typename InKeyType, typename InValueType>
-        explicit operator std::tuple<KeyType, ValueType>()
-        {
-            return std::make_tuple(static_cast<InKeyType>(Key), static_cast<InValueType>(Value));
-        }
-
-    public:
-        KeyType Key;
-        ValueType Value;
-    };
-
     template <typename Key, typename Value>
     struct MapDefaultHashFun
     {
@@ -99,7 +73,7 @@ namespace Engine
             return Engine::GetHashCode(key);
         }
 
-        static const KeyType& GetKey(const Pair<KeyType, ValueType>& element)
+        static const KeyType& GetKey(const Tuple<KeyType, ValueType>& element)
         {
             return element.Key;
         }
@@ -116,7 +90,7 @@ namespace Engine
     public:
         using KeyType = Key;
         using ValueType = Value;
-        using PairType = Pair<KeyType, ValueType>;
+        using PairType = Tuple<KeyType, ValueType>;
         using AllocatorType = Alloc::template ElementAllocator<PairType>;
         using SizeType = typename AllocatorType::SizeType;
         using SetType = Set<PairType, KeyFun, Alloc>;
@@ -268,7 +242,7 @@ namespace Engine
         template <typename AnyKeyType, typename AnyValueType>
         ValueType& Emplace(AnyKeyType&& key, AnyValueType&& value)
         {
-            return Pairs.Emplace(Pair(std::forward<AnyKeyType>(key), std::forward<AnyValueType>(value))).Value;
+            return Pairs.Emplace(PairType(std::forward<AnyKeyType>(key), std::forward<AnyValueType>(value))).Value;
         }
 
         template <typename AnyKeyType, typename AnyValueType>

@@ -9,35 +9,27 @@ namespace Engine
 {
     TEST(TupleTest, Ctor)
     {
-        std::string name = "name";
-        int32 level = 5;
+        int x = 42;
+        float y = 3.14f;
+        float z = 1.001f;
 
-        std::tuple<std::string&, int32&, int32> t0 = {name, level, 10};
-        Tuple<std::string&, int32&, int32> t1 {name, level, 10};
-        auto t2 = MakeTuple(name, level, 10);
+        std::tuple<int&, float&, int> t0(x, y, static_cast<int>(z));
 
-        std::get<0>(t0) = "nano";
-        std::get<1>(t0) = 7;
-        EXPECT_TRUE(name == "nano");
-        EXPECT_TRUE(level == 7);
+        std::get<0>(t0) = 100;
+        std::get<1>(t0) = 2.718f;
 
-        EXPECT_TRUE(t1.Get<0>() == "nano");
-        EXPECT_TRUE(t1.Get<1>() == 7);
-        EXPECT_TRUE(std::is_reference_v<decltype(get<2>(t0))>);
-        EXPECT_TRUE(std::is_reference_v<decltype(t1.Get<2>())>);
+        EXPECT_TRUE(x == 100 && y == 2.718f);
+        EXPECT_TRUE(std::is_reference_v<decltype(std::get<1>(t0))>);
+        EXPECT_TRUE(std::is_rvalue_reference_v<decltype(std::get<2>(std::move(t0)))>);
 
-        EXPECT_TRUE(t2.Get<0>() == "name");
-        EXPECT_TRUE(t2.Get<1>() == 5);
-    }
+        Tuple<int&, float&, int> t1(x, y, static_cast<int>(z));
 
-    TEST(TupleTest, Get)
-    {
-        std::string name = "string";
-        int32 level = 5;
+        t1.Get<0>() = 200;
+        t1.Get<1>() = 5.718f;
 
-        auto t0 = MakeTuple(name, level, 10.0f);
-
-        EXPECT_TRUE(t0.Get<std::string>() == "string");
+        EXPECT_TRUE(x == 200 && y == 5.718f);
+        EXPECT_TRUE(std::is_reference_v<decltype(t1.Get<1>())>);
+        EXPECT_TRUE(std::is_rvalue_reference_v<decltype(std::move(t1).Get<1>())>);
     }
 
     TEST(TupleTest, Compare)
